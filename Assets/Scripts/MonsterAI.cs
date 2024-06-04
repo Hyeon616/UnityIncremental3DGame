@@ -1,83 +1,113 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class MonsterAI : MonoBehaviour, IDamage
+public class MonsterAI : MonoBehaviour, IDamageable
 {
-    private float detectionRange = 100f;
+    [Header("Combat")]
+    private float detectionRange = 20f;
     private float attackRange = 5f;
-    private float attackCooldown = 1f;
+    [SerializeField] private float attackCooldown = 2f;
+    [SerializeField] private int attackPower = 1;
     private float attackTimer = 0f;
 
+    [Header("Health")]
+    private int maxHealth = 10;
+    private int currentHealth;
 
-    [SerializeField] private float enemyHealth;
+    [Header("Move")]
+    [SerializeField] private float wanderRadius = 20f;
+    [SerializeField] private float wanderTimer = 5f;
+    private float wanderTimerCounter;
 
     private NavMeshAgent agent;
-    private GameObject target;
+    private GameObject player;
     private Animator animator;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        ResetHealth();
+        wanderTimerCounter = wanderTimer;
+    }
+
+    public void SetPlayer(Transform playerTransform)
+    {
+        player = playerTransform.gameObject;
+    }
+
+    public void ResetHealth()
+    {
+        currentHealth = maxHealth;
     }
 
     void Update()
     {
-        attackTimer -= Time.deltaTime;
-
-        FindTarget();
-
-        if (target != null)
+        if (currentHealth <= 0)
         {
-            float distance = Vector3.Distance(transform.position, target.transform.position);
-            if (distance <= attackRange)
-            {
-                Attack();
-            }
-            else
-            {
-                ChaseTarget();
-            }
+            gameObject.SetActive(false);
+            return;
+        }
+
+        attackTimer -= Time.deltaTime;
+        wanderTimerCounter -= Time.deltaTime;
+
+        if (player != null && Vector3.Distance(transform.position, player.transform.position) <= detectionRange)
+        {
+            ChaseOrAttackPlayer();
+        }
+        else if (wanderTimerCounter <= 0f)
+        {
+            Wander();
+            wanderTimerCounter = wanderTimer;
+        }
+    }
+    void ChaseOrAttackPlayer()
+    {
+        float distance = Vector3.Distance(transform.position, player.transform.position);
+        if (distance <= attackRange)
+        {
+            Attack();
         }
         else
         {
-            Idle();
+            ChasePlayer();
         }
     }
 
-    void FindTarget()
+    void ChasePlayer()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, detectionRange);
-        foreach (var hitCollider in hitColliders)
-        {
-            if (hitCollider.CompareTag("Player"))
-            {
-                target = hitCollider.gameObject;
-                return;
-            }
-        }
-        target = null;
-    }
-
-    void ChaseTarget()
-    {
-        transform.position = Vector3.zero;
+        agent.SetDestination(player.transform.position);
         animator.SetBool("isWalking", true);
         animator.SetBool("isAttacking", false);
-        agent.SetDestination(target.transform.position);
     }
 
     void Attack()
     {
         if (attackTimer <= 0f)
         {
+            transform.LookAt(player.transform);
             animator.SetBool("isWalking", false);
             animator.SetBool("isAttacking", true);
-            transform.LookAt(target.transform);
             attackTimer = attackCooldown;
         }
+    }
+
+    void Wander()
+    {
+        Vector3 newPos = RandomNavSphere(transform.position, wanderRadius, -1);
+        agent.SetDestination(newPos);
+        animator.SetBool("isWalking", true);
+        animator.SetBool("isAttacking", false);
+    }
+
+    public static Vector3 RandomNavSphere(Vector3 origin, float dist, int layermask)
+    {
+        Vector3 randDirection = Random.insideUnitSphere * dist;
+        randDirection += origin;
+        NavMeshHit navHit;
+        NavMesh.SamplePosition(randDirection, out navHit, dist, layermask);
+        return navHit.position;
     }
 
     void Idle()
@@ -85,19 +115,39 @@ public class MonsterAI : MonoBehaviour, IDamage
         animator.SetBool("isWalking", false);
         animator.SetBool("isAttacking", false);
     }
-    void OnDrawGizmos()
+
+    public void ApplyDamage()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, detectionRange);
+        if (player != null && Vector3.Distance(transform.position, player.transform.position) <= attackRange)
+        {
+            if (player.TryGetComponent<IDamageable>(out IDamageable damageable))
+            {
+                damageable.TakeDamage(GetAttackPower());
+            }
+        }
     }
 
-    public void Damage(float damage)
+    public void TakeDamage(int amount)
     {
-        enemyHealth -= damage;
-
-        if (enemyHealth <= 0)
+        currentHealth -= amount;
+        if (currentHealth <= 0)
         {
-            // 몬스터 죽음 처리
+            Die();
         }
+        else
+        {
+            animator.SetTrigger("TakeDamage");
+        }
+    }
+
+    public int GetAttackPower()
+    {
+        return attackPower;
+    }
+
+    void Die()
+    {
+        Debug.Log("Monster died.");
+        gameObject.SetActive(false);
     }
 }

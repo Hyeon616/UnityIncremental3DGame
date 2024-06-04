@@ -7,17 +7,19 @@ public class PlayerAI : MonoBehaviour
 {
     private float detectionRange = 100f;
     private float attackRange = 5f;
-    private float attackCooldown = 1f;
+    private float attackCooldown = 2f;
     private float attackTimer = 0f;
 
     private NavMeshAgent agent;
     private GameObject target;
     private Animator animator;
+    private Player player;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
+        player = GetComponent<Player>();
     }
 
     void Update()
@@ -47,32 +49,42 @@ public class PlayerAI : MonoBehaviour
     void FindTarget()
     {
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, detectionRange);
+        float closestDistance = Mathf.Infinity;
+        GameObject closestTarget = null;
+
         foreach (var hitCollider in hitColliders)
         {
-            if (hitCollider.CompareTag("Monster"))
+            if (hitCollider.CompareTag("Monster") && hitCollider.gameObject.activeInHierarchy)
             {
-                target = hitCollider.gameObject;
-                return;
+                float distance = Vector3.Distance(transform.position, hitCollider.transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestTarget = hitCollider.gameObject;
+                }
             }
         }
-        target = null;
+
+        target = closestTarget;
     }
 
     void ChaseTarget()
     {
-        animator.SetBool("isWalking", true);
-        animator.SetBool("isAttacking", false);
-        agent.SetDestination(target.transform.position);
+        if (target != null)
+        {
+            agent.SetDestination(target.transform.position);
+            animator.SetBool("isWalking", true);
+            animator.SetBool("isAttacking", false);
+        }
     }
 
     void Attack()
     {
         if (attackTimer <= 0f)
         {
+            transform.LookAt(target.transform);
             animator.SetBool("isWalking", false);
             animator.SetBool("isAttacking", true);
-            transform.LookAt(target.transform);
-            Debug.Log("Player attacks " + target.name);
             attackTimer = attackCooldown;
         }
     }
@@ -83,10 +95,22 @@ public class PlayerAI : MonoBehaviour
         animator.SetBool("isAttacking", false);
     }
 
+    public void ApplyDamage()
+    {
+        if (target != null && Vector3.Distance(transform.position, target.transform.position) <= attackRange)
+        {
+            if (target.TryGetComponent<IDamageable>(out IDamageable damageable))
+            {
+                damageable.TakeDamage(player.GetAttackPower());
+            }
+        }
+    }
+
     void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
     }
 
+    
 }
