@@ -7,14 +7,14 @@ public class MonsterSpawner : MonoBehaviour
 {
     public GameObject monsterPrefab;
     public Transform player;
-    private ObjectPool<MonsterAI> monsterPool;
+    private ObjectPool<MonsterViewModel> monsterPool;
     public int totalMonstersPerStage = 25;
     private int spawnedMonsters = 0;
     private int killedMonsters = 0;
 
     void Start()
     {
-        monsterPool = new ObjectPool<MonsterAI>(monsterPrefab.GetComponent<MonsterAI>(), totalMonstersPerStage);
+        monsterPool = new ObjectPool<MonsterViewModel>(monsterPrefab.GetComponent<MonsterViewModel>(), totalMonstersPerStage);
         StartCoroutine(SpawnMonstersRoutine());
     }
 
@@ -35,7 +35,8 @@ public class MonsterSpawner : MonoBehaviour
             {
                 if (killedMonsters >= totalMonstersPerStage)
                 {
-                    player.GetComponent<Player>().FullHeal();
+                    // 플레이어 체력 회복
+                    player.GetComponent<PlayerViewModel>().FullHeal();
 
                     yield return new WaitForSeconds(10f);
                     spawnedMonsters = 0;
@@ -51,7 +52,7 @@ public class MonsterSpawner : MonoBehaviour
 
     void SpawnMonster()
     {
-        MonsterAI monster = monsterPool.GetObject();
+        MonsterViewModel monster = monsterPool.GetObject();
         if (monster != null)
         {
             Vector3 spawnPosition = GetRandomPosition();
@@ -59,7 +60,7 @@ public class MonsterSpawner : MonoBehaviour
             monster.gameObject.SetActive(true);
 
             monster.SetPlayer(player);
-            monster.ResetHealth();
+            monster.GetComponent<MonsterModel>().ResetHealth();
         }
     }
 

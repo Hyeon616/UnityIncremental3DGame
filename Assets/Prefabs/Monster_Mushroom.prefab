@@ -329,9 +329,12 @@ GameObject:
   m_Component:
   - component: {fileID: 2163617509411304724}
   - component: {fileID: 399054021839922203}
-  - component: {fileID: 2163617509420325600}
-  - component: {fileID: 399054021839922202}
   - component: {fileID: 399054021932880592}
+  - component: {fileID: 2163617509420325600}
+  - component: {fileID: 572602385510657411}
+  - component: {fileID: 2124531136820061960}
+  - component: {fileID: 6359626068210489985}
+  - component: {fileID: 399054021839922202}
   m_Layer: 8
   m_Name: Monster_Mushroom
   m_TagString: Monster
@@ -378,6 +381,20 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!64 &399054021932880592
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163617509410941236}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300000, guid: 119e98e7044e846bb86de248d6b7c57d, type: 3}
 --- !u!95 &2163617509420325600
 Animator:
   serializedVersion: 5
@@ -399,6 +416,46 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &572602385510657411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163617509410941236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15a2ae3d3b4c44e459a57e382493aa6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 0
+  attackPower: 0
+  initialHealth: 10
+  initialAttackPower: 1
+--- !u!114 &2124531136820061960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163617509410941236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07c2e095f3e13f74e8cd975290c3a696, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &6359626068210489985
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2163617509410941236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55bd97a76d0a39a4790e0fc140ba38d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &399054021839922202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -412,22 +469,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackCooldown: 2
-  maxHealth: 100
   attackPower: 1
---- !u!64 &399054021932880592
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2163617509410941236}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 4300000, guid: 119e98e7044e846bb86de248d6b7c57d, type: 3}
+  wanderRadius: 20
+  wanderTimer: 5
 --- !u!1 &2163617509410941238
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,14 +12,13 @@ public class PlayerAI : MonoBehaviour
 
     private NavMeshAgent agent;
     private GameObject target;
-    private Animator animator;
-    private Player player;
+    private PlayerViewModel playerViewModel;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        animator = GetComponent<Animator>();
-        player = GetComponent<Player>();
+        playerViewModel = GetComponent<PlayerViewModel>();
+        agent.stoppingDistance = attackRange; // Stopping distance¸¦ ¼³Á¤
     }
 
     void Update()
@@ -33,7 +32,7 @@ public class PlayerAI : MonoBehaviour
             float distance = Vector3.Distance(transform.position, target.transform.position);
             if (distance <= attackRange)
             {
-                Attack();
+                StopAndAttack();
             }
             else
             {
@@ -73,38 +72,35 @@ public class PlayerAI : MonoBehaviour
         if (target != null)
         {
             agent.SetDestination(target.transform.position);
-            animator.SetBool("isWalking", true);
-            animator.SetBool("isAttacking", false);
+            playerViewModel.characterView.Animator.SetBool("isWalking", true);
+            playerViewModel.characterView.Animator.SetBool("isAttacking", false);
+            agent.isStopped = false;
         }
     }
 
-    void Attack()
+    void StopAndAttack()
     {
+        agent.isStopped = true;
+        playerViewModel.characterView.Animator.SetBool("isWalking", false);
         if (attackTimer <= 0f)
         {
             transform.LookAt(target.transform);
-            animator.SetBool("isWalking", false);
-            animator.SetBool("isAttacking", true);
+            MonsterViewModel targetViewModel = target.GetComponent<MonsterViewModel>();
+            if (targetViewModel != null)
+            {
+                playerViewModel.Attack(targetViewModel);
+            }
             attackTimer = attackCooldown;
         }
     }
 
     void Idle()
     {
-        animator.SetBool("isWalking", false);
-        animator.SetBool("isAttacking", false);
+        playerViewModel.characterView.Animator.SetBool("isWalking", false);
+        playerViewModel.characterView.Animator.SetBool("isAttacking", false);
     }
 
-    public void ApplyDamage()
-    {
-        if (target != null && Vector3.Distance(transform.position, target.transform.position) <= attackRange)
-        {
-            if (target.TryGetComponent<IDamageable>(out IDamageable damageable))
-            {
-                damageable.TakeDamage(player.GetAttackPower());
-            }
-        }
-    }
+
 
     void OnDrawGizmos()
     {

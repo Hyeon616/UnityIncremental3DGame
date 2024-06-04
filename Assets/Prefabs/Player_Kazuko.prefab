@@ -1910,8 +1910,10 @@ GameObject:
   - component: {fileID: 8449289589772141540}
   - component: {fileID: 8387130256047262460}
   - component: {fileID: 8417806193771083764}
-  - component: {fileID: 1610129560}
+  - component: {fileID: 1610129567}
+  - component: {fileID: 1610129566}
   - component: {fileID: 1610129565}
+  - component: {fileID: 1610129560}
   m_Layer: 7
   m_Name: Player_Kazuko
   m_TagString: Player
@@ -2011,6 +2013,46 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1610129567
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8468012470551875962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10d7ef7e97ee5424eaa532c81063c88b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 0
+  attackPower: 0
+  initialHealth: 100
+  initialAttackPower: 6
+--- !u!114 &1610129566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8468012470551875962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c849377100ca7946a5eb3b5b8cb22c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1610129565
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8468012470551875962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 061427caeef917e478f168672f646685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1610129560
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2023,20 +2065,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c709646945530745a49ad11d36554ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1610129565
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8468012470551875962}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5acf7f27f0ef1974dbed293548bff6cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 100
-  attackPower: 20
 --- !u!1 &8468016763540513226
 GameObject:
   m_ObjectHideFlags: 0
