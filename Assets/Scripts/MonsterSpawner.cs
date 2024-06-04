@@ -35,6 +35,8 @@ public class MonsterSpawner : MonoBehaviour
             {
                 if (killedMonsters >= totalMonstersPerStage)
                 {
+                    player.GetComponent<Player>().FullHeal();
+
                     yield return new WaitForSeconds(10f);
                     spawnedMonsters = 0;
                     killedMonsters = 0;

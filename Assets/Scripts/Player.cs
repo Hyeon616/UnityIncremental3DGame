@@ -35,5 +35,9 @@ public class Player : MonoBehaviour, IDamageable
         Debug.Log("Player die");
     }
 
-
+    public void FullHeal()
+    {
+        currentHealth = maxHealth;
+        Debug.Log("Player fully healed. Current health: " + currentHealth);
+    }
 }
