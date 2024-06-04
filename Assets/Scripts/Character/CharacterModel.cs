@@ -4,8 +4,10 @@ using UnityEngine;
 
 public abstract class CharacterModel : MonoBehaviour, IDamageable
 {
-    [SerializeField] protected int maxHealth;
-    [SerializeField] protected int attackPower;
+    protected int maxHealth;
+    protected int attackPower;
+    protected float attackRange;
+    protected float attackCooldown;
     protected int currentHealth;
     protected Animator animator;
 
@@ -14,6 +16,9 @@ public abstract class CharacterModel : MonoBehaviour, IDamageable
         get => currentHealth;
         protected set => currentHealth = Mathf.Clamp(value, 0, maxHealth);
     }
+
+    public float AttackRange => attackRange;
+    public float AttackCooldown => attackCooldown;
 
     protected virtual void Awake()
     {
@@ -27,10 +32,6 @@ public abstract class CharacterModel : MonoBehaviour, IDamageable
         if (CurrentHealth <= 0)
         {
             Die();
-        }
-        else
-        {
-            animator.SetTrigger("TakeDamage");
         }
     }
 

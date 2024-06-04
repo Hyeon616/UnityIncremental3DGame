@@ -6,9 +6,14 @@ using UnityEngine.AI;
 public abstract  class CharacterViewModel : MonoBehaviour
 {
     protected CharacterModel characterModel;
+    public CharacterModel CharacterModel => characterModel;
+
     public CharacterView characterView { get; private set; }
-    protected NavMeshAgent agent;
-    protected CharacterViewModel attackTarget;
+    public NavMeshAgent agent { get; private set; }
+    public GameObject target { get; set; }
+    public float attackTimer = 0f;
+
+    private ICharacterState currentState;
 
     protected virtual void Awake()
     {
@@ -17,10 +22,37 @@ public abstract  class CharacterViewModel : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
     }
 
+    protected virtual void Start()
+    {
+        ChangeState(new IdleState(this));
+    }
+
+    public void ChangeState(ICharacterState newState)
+    {
+        if (currentState != null)
+        {
+            currentState.Exit();
+        }
+
+        currentState = newState;
+
+        if (currentState != null)
+        {
+            currentState.Enter();
+        }
+    }
+
+    protected virtual void Update()
+    {
+        if (currentState != null)
+        {
+            currentState.Execute();
+        }
+    }
+
     public virtual void TakeDamage(int amount)
     {
         characterModel.TakeDamage(amount);
-     //   characterView.PlayDamageAnimation();
         if (characterModel.CurrentHealth <= 0)
         {
             Die();
@@ -39,19 +71,27 @@ public abstract  class CharacterViewModel : MonoBehaviour
 
     public virtual void Attack(CharacterViewModel target)
     {
-        attackTarget = target;
+        this.target = target.gameObject;
         characterView.PlayAttackAnimation();
     }
 
-    // ¾Ö´Ï¸ÞÀÌ¼Ç ÀÌº¥Æ®·Î È£ÃâµÉ ¸Þ¼­µå
+    // ì• ë‹ˆë©”ì´ì…˜ ì´ë²¤íŠ¸ë¡œ í˜¸ì¶œë  ë©”ì„œë“œ
     public void ApplyDamage()
     {
-        
-        if (attackTarget != null)
+        Debug.Log("ApplyDamage called");
+        if (target != null)
         {
-            attackTarget.TakeDamage(characterModel.GetAttackPower());
+            CharacterViewModel targetViewModel = target.GetComponent<CharacterViewModel>();
+            if (targetViewModel != null)
+            {
+                Debug.Log("Applying damage to target");
+                targetViewModel.TakeDamage(characterModel.GetAttackPower());
+            }
         }
-        
+        else
+        {
+            Debug.Log("No attack target");
+        }
     }
 
     public void MoveTo(Vector3 destination)
@@ -60,4 +100,30 @@ public abstract  class CharacterViewModel : MonoBehaviour
     }
 
     protected abstract void Die();
+
+    public void FindTarget()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 10f);
+        float closestDistance = Mathf.Infinity;
+        GameObject closestTarget = null;
+
+        foreach (var hitCollider in hitColliders)
+        {
+            if (hitCollider.CompareTag("Monster") && hitCollider.gameObject.activeInHierarchy)
+            {
+                float distance = Vector3.Distance(transform.position, hitCollider.transform.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestTarget = hitCollider.gameObject;
+                }
+            }
+        }
+
+        target = closestTarget;
+        if (target != null)
+        {
+            ChangeState(new ChasingState(this));
+        }
+    }
 }
