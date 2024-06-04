@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class AttackingState : ICharacterState
@@ -15,7 +13,7 @@ public class AttackingState : ICharacterState
     {
         character.characterView.Animator.SetBool("isWalking", false);
         character.characterView.Animator.SetBool("isAttacking", true);
-        character.agent.isStopped = true;
+        //character.agent.isStopped = true;
     }
 
     public void Execute()

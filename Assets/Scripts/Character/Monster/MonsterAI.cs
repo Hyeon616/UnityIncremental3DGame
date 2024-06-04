@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,23 +9,41 @@ public class MonsterAI : MonoBehaviour
     private float attackCooldown = 3f;
     private float attackTimer = 0f;
 
-    private NavMeshAgent agent;
+    private float wanderRadius = 20f;
+    private float wanderTimer = 5f;
+    private float wanderTime;
+
     private GameObject player;
     private MonsterViewModel monsterViewModel;
     private PlayerViewModel playerViewModel;
+    private JPSBPathfinding pathfinding;
+
+    private List<Node> path;
+    private int pathIndex = 0;
+
+    private float mapSize = 50f;
 
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
         monsterViewModel = GetComponent<MonsterViewModel>();
         player = GameObject.FindGameObjectWithTag("Player");
         playerViewModel = player.GetComponent<PlayerViewModel>();
-        agent.stoppingDistance = attackRange; 
+        pathfinding = GetComponent<JPSBPathfinding>();
+
+        pathfinding.grid = FindObjectOfType<Grid>();
+        if (pathfinding.grid == null)
+        {
+            Debug.LogError("Grid not found in the scene. Please ensure there is a Grid object in the scene.");
+        }
+
+        pathfinding.seeker = transform;
+        wanderTime = wanderTimer;
     }
 
     void Update()
     {
         attackTimer -= Time.deltaTime;
+        wanderTime -= Time.deltaTime;
 
         if (player != null && Vector3.Distance(transform.position, player.transform.position) <= detectionRange)
         {
@@ -32,8 +51,14 @@ public class MonsterAI : MonoBehaviour
         }
         else
         {
-            Wander();
+            if (wanderTime <= 0f)
+            {
+                Wander();
+                wanderTime = wanderTimer;
+            }
         }
+
+        MoveAlongPath();
     }
 
     void ChaseOrAttackPlayer()
@@ -51,18 +76,18 @@ public class MonsterAI : MonoBehaviour
 
     void ChasePlayer()
     {
-        if (player != null)
+        if (player != null && pathfinding.grid != null)
         {
-            agent.SetDestination(player.transform.position);
+            pathfinding.FindPath(transform.position, player.transform.position);
+            path = pathfinding.grid.path;
+            pathIndex = 0;
             monsterViewModel.characterView.Animator.SetBool("isWalking", true);
             monsterViewModel.characterView.Animator.SetBool("isAttacking", false);
-            agent.isStopped = false;
         }
     }
 
     void StopAndAttack()
     {
-        agent.isStopped = true;
         monsterViewModel.characterView.Animator.SetBool("isWalking", false);
         if (attackTimer <= 0f)
         {
@@ -74,15 +99,37 @@ public class MonsterAI : MonoBehaviour
 
     void Wander()
     {
-        Vector3 newPos = MonsterViewModel.RandomNavSphere(transform.position, 20f, -1);
-        agent.SetDestination(newPos);
-        monsterViewModel.characterView.Animator.SetBool("isWalking", true);
-        monsterViewModel.characterView.Animator.SetBool("isAttacking", false);
+        Vector3 randomDirection = new Vector3(
+            Random.Range(-wanderRadius, wanderRadius),
+            0,
+            Random.Range(-wanderRadius, wanderRadius)
+        );
+
+        Vector3 candidatePosition = transform.position + randomDirection;
+
+        // 맵의 경계 안에 있는지 확인
+        if (candidatePosition.x > -mapSize / 2 && candidatePosition.x < mapSize / 2 &&
+            candidatePosition.z > -mapSize / 2 && candidatePosition.z < mapSize / 2)
+        {
+            pathfinding.FindPath(transform.position, candidatePosition);
+            path = pathfinding.grid.path;
+            pathIndex = 0;
+            monsterViewModel.characterView.Animator.SetBool("isWalking", true);
+            monsterViewModel.characterView.Animator.SetBool("isAttacking", false);
+        }
     }
 
-    void Idle()
+    void MoveAlongPath()
     {
-        monsterViewModel.characterView.Animator.SetBool("isWalking", false);
-        monsterViewModel.characterView.Animator.SetBool("isAttacking", false);
+        if (path != null && pathIndex < path.Count)
+        {
+            Vector3 targetPosition = path[pathIndex].worldPosition;
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * 5);
+            transform.LookAt(targetPosition);
+            if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+            {
+                pathIndex++;
+            }
+        }
     }
 }

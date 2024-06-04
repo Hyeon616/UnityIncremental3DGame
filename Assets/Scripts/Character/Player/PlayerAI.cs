@@ -10,15 +10,28 @@ public class PlayerAI : MonoBehaviour
     private float attackCooldown = 2f;
     private float attackTimer = 0f;
 
-    private NavMeshAgent agent;
     private GameObject target;
     private PlayerViewModel playerViewModel;
+    private JPSBPathfinding pathfinding;
+
+    private List<Node> path;
+    private int pathIndex = 0;
 
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
         playerViewModel = GetComponent<PlayerViewModel>();
-        agent.stoppingDistance = attackRange; // Stopping distance¸¦ ¼³Á¤
+        pathfinding = GetComponent<JPSBPathfinding>();
+
+        if (pathfinding.grid == null)
+        {
+            pathfinding.grid = FindObjectOfType<Grid>();
+            if (pathfinding.grid == null)
+            {
+                Debug.LogError("Grid not found in the scene. Please ensure there is a Grid object in the scene.");
+            }
+        }
+
+        pathfinding.seeker = transform;
     }
 
     void Update()
@@ -43,6 +56,8 @@ public class PlayerAI : MonoBehaviour
         {
             Idle();
         }
+
+        MoveAlongPath();
     }
 
     void FindTarget()
@@ -69,28 +84,28 @@ public class PlayerAI : MonoBehaviour
 
     void ChaseTarget()
     {
-        if (target != null)
+        if (target != null && pathfinding.grid != null)
         {
-            agent.SetDestination(target.transform.position);
+            pathfinding.FindPath(transform.position, target.transform.position);
+            path = pathfinding.grid.path;
+            pathIndex = 0;
             playerViewModel.characterView.Animator.SetBool("isWalking", true);
             playerViewModel.characterView.Animator.SetBool("isAttacking", false);
-            agent.isStopped = false;
         }
     }
 
     void StopAndAttack()
     {
-        agent.isStopped = true;
-        playerViewModel.characterView.Animator.SetBool("isWalking", false);
         if (attackTimer <= 0f)
         {
-            transform.LookAt(target.transform);
-            MonsterViewModel targetViewModel = target.GetComponent<MonsterViewModel>();
-            if (targetViewModel != null)
+            float distance = Vector3.Distance(transform.position, target.transform.position);
+            if (distance <= attackRange)
             {
-                playerViewModel.Attack(targetViewModel);
+                playerViewModel.characterView.Animator.SetBool("isWalking", false);
+                playerViewModel.characterView.Animator.SetBool("isAttacking", true);
+                transform.LookAt(target.transform);
+                attackTimer = attackCooldown;
             }
-            attackTimer = attackCooldown;
         }
     }
 
@@ -100,13 +115,23 @@ public class PlayerAI : MonoBehaviour
         playerViewModel.characterView.Animator.SetBool("isAttacking", false);
     }
 
-
+    void MoveAlongPath()
+    {
+        if (path != null && pathIndex < path.Count)
+        {
+            Vector3 targetPosition = path[pathIndex].worldPosition;
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * 5);
+            transform.LookAt(targetPosition);
+            if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+            {
+                pathIndex++;
+            }
+        }
+    }
 
     void OnDrawGizmos()
     {
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
     }
-
-    
 }

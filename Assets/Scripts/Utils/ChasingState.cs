@@ -5,17 +5,18 @@ using UnityEngine;
 public class ChasingState : ICharacterState
 {
     private readonly CharacterViewModel character;
+    private JPSBPathfinding pathfinding;
 
     public ChasingState(CharacterViewModel character)
     {
         this.character = character;
+        pathfinding = character.GetComponent<JPSBPathfinding>();
     }
 
     public void Enter()
     {
         character.characterView.Animator.SetBool("isWalking", true);
         character.characterView.Animator.SetBool("isAttacking", false);
-        character.agent.isStopped = false;
     }
 
     public void Execute()
@@ -23,7 +24,8 @@ public class ChasingState : ICharacterState
         // 목표를 향해 이동
         if (character.target != null)
         {
-            character.agent.SetDestination(character.target.transform.position);
+            pathfinding.FindPath(character.transform.position, character.target.transform.position);
+            character.SetPath(pathfinding.grid.path);
             if (Vector3.Distance(character.transform.position, character.target.transform.position) <= character.CharacterModel.AttackRange)
             {
                 character.ChangeState(new AttackingState(character));
@@ -38,6 +40,5 @@ public class ChasingState : ICharacterState
     public void Exit()
     {
         // Chasing 상태에서 나갈 때 할 일 (예: 이동을 멈추기)
-        character.agent.isStopped = true;
     }
 }

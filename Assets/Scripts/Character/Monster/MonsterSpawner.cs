@@ -35,7 +35,7 @@ public class MonsterSpawner : MonoBehaviour
             {
                 if (killedMonsters >= totalMonstersPerStage)
                 {
-                    // �÷��̾� ü�� ȸ��
+                    // 플레이어 체력 회복
                     player.GetComponent<PlayerViewModel>().FullHeal();
 
                     yield return new WaitForSeconds(10f);
@@ -66,20 +66,42 @@ public class MonsterSpawner : MonoBehaviour
 
     Vector3 GetRandomPosition()
     {
-        float minDistance = 10f; // �ּ� ���� �Ÿ�
-        float maxDistance = 30f; // �ִ� ���� �Ÿ�
+        float mapSize = 50f; // 맵의 크기, 50x50 유닛 기준
 
-        Vector3 randomPosition;
-        do
+        Vector3 randomPosition = Vector3.zero;
+        bool validPositionFound = false;
+        int attempts = 0;
+        int maxAttempts = 100; // 시도 횟수
+
+        while (!validPositionFound && attempts < maxAttempts)
         {
-            Vector3 randomDirection = Random.insideUnitSphere * maxDistance;
-            randomDirection += player.position; // �÷��̾��� ��ġ�� �������� ����
-            NavMeshHit hit;
-            NavMesh.SamplePosition(randomDirection, out hit, maxDistance, 1);
-            randomPosition = hit.position;
-        } while (Vector3.Distance(player.position, randomPosition) < minDistance); // �ּ� �Ÿ� ���� üũ
+            float randomX = Random.Range(-mapSize / 2, mapSize / 2);
+            float randomZ = Random.Range(-mapSize / 2, mapSize / 2);
+            randomPosition = new Vector3(randomX, 0, randomZ);
+
+            // 추가 검사를 통해 위치의 유효성을 확인할 수 있습니다.
+            if (IsPositionValid(randomPosition))
+            {
+                validPositionFound = true;
+            }
+
+            attempts++;
+        }
+
+        if (!validPositionFound)
+        {
+            Debug.LogWarning("Failed to find valid spawn position after multiple attempts. Defaulting to origin.");
+            randomPosition = Vector3.zero;
+        }
 
         return randomPosition;
+    }
+
+    bool IsPositionValid(Vector3 position)
+    {
+        // 필요에 따라 추가 검사를 수행할 수 있습니다.
+        // 예: 특정 범위 안에 있는지, 다른 오브젝트와 겹치지 않는지 등
+        return true; // 기본적으로 모든 위치를 유효하다고 가정
     }
 
     void Update()

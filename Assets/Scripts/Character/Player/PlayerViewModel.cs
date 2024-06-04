@@ -2,12 +2,12 @@ using UnityEngine;
 
 public class PlayerViewModel : CharacterViewModel
 {
-    private GameObject target;
+  //  private GameObject target;
 
     protected override void Die()
     {
         Debug.Log("Player died.");
-        // ÇÃ·¹ÀÌ¾î »ç¸Á Ã³¸® ·ÎÁ÷ Ãß°¡
+        // í”Œë ˆì´ì–´ ì‚¬ë§ ì²˜ë¦¬ ë¡œì§ ì¶”ê°€
     }
 
     public void FindAndAttackTarget()

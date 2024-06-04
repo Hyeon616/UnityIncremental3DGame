@@ -1,30 +1,55 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 
-public abstract  class CharacterViewModel : MonoBehaviour
+public abstract class CharacterViewModel : MonoBehaviour
 {
     protected CharacterModel characterModel;
     public CharacterModel CharacterModel => characterModel;
 
     public CharacterView characterView { get; private set; }
-    public NavMeshAgent agent { get; private set; }
     public GameObject target { get; set; }
     public float attackTimer = 0f;
-
-    private ICharacterState currentState;
+    protected ICharacterState currentState;
+    private List<Node> path;
+    private int targetIndex;
 
     protected virtual void Awake()
     {
         characterModel = GetComponent<CharacterModel>();
         characterView = GetComponent<CharacterView>();
-        agent = GetComponent<NavMeshAgent>();
     }
 
     protected virtual void Start()
     {
         ChangeState(new IdleState(this));
+    }
+
+    public void SetPath(List<Node> path)
+    {
+        this.path = path;
+        targetIndex = 0;
+    }
+
+    public void MoveAlongPath()
+    {
+        if (path == null || targetIndex >= path.Count)
+        {
+            return;
+        }
+
+        Vector3 targetPosition = path[targetIndex].worldPosition;
+        transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * 5);
+
+        if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
+        {
+            targetIndex++;
+        }
+    }
+
+    public void MoveTo(Vector3 destination)
+    {
+        path = new List<Node> { new Node(true, destination, 0, 0) }; // 임시 노드 경로 설정
+        targetIndex = 0;
     }
 
     public void ChangeState(ICharacterState newState)
@@ -48,6 +73,8 @@ public abstract  class CharacterViewModel : MonoBehaviour
         {
             currentState.Execute();
         }
+
+        MoveAlongPath();
     }
 
     public virtual void TakeDamage(int amount)
@@ -78,25 +105,16 @@ public abstract  class CharacterViewModel : MonoBehaviour
     // 애니메이션 이벤트로 호출될 메서드
     public void ApplyDamage()
     {
-        Debug.Log("ApplyDamage called");
+
         if (target != null)
         {
             CharacterViewModel targetViewModel = target.GetComponent<CharacterViewModel>();
             if (targetViewModel != null)
             {
-                Debug.Log("Applying damage to target");
+                Debug.Log($"{target} hit");
                 targetViewModel.TakeDamage(characterModel.GetAttackPower());
             }
         }
-        else
-        {
-            Debug.Log("No attack target");
-        }
-    }
-
-    public void MoveTo(Vector3 destination)
-    {
-        agent.SetDestination(destination);
     }
 
     protected abstract void Die();

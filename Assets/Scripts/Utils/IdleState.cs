@@ -1,7 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public class IdleState : ICharacterState
 {
     private readonly CharacterViewModel character;
@@ -15,17 +11,16 @@ public class IdleState : ICharacterState
     {
         character.characterView.Animator.SetBool("isWalking", false);
         character.characterView.Animator.SetBool("isAttacking", false);
-        character.agent.isStopped = true;
     }
 
     public void Execute()
     {
-        // Idle »óÅÂ¿¡¼­ ÇÒ ÀÏ (¿¹: ÀûÀ» Ã£±â)
+        // ì ì„ ì°¾ê¸°
         character.FindTarget();
     }
 
     public void Exit()
     {
-        // Idle »óÅÂ¿¡¼­ ³ª°¥ ¶§ ÇÒ ÀÏ (Æ¯º°ÇÑ ÀÛ¾÷ÀÌ ¾ø´Ù¸é ºñ¿öµÒ)
+        // Idle ìƒíƒœì—ì„œ ë‚˜ê°ˆ ë•Œ í•  ì¼
     }
 }
