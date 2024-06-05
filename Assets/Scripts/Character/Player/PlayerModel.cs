@@ -8,18 +8,18 @@ public class PlayerModel : CharacterModel
     [SerializeField] private int initialAttackPower = 6;
     [SerializeField] private float playerAttackRange = 5f;
     [SerializeField] private float playerAttackCooldown = 2f;
-    protected override void Awake()
+    protected override void Start()
     {
         maxHealth = initialHealth;
         attackPower = initialAttackPower;
         attackRange = playerAttackRange;
         attackCooldown = playerAttackCooldown;
-        base.Awake();
+        base.Start();
     }
 
     protected override void Die()
     {
         Debug.Log("Player died.");
-        // ªÁ∏¡ √≥∏Æ ∑Œ¡˜ √ﬂ∞°
+        // ÏÇ¨Îßù Ï≤òÎ¶¨ Î°úÏßÅ Ï∂îÍ∞Ä
     }
 }

@@ -1,31 +1,37 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class IdleState : ICharacterState
 {
     private readonly CharacterViewModel character;
+    private readonly float detectionRange;
+    private readonly float attackRange;
 
-    public IdleState(CharacterViewModel character)
+    public IdleState(CharacterViewModel character, float detectionRange, float attackRange)
     {
         this.character = character;
+        this.detectionRange = detectionRange;
+        this.attackRange = attackRange;
     }
 
     public void Enter()
     {
-        character.characterView.Animator.SetBool("isWalking", false);
-        character.characterView.Animator.SetBool("isAttacking", false);
-        character.agent.isStopped = true;
+        character.CharacterView.Animator.SetBool("isWalking", false);
+        character.CharacterView.Animator.SetBool("isAttacking", false);
+        character.Agent.isStopped = true;
     }
 
     public void Execute()
     {
-        // Idle »óÅÂ¿¡¼­ ÇÒ ÀÏ (¿¹: ÀûÀ» Ã£±â)
-        character.FindTarget();
+        Transform target = character.FindTarget(detectionRange, "Player");
+        if (target != null)
+        {
+            character.Target = target;
+            character.ChangeState(new ChasingState(character, target, detectionRange, attackRange));
+        }
     }
 
     public void Exit()
     {
-        // Idle »óÅÂ¿¡¼­ ³ª°¥ ¶§ ÇÒ ÀÏ (Æ¯º°ÇÑ ÀÛ¾÷ÀÌ ¾ø´Ù¸é ºñ¿öµÒ)
+        // ëŒ€ê¸° ìƒíƒœ ì¢…ë£Œ ì‹œ ë¡œì§
     }
 }

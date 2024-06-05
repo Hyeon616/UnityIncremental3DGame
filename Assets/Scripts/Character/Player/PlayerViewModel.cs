@@ -2,37 +2,13 @@ using UnityEngine;
 
 public class PlayerViewModel : CharacterViewModel
 {
-    private GameObject target;
-
+    public void FullHeal()
+    {
+        CharacterModel.FullHeal();
+    }
     protected override void Die()
     {
         Debug.Log("Player died.");
-        // ÇÃ·¹ÀÌ¾î »ç¸Á Ã³¸® ·ÎÁ÷ Ãß°¡
-    }
-
-    public void FindAndAttackTarget()
-    {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 10f);
-        float closestDistance = Mathf.Infinity;
-        GameObject closestTarget = null;
-
-        foreach (var hitCollider in hitColliders)
-        {
-            if (hitCollider.CompareTag("Monster") && hitCollider.gameObject.activeInHierarchy)
-            {
-                float distance = Vector3.Distance(transform.position, hitCollider.transform.position);
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestTarget = hitCollider.gameObject;
-                }
-            }
-        }
-
-        if (closestTarget != null)
-        {
-            target = closestTarget;
-            Attack(target.GetComponent<CharacterViewModel>());
-        }
+        // ì¶”ê°€ì ì¸ í”Œë ˆì´ì–´ ì‚¬ë§ ì²˜ë¦¬ ë¡œì§
     }
 }

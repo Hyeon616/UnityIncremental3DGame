@@ -8,13 +8,13 @@ public class MonsterModel : CharacterModel
     [SerializeField] private float monsterAttackCooldown = 3f;
 
 
-    protected override void Awake()
+    protected override void Start()
     {
         maxHealth = initialHealth;
         attackPower = initialAttackPower;
         attackRange = monsterAttackRange;
         attackCooldown = monsterAttackCooldown;
-        base.Awake();
+        base.Start();
     }
 
     protected override void Die()

@@ -1,43 +1,49 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ChasingState : ICharacterState
 {
     private readonly CharacterViewModel character;
+    private readonly Transform player;
+    private readonly float detectionRange;
+    private readonly float attackRange;
 
-    public ChasingState(CharacterViewModel character)
+    public ChasingState(CharacterViewModel character, Transform player, float detectionRange, float attackRange)
     {
         this.character = character;
+        this.player = player;
+        this.detectionRange = detectionRange;
+        this.attackRange = attackRange;
     }
 
     public void Enter()
     {
-        character.characterView.Animator.SetBool("isWalking", true);
-        character.characterView.Animator.SetBool("isAttacking", false);
-        character.agent.isStopped = false;
+        character.CharacterView.Animator.SetBool("isWalking", true);
+        character.CharacterView.Animator.SetBool("isAttacking", false);
+        character.Agent.isStopped = false;
     }
 
     public void Execute()
     {
-        // 목표를 향해 이동
-        if (character.target != null)
+        if (player == null)
         {
-            character.agent.SetDestination(character.target.transform.position);
-            if (Vector3.Distance(character.transform.position, character.target.transform.position) <= character.CharacterModel.AttackRange)
-            {
-                character.ChangeState(new AttackingState(character));
-            }
+            character.ChangeState(new IdleState(character, detectionRange, attackRange));
+            return;
+        }
+
+        float distanceToPlayer = Vector3.Distance(character.transform.position, player.position);
+
+        if (distanceToPlayer <= attackRange)
+        {
+            character.ChangeState(new AttackingState(character, player, detectionRange, attackRange));
         }
         else
         {
-            character.ChangeState(new IdleState(character));
+            character.Agent.SetDestination(player.position);
         }
     }
 
     public void Exit()
     {
-        // Chasing 상태에서 나갈 때 할 일 (예: 이동을 멈추기)
-        character.agent.isStopped = true;
+        character.CharacterView.Animator.SetBool("isWalking", false);
     }
 }

@@ -1,129 +1,105 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public abstract  class CharacterViewModel : MonoBehaviour
+public abstract class CharacterViewModel : MonoBehaviour
 {
-    protected CharacterModel characterModel;
-    public CharacterModel CharacterModel => characterModel;
-
-    public CharacterView characterView { get; private set; }
-    public NavMeshAgent agent { get; private set; }
-    public GameObject target { get; set; }
-    public float attackTimer = 0f;
+    [SerializeField] private CharacterView characterView;
+    [SerializeField] private NavMeshAgent agent;
+    [SerializeField] private Transform target;
+    [SerializeField] private CharacterModel characterModel;
 
     private ICharacterState currentState;
+    private float attackTimer;
 
-    protected virtual void Awake()
+    public ICharacterState CurrentState => currentState;
+    public CharacterView CharacterView => characterView;
+    public NavMeshAgent Agent => agent;
+    public Transform Target
     {
-        characterModel = GetComponent<CharacterModel>();
-        characterView = GetComponent<CharacterView>();
-        agent = GetComponent<NavMeshAgent>();
+        get => target;
+        set => target = value;
     }
 
-    protected virtual void Start()
+    public CharacterModel CharacterModel => characterModel;
+    public float AttackTimer
     {
-        ChangeState(new IdleState(this));
+        get => attackTimer;
+        set => attackTimer = value;
     }
 
-    public void ChangeState(ICharacterState newState)
+    public void SetState(ICharacterState newState)
     {
         if (currentState != null)
         {
             currentState.Exit();
         }
-
         currentState = newState;
-
-        if (currentState != null)
-        {
-            currentState.Enter();
-        }
+        currentState.Enter();
     }
 
-    protected virtual void Update()
+    public void ChangeState(ICharacterState newState)
     {
-        if (currentState != null)
-        {
-            currentState.Execute();
-        }
+        SetState(newState);
     }
 
-    public virtual void TakeDamage(int amount)
+    public virtual void Update()
     {
-        characterModel.TakeDamage(amount);
-        if (characterModel.CurrentHealth <= 0)
-        {
-            Die();
-        }
-    }
-
-    public virtual void Heal(int amount)
-    {
-        characterModel.Heal(amount);
-    }
-
-    public virtual void FullHeal()
-    {
-        characterModel.FullHeal();
-    }
-
-    public virtual void Attack(CharacterViewModel target)
-    {
-        this.target = target.gameObject;
-        characterView.PlayAttackAnimation();
-    }
-
-    // 애니메이션 이벤트로 호출될 메서드
-    public void ApplyDamage()
-    {
-        Debug.Log("ApplyDamage called");
-        if (target != null)
-        {
-            CharacterViewModel targetViewModel = target.GetComponent<CharacterViewModel>();
-            if (targetViewModel != null)
-            {
-                Debug.Log("Applying damage to target");
-                targetViewModel.TakeDamage(characterModel.GetAttackPower());
-            }
-        }
-        else
-        {
-            Debug.Log("No attack target");
-        }
-    }
-
-    public void MoveTo(Vector3 destination)
-    {
-        agent.SetDestination(destination);
+        currentState?.Execute();
     }
 
     protected abstract void Die();
 
-    public void FindTarget()
+    public Transform FindTarget(float detectionRange, string targetTag)
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, 10f);
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, detectionRange);
+        Transform closestTarget = null;
         float closestDistance = Mathf.Infinity;
-        GameObject closestTarget = null;
 
         foreach (var hitCollider in hitColliders)
         {
-            if (hitCollider.CompareTag("Monster") && hitCollider.gameObject.activeInHierarchy)
+            if (hitCollider.CompareTag(targetTag))
             {
                 float distance = Vector3.Distance(transform.position, hitCollider.transform.position);
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
-                    closestTarget = hitCollider.gameObject;
+                    closestTarget = hitCollider.transform;
                 }
             }
         }
 
-        target = closestTarget;
-        if (target != null)
+        return closestTarget;
+    }
+
+    public void ApplyDamage()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, characterModel.AttackRange);
+        int targetsHit = 0;
+
+        foreach (var hitCollider in hitColliders)
         {
-            ChangeState(new ChasingState(this));
+            if (hitCollider.CompareTag("Monster"))
+            {
+                IDamageable damageable = hitCollider.GetComponent<IDamageable>();
+                if (damageable != null)
+                {
+                    damageable.TakeDamage(characterModel.AttackPower);
+                    targetsHit++;
+                    if (targetsHit >= 3) break; // 최대 3마리의 타겟에만 데미지를 줌
+                }
+            }
+        }
+
+        Debug.Log("ApplyDamage called");
+    }
+
+    // 애니메이션 이벤트에서 호출될 메서드
+    public void OnAttackAnimationEnd()
+    {
+        if (currentState is AttackingState)
+        {
+            currentState.Exit();
+            SetState(new IdleState(this, 100f, characterModel.AttackRange));
         }
     }
 }

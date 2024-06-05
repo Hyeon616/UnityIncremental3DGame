@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.18028378, g: 0.22571412, b: 0.30692285, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028352, g: 0.22571376, b: 0.30692244, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -751,6 +751,36 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 8467322104213117792}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1610129562 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1610129566, guid: a968d1125b4011e4a9702bd3e5ed2f82,
+    type: 3}
+  m_PrefabInstance: {fileID: 8467322104213117792}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c849377100ca7946a5eb3b5b8cb22c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1610129563 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1610129567, guid: a968d1125b4011e4a9702bd3e5ed2f82,
+    type: 3}
+  m_PrefabInstance: {fileID: 8467322104213117792}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10d7ef7e97ee5424eaa532c81063c88b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!195 &1610129567 stripped
+NavMeshAgent:
+  m_CorrespondingSourceObject: {fileID: 1610129561, guid: a968d1125b4011e4a9702bd3e5ed2f82,
+    type: 3}
+  m_PrefabInstance: {fileID: 8467322104213117792}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &8467322104213117792
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -758,6 +788,18 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1610129565, guid: a968d1125b4011e4a9702bd3e5ed2f82, type: 3}
+      propertyPath: agent
+      value: 
+      objectReference: {fileID: 1610129567}
+    - target: {fileID: 1610129565, guid: a968d1125b4011e4a9702bd3e5ed2f82, type: 3}
+      propertyPath: characterView
+      value: 
+      objectReference: {fileID: 1610129562}
+    - target: {fileID: 1610129565, guid: a968d1125b4011e4a9702bd3e5ed2f82, type: 3}
+      propertyPath: characterModel
+      value: 
+      objectReference: {fileID: 1610129563}
     - target: {fileID: 8468012470551875962, guid: a968d1125b4011e4a9702bd3e5ed2f82,
         type: 3}
       propertyPath: m_Name

@@ -1,47 +1,75 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class AttackingState : ICharacterState
 {
     private readonly CharacterViewModel character;
+    private readonly Transform player;
+    private readonly float detectionRange;
+    private readonly float attackRange;
+    private readonly float attackCooldown;
+    private float attackTimer;
 
-    public AttackingState(CharacterViewModel character)
+    public AttackingState(CharacterViewModel character, Transform player, float detectionRange, float attackRange)
     {
         this.character = character;
+        this.player = player;
+        this.detectionRange = detectionRange;
+        this.attackRange = attackRange;
+        this.attackCooldown = character.CharacterModel.AttackCooldown;
     }
 
     public void Enter()
     {
-        character.characterView.Animator.SetBool("isWalking", false);
-        character.characterView.Animator.SetBool("isAttacking", true);
-        character.agent.isStopped = true;
+        character.CharacterView.Animator.SetBool("isWalking", false);
+        character.CharacterView.Animator.SetBool("isAttacking", true);
+        character.Agent.isStopped = true;
+        attackTimer = 0f;
     }
 
     public void Execute()
     {
-        // 공격 로직
-        if (character.attackTimer <= 0f)
+        if (player != null)
         {
-            if (character.target != null)
+            float distanceToPlayer = Vector3.Distance(character.transform.position, player.position);
+            if (distanceToPlayer > attackRange)
             {
-                character.transform.LookAt(character.target.transform);
-                character.ApplyDamage();
-                character.attackTimer = character.CharacterModel.AttackCooldown;
+                character.ChangeState(new ChasingState(character, player, detectionRange, attackRange));
+                return;
+            }
+
+            Collider[] hitColliders = Physics.OverlapSphere(character.transform.position, attackRange);
+            bool enemyNearby = false;
+
+            foreach (var hitCollider in hitColliders)
+            {
+                if (hitCollider.CompareTag("Monster"))
+                {
+                    enemyNearby = true;
+                    break;
+                }
+            }
+
+            if (!enemyNearby)
+            {
+                character.ChangeState(new IdleState(character, detectionRange, attackRange));
+                return;
+            }
+
+            attackTimer -= Time.deltaTime;
+            if (attackTimer <= 0f)
+            {
+                character.transform.LookAt(player.transform);
+                attackTimer = attackCooldown;
             }
         }
-        character.attackTimer -= Time.deltaTime;
-
-        // 적이 범위를 벗어났는지 확인
-        if (character.target == null || Vector3.Distance(character.transform.position, character.target.transform.position) > character.CharacterModel.AttackRange)
+        else
         {
-            character.ChangeState(new ChasingState(character));
+            character.ChangeState(new IdleState(character, detectionRange, attackRange));
         }
     }
 
     public void Exit()
     {
-        // Attacking 상태에서 나갈 때 할 일 (예: 공격 애니메이션 멈추기)
-        character.characterView.Animator.SetBool("isAttacking", false);
+        character.CharacterView.Animator.SetBool("isAttacking", false);
     }
 }

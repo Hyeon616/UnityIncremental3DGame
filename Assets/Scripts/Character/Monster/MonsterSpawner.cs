@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -35,7 +34,7 @@ public class MonsterSpawner : MonoBehaviour
             {
                 if (killedMonsters >= totalMonstersPerStage)
                 {
-                    // ÇÃ·¹ÀÌ¾î Ã¼·Â È¸º¹
+                    // í”Œë ˆì´ì–´ ì²´ë ¥ íšŒë³µ
                     player.GetComponent<PlayerViewModel>().FullHeal();
 
                     yield return new WaitForSeconds(10f);
@@ -66,18 +65,18 @@ public class MonsterSpawner : MonoBehaviour
 
     Vector3 GetRandomPosition()
     {
-        float minDistance = 10f; // ÃÖ¼Ò ½ºÆù °Å¸®
-        float maxDistance = 30f; // ÃÖ´ë ½ºÆù °Å¸®
+        float minDistance = 10f; // ìµœì†Œ ìŠ¤í° ê±°ë¦¬
+        float maxDistance = 30f; // ìµœëŒ€ ìŠ¤í° ê±°ë¦¬
 
         Vector3 randomPosition;
         do
         {
             Vector3 randomDirection = Random.insideUnitSphere * maxDistance;
-            randomDirection += player.position; // ÇÃ·¹ÀÌ¾îÀÇ À§Ä¡¸¦ ±âÁØÀ¸·Î ½ºÆù
+            randomDirection += player.position; // í”Œë ˆì´ì–´ì˜ ìœ„ì¹˜ë¥¼ ê¸°ì¤€ìœ¼ë¡œ ìŠ¤í°
             NavMeshHit hit;
             NavMesh.SamplePosition(randomDirection, out hit, maxDistance, 1);
             randomPosition = hit.position;
-        } while (Vector3.Distance(player.position, randomPosition) < minDistance); // ÃÖ¼Ò °Å¸® Á¶°Ç Ã¼Å©
+        } while (Vector3.Distance(player.position, randomPosition) < minDistance); // ìµœì†Œ ê±°ë¦¬ ì¡°ê±´ ì²´í¬
 
         return randomPosition;
     }
