@@ -4,25 +4,25 @@ using UnityEngine;
 
 public abstract class CharacterView : MonoBehaviour
 {
-    protected Animator animator;
-    protected CharacterModel characterModel;
+    protected Animator _animator;
+    protected CharacterModel _characterModel;
 
-    public Animator Animator => animator;
+    public Animator Animator => _animator;
 
     protected virtual void Awake()
     {
-        animator = GetComponent<Animator>();
-        characterModel = GetComponent<CharacterModel>();
+        _animator = GetComponent<Animator>();
+        _characterModel = GetComponent<CharacterModel>();
     }
 
 
     public void PlayAttackAnimation()
     {
-        animator.SetBool("isAttacking", true);
+        _animator.SetBool("isAttacking", true);
     }
 
     public void StopAttackAnimation()
     {
-        animator.SetBool("isAttacking", false);
+        _animator.SetBool("isAttacking", false);
     }
 }

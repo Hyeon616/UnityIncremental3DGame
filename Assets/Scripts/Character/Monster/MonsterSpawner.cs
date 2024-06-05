@@ -1,49 +1,49 @@
-using System.Collections;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class MonsterSpawner : MonoBehaviour
 {
-    public GameObject monsterPrefab;
-    public Transform player;
-    private ObjectPool<MonsterViewModel> monsterPool;
-    public int totalMonstersPerStage = 25;
-    private int spawnedMonsters = 0;
-    private int killedMonsters = 0;
+    public GameObject GameObject_MonsterPrefab;
+    public Transform Transform_Player;
+    private ObjectPool<MonsterViewModel> _monsterPool;
+    private int _totalMonstersPerStage = 25;
+    private int _spawnedMonsters = 0;
+    private int _killedMonsters = 0;
 
     void Start()
     {
-        monsterPool = new ObjectPool<MonsterViewModel>(monsterPrefab.GetComponent<MonsterViewModel>(), totalMonstersPerStage);
-        StartCoroutine(SpawnMonstersRoutine());
+        _monsterPool = new ObjectPool<MonsterViewModel>(GameObject_MonsterPrefab.GetComponent<MonsterViewModel>(), _totalMonstersPerStage);
+        SpawnMonstersRoutine().Forget();
     }
 
-    IEnumerator SpawnMonstersRoutine()
+    private async UniTaskVoid SpawnMonstersRoutine()
     {
         while (true)
         {
-            if (spawnedMonsters < totalMonstersPerStage)
+            if (_spawnedMonsters < _totalMonstersPerStage)
             {
                 for (int i = 0; i < 5; i++)
                 {
                     SpawnMonster();
-                    spawnedMonsters++;
+                    _spawnedMonsters++;
                 }
-                yield return new WaitForSeconds(3f);
+                await UniTask.Delay(3000); // 3초 대기
             }
             else
             {
-                if (killedMonsters >= totalMonstersPerStage)
+                if (_killedMonsters >= _totalMonstersPerStage)
                 {
-                    // 플레이어 체력 회복
-                    player.GetComponent<PlayerViewModel>().FullHeal();
+                    Transform_Player.GetComponent<PlayerViewModel>().FullHeal();
+                    MonsterModel.ResetHealthIncrementer();
 
-                    yield return new WaitForSeconds(10f);
-                    spawnedMonsters = 0;
-                    killedMonsters = 0;
+                    await UniTask.Delay(10000); // 10초 대기
+                    _spawnedMonsters = 0;
+                    _killedMonsters = 0;
                 }
                 else
                 {
-                    yield return null;
+                    await UniTask.Yield();
                 }
             }
         }
@@ -51,14 +51,14 @@ public class MonsterSpawner : MonoBehaviour
 
     void SpawnMonster()
     {
-        MonsterViewModel monster = monsterPool.GetObject();
+        MonsterViewModel monster = _monsterPool.GetObject();
         if (monster != null)
         {
             Vector3 spawnPosition = GetRandomPosition();
             monster.transform.position = spawnPosition;
             monster.gameObject.SetActive(true);
 
-            monster.SetPlayer(player);
+            monster.SetPlayer(Transform_Player);
             monster.GetComponent<MonsterModel>().ResetHealth();
         }
     }
@@ -72,11 +72,11 @@ public class MonsterSpawner : MonoBehaviour
         do
         {
             Vector3 randomDirection = Random.insideUnitSphere * maxDistance;
-            randomDirection += player.position; // 플레이어의 위치를 기준으로 스폰
+            randomDirection += Transform_Player.position; // 플레이어의 위치를 기준으로 스폰
             NavMeshHit hit;
             NavMesh.SamplePosition(randomDirection, out hit, maxDistance, 1);
             randomPosition = hit.position;
-        } while (Vector3.Distance(player.position, randomPosition) < minDistance); // 최소 거리 조건 체크
+        } while (Vector3.Distance(Transform_Player.position, randomPosition) < minDistance); // 최소 거리 조건 체크
 
         return randomPosition;
     }
@@ -85,13 +85,13 @@ public class MonsterSpawner : MonoBehaviour
     {
         if (AllMonstersDead())
         {
-            killedMonsters++;
+            _killedMonsters++;
         }
     }
 
     bool AllMonstersDead()
     {
-        return monsterPool.AllObjectsInactive();
+        return _monsterPool.AllObjectsInactive();
     }
 }
 

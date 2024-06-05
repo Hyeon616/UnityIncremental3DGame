@@ -2025,10 +2025,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10d7ef7e97ee5424eaa532c81063c88b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 0
-  attackPower: 0
-  initialHealth: 100
-  initialAttackPower: 6
+  _initialHealth: 100
+  _initialAttackPower: 6
+  _playerAttackRange: 5
+  _playerAttackCooldown: 2
 --- !u!114 &1610129566
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2053,6 +2053,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 061427caeef917e478f168672f646685, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CharacterView_CharacterView: {fileID: 1610129566}
+  NavMeshAgent_Agent: {fileID: 1610129561}
+  Transform_Target: {fileID: 0}
+  CharacterModel_CharacterModel: {fileID: 1610129567}
+  GameObject_DamageTextPrefab: {fileID: 1229487905745214427, guid: d702cbec6598ed54696b99a3944fddc3,
+    type: 3}
 --- !u!114 &1610129560
 MonoBehaviour:
   m_ObjectHideFlags: 0

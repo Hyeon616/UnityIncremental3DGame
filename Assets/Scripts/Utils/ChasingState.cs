@@ -2,48 +2,48 @@ using UnityEngine;
 
 public class ChasingState : ICharacterState
 {
-    private readonly CharacterViewModel character;
-    private readonly Transform player;
-    private readonly float detectionRange;
-    private readonly float attackRange;
+    private readonly CharacterViewModel _character;
+    private readonly Transform _player;
+    private readonly float _detectionRange;
+    private readonly float _attackRange;
 
     public ChasingState(CharacterViewModel character, Transform player, float detectionRange, float attackRange)
     {
-        this.character = character;
-        this.player = player;
-        this.detectionRange = detectionRange;
-        this.attackRange = attackRange;
+        this._character = character;
+        this._player = player;
+        this._detectionRange = detectionRange;
+        this._attackRange = attackRange;
     }
 
     public void Enter()
     {
-        character.CharacterView.Animator.SetBool("isWalking", true);
-        character.CharacterView.Animator.SetBool("isAttacking", false);
-        character.Agent.isStopped = false;
+        _character.CharacterView.Animator.SetBool("isWalking", true);
+        _character.CharacterView.Animator.SetBool("isAttacking", false);
+        _character.Agent.isStopped = false;
     }
 
     public void Execute()
     {
-        if (player == null)
+        if (_player == null)
         {
-            character.ChangeState(new IdleState(character, detectionRange, attackRange));
+            _character.ChangeState(new IdleState(_character, _detectionRange, _attackRange));
             return;
         }
 
-        float distanceToPlayer = Vector3.Distance(character.transform.position, player.position);
+        float distanceToPlayer = Vector3.Distance(_character.transform.position, _player.position);
 
-        if (distanceToPlayer <= attackRange)
+        if (distanceToPlayer <= _attackRange)
         {
-            character.ChangeState(new AttackingState(character, player, detectionRange, attackRange));
+            _character.ChangeState(new AttackingState(_character, _player, _detectionRange, _attackRange));
         }
         else
         {
-            character.Agent.SetDestination(player.position);
+            _character.Agent.SetDestination(_player.position);
         }
     }
 
     public void Exit()
     {
-        character.CharacterView.Animator.SetBool("isWalking", false);
+        _character.CharacterView.Animator.SetBool("isWalking", false);
     }
 }

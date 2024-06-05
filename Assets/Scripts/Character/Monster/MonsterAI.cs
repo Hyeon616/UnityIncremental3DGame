@@ -3,26 +3,26 @@ using UnityEngine.AI;
 
 public class MonsterAI : MonoBehaviour
 {
-    private float detectionRange = 100f;
-    private float attackRange = 5f;
-    private float attackCooldown = 3f;
-    private float attackTimer = 0f;
+    private float _detectionRange = 100f;
+    private float _attackRange = 5f;
+    private float _attackCooldown = 3f;
+    private float _attackTimer = 0f;
 
-    private NavMeshAgent agent;
-    private MonsterViewModel monsterViewModel;
-    private PlayerViewModel playerViewModel;
+    private NavMeshAgent _agent;
+    private MonsterViewModel _monsterViewModel;
+    private PlayerViewModel _playerViewModel;
 
     private void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
-        monsterViewModel = GetComponent<MonsterViewModel>();
-        playerViewModel = FindObjectOfType<PlayerViewModel>();
+        _agent = GetComponent<NavMeshAgent>();
+        _monsterViewModel = GetComponent<MonsterViewModel>();
+        _playerViewModel = FindObjectOfType<PlayerViewModel>();
 
-        monsterViewModel.SetState(new IdleState(monsterViewModel, detectionRange, attackRange));
+        _monsterViewModel.SetState(new IdleState(_monsterViewModel, _detectionRange, _attackRange));
     }
 
     private void Update()
     {
-        monsterViewModel.CurrentState.Execute();
+        _monsterViewModel.CurrentState.Execute();
     }
 }

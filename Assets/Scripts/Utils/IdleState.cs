@@ -2,31 +2,31 @@ using UnityEngine;
 
 public class IdleState : ICharacterState
 {
-    private readonly CharacterViewModel character;
-    private readonly float detectionRange;
-    private readonly float attackRange;
+    private readonly CharacterViewModel _character;
+    private readonly float _detectionRange;
+    private readonly float _attackRange;
 
     public IdleState(CharacterViewModel character, float detectionRange, float attackRange)
     {
-        this.character = character;
-        this.detectionRange = detectionRange;
-        this.attackRange = attackRange;
+        this._character = character;
+        this._detectionRange = detectionRange;
+        this._attackRange = attackRange;
     }
 
     public void Enter()
     {
-        character.CharacterView.Animator.SetBool("isWalking", false);
-        character.CharacterView.Animator.SetBool("isAttacking", false);
-        character.Agent.isStopped = true;
+        _character.CharacterView.Animator.SetBool("isWalking", false);
+        _character.CharacterView.Animator.SetBool("isAttacking", false);
+        _character.Agent.isStopped = true;
     }
 
     public void Execute()
     {
-        Transform target = character.FindTarget(detectionRange, "Player");
+        Transform target = _character.FindTarget(_detectionRange, "Player");
         if (target != null)
         {
-            character.Target = target;
-            character.ChangeState(new ChasingState(character, target, detectionRange, attackRange));
+            _character.Target = target;
+            _character.ChangeState(new ChasingState(_character, target, _detectionRange, _attackRange));
         }
     }
 

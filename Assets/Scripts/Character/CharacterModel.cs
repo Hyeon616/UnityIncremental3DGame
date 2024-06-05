@@ -2,22 +2,26 @@ using UnityEngine;
 
 public abstract class CharacterModel : MonoBehaviour, IDamageable
 {
-    protected int maxHealth;
-    protected int currentHealth;
-    protected int attackPower;
-    protected float attackRange;
-    protected float attackCooldown;
-    protected float attackTimer;
+    protected int _maxHealth;
+    protected int _currentHealth;
+    protected int _attackPower;
+    protected float _attackRange;
+    protected float _attackCooldown;
+    protected float _attackTimer;
+
+    public int AttackPower => _attackPower;
+    public float AttackRange => _attackRange;
+    public float AttackCooldown => _attackCooldown;
 
     protected virtual void Start()
     {
-        currentHealth = maxHealth;
+        _currentHealth = _maxHealth;
     }
 
     public void TakeDamage(int damage)
     {
-        currentHealth -= damage;
-        if (currentHealth <= 0)
+        _currentHealth -= damage;
+        if (_currentHealth <= 0)
         {
             Die();
         }
@@ -25,7 +29,7 @@ public abstract class CharacterModel : MonoBehaviour, IDamageable
 
     public void FullHeal()
     {
-        currentHealth = maxHealth;
+        _currentHealth = _maxHealth;
     }
     protected abstract void Die();
 
@@ -33,10 +37,8 @@ public abstract class CharacterModel : MonoBehaviour, IDamageable
     {
         // 공격 애니메이션 시작
         // ApplyDamage는 애니메이션 이벤트에 의해 호출됨
-        Debug.Log($"{name} is attacking {target.name} with {attackPower} power.");
+        Debug.Log($"{name} is attacking {target.name} with {_attackPower} power.");
     }
 
-    public int AttackPower => attackPower;
-    public float AttackRange => attackRange;
-    public float AttackCooldown => attackCooldown;
+    
 }

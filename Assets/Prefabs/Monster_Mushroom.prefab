@@ -428,10 +428,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15a2ae3d3b4c44e459a57e382493aa6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialHealth: 10
-  initialAttackPower: 1
-  monsterAttackRange: 5
-  monsterAttackCooldown: 3
+  _initialHealth: 10
+  _initialAttackPower: 1
+  _monsterAttackRange: 5
+  _monsterAttackCooldown: 3
 --- !u!114 &2124531136820061960
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -456,10 +456,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 55bd97a76d0a39a4790e0fc140ba38d5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  characterView: {fileID: 2124531136820061960}
-  agent: {fileID: 399054021839922203}
-  target: {fileID: 0}
-  characterModel: {fileID: 572602385510657411}
+  CharacterView_CharacterView: {fileID: 2124531136820061960}
+  NavMeshAgent_Agent: {fileID: 399054021839922203}
+  Transform_Target: {fileID: 0}
+  CharacterModel_CharacterModel: {fileID: 572602385510657411}
 --- !u!114 &399054021839922202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,9 +472,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c459914ffa75434aa926092275638d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detectionRange: 20
-  attackRange: 5
-  attackCooldown: 2
 --- !u!1 &2163617509410941238
 GameObject:
   m_ObjectHideFlags: 0

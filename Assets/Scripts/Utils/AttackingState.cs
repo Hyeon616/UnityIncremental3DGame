@@ -2,42 +2,42 @@ using UnityEngine;
 
 public class AttackingState : ICharacterState
 {
-    private readonly CharacterViewModel character;
-    private readonly Transform player;
-    private readonly float detectionRange;
-    private readonly float attackRange;
-    private readonly float attackCooldown;
-    private float attackTimer;
+    private readonly CharacterViewModel _character;
+    private readonly Transform _player;
+    private readonly float _detectionRange;
+    private readonly float _attackRange;
+    private readonly float _attackCooldown;
+    private float _attackTimer;
 
     public AttackingState(CharacterViewModel character, Transform player, float detectionRange, float attackRange)
     {
-        this.character = character;
-        this.player = player;
-        this.detectionRange = detectionRange;
-        this.attackRange = attackRange;
-        this.attackCooldown = character.CharacterModel.AttackCooldown;
+        this._character = character;
+        this._player = player;
+        this._detectionRange = detectionRange;
+        this._attackRange = attackRange;
+        this._attackCooldown = character.CharacterModel.AttackCooldown;
     }
 
     public void Enter()
     {
-        character.CharacterView.Animator.SetBool("isWalking", false);
-        character.CharacterView.Animator.SetBool("isAttacking", true);
-        character.Agent.isStopped = true;
-        attackTimer = 0f;
+        _character.CharacterView.Animator.SetBool("isWalking", false);
+        _character.CharacterView.Animator.SetBool("isAttacking", true);
+        _character.Agent.isStopped = true;
+        _attackTimer = 0f;
     }
 
     public void Execute()
     {
-        if (player != null)
+        if (_player != null)
         {
-            float distanceToPlayer = Vector3.Distance(character.transform.position, player.position);
-            if (distanceToPlayer > attackRange)
+            float distanceToPlayer = Vector3.Distance(_character.transform.position, _player.position);
+            if (distanceToPlayer > _attackRange)
             {
-                character.ChangeState(new ChasingState(character, player, detectionRange, attackRange));
+                _character.ChangeState(new ChasingState(_character, _player, _detectionRange, _attackRange));
                 return;
             }
 
-            Collider[] hitColliders = Physics.OverlapSphere(character.transform.position, attackRange);
+            Collider[] hitColliders = Physics.OverlapSphere(_character.transform.position, _attackRange);
             bool enemyNearby = false;
 
             foreach (var hitCollider in hitColliders)
@@ -51,25 +51,25 @@ public class AttackingState : ICharacterState
 
             if (!enemyNearby)
             {
-                character.ChangeState(new IdleState(character, detectionRange, attackRange));
+                _character.ChangeState(new IdleState(_character, _detectionRange, _attackRange));
                 return;
             }
 
-            attackTimer -= Time.deltaTime;
-            if (attackTimer <= 0f)
+            _attackTimer -= Time.deltaTime;
+            if (_attackTimer <= 0f)
             {
-                character.transform.LookAt(player.transform);
-                attackTimer = attackCooldown;
+                _character.transform.LookAt(_player.transform);
+                _attackTimer = _attackCooldown;
             }
         }
         else
         {
-            character.ChangeState(new IdleState(character, detectionRange, attackRange));
+            _character.ChangeState(new IdleState(_character, _detectionRange, _attackRange));
         }
     }
 
     public void Exit()
     {
-        character.CharacterView.Animator.SetBool("isAttacking", false);
+        _character.CharacterView.Animator.SetBool("isAttacking", false);
     }
 }
