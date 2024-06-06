@@ -12,7 +12,7 @@ public abstract class CharacterViewModel : MonoBehaviour
     [SerializeField] private GameObject GameObject_HitEffectPrefab;
     [SerializeField] private AudioSource AudioSource_Attack;
     [SerializeField] private AudioClip AudioClip_Attack;
-
+    [SerializeField] private Canvas Canvas_DamageFont;
 
     private ICharacterState _currentState;
     private float _attackTimer;
@@ -51,7 +51,7 @@ public abstract class CharacterViewModel : MonoBehaviour
                 Debug.LogError("CharacterModel_CharacterModel is not set and could not be found on the GameObject.");
             }
         }
-
+        Canvas instantiatedCanvas = Instantiate(Canvas_DamageFont);
         _attackHandler = new AttackHandler(this);
     }
 

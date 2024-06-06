@@ -35,7 +35,6 @@ public class DamageText : MonoBehaviour
             Text_DamageText.color = _originalColor;
         }
 
-        // Move up and fade out animation using DOTween
         Sequence sequence = DOTween.Sequence();
         sequence.Append(transform.DOMoveY(transform.position.y + _moveDistance, _disappearSpeed).SetEase(Ease.OutCubic));
         sequence.Join(Text_DamageText.DOFade(0, _fadeSpeed).SetEase(Ease.InCubic));

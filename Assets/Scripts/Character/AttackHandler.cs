@@ -1,14 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AttackHandler
 {
     private CharacterViewModel _characterViewModel;
-    private Canvas _canvas;
 
     public AttackHandler(CharacterViewModel characterViewModel)
     {
         _characterViewModel = characterViewModel;
-        _canvas = GameObject.FindObjectOfType<Canvas>();
     }
 
     public void ApplyDamage()
@@ -48,7 +47,6 @@ public class AttackHandler
                     playerViewModel.PlayAttackEffect(closestCollider.transform);
                     PlayAttackSound();
                 }
-
             }
         }
     }
@@ -68,13 +66,14 @@ public class AttackHandler
             screenPosition.x = Mathf.Clamp(screenPosition.x, 50, Screen.width - 50);
             screenPosition.y = Mathf.Clamp(screenPosition.y, 50, Screen.height - 50);
 
-            GameObject damageText = Object.Instantiate(_characterViewModel.DamageTextPrefab, _canvas.transform);
+            GameObject damageText = Object.Instantiate(_characterViewModel.DamageTextPrefab, SingletonDamageFontCanvas.Instance.transform);
             damageText.transform.position = screenPosition;
 
             DamageText damageTextComponent = damageText.GetComponent<DamageText>();
             if (damageTextComponent != null)
             {
                 damageTextComponent.Setup(damage, isCritical, isMonsterDamage);
+                
             }
         }
     }
@@ -83,8 +82,8 @@ public class AttackHandler
     {
         if (_characterViewModel.HitEffectPrefab != null)
         {
-
-            GameObject hitEffect = Object.Instantiate(_characterViewModel.HitEffectPrefab, targetTransform.position, Quaternion.identity);
+            GameObject hitEffect = Object.Instantiate(_characterViewModel.HitEffectPrefab, targetTransform.position, Quaternion.Euler(0, 180, 0));
+            hitEffect.transform.LookAt(_characterViewModel.transform);
             Object.Destroy(hitEffect, 2f);
         }
     }
@@ -95,6 +94,6 @@ public class AttackHandler
         {
             _characterViewModel.AttackAudioSource.PlayOneShot(_characterViewModel.AttackAudioClip);
         }
-    }
 
+    }
 }
