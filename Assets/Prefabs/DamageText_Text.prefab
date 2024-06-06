@@ -95,7 +95,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 269cc00d51848174cb03a51b4afc6b77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageText: {fileID: 569608724984682076}
-  disappearSpeed: 1.5
-  moveSpeed: 1.5
-  fadeSpeed: 1.5
+  Text_DamageText: {fileID: 569608724984682076}
+  _disappearSpeed: 2
+  _moveDistance: 2
+  _fadeSpeed: 2

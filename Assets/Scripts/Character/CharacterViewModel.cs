@@ -90,7 +90,7 @@ public abstract class CharacterViewModel : MonoBehaviour
         return closestTarget;
     }
 
-    protected virtual void ShowDamage(Transform targetTransform, int damageAmount)
+    protected virtual void ShowDamage(Transform targetTransform, int damageAmount, bool isCritical)
     {
         if (GameObject_DamageTextPrefab == null)
         {
@@ -125,7 +125,7 @@ public abstract class CharacterViewModel : MonoBehaviour
             return;
         }
 
-        damageTextComponent.Setup(damageAmount);
+        damageTextComponent.Setup(damageAmount, isCritical); // 치명타 여부를 전달
 
         // DOTween 애니메이션 추가
         damageText.transform.localScale = Vector3.zero;

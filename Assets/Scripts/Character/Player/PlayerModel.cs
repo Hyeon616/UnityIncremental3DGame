@@ -9,6 +9,7 @@ public class PlayerModel : CharacterModel
     [SerializeField] private float _criticalChance = 0.2f; // 20% 크리티컬 확률
     [SerializeField] private float _criticalMultiplier = 2f; // 크리티컬 데미지 배수
 
+    private bool _isCriticalHit = false;
 
     protected override void Start()
     {
@@ -24,14 +25,19 @@ public class PlayerModel : CharacterModel
         float randomMultiplier = Random.Range(0.8f, 1.2f); // 80%에서 120% 범위의 무작위 값
         int baseDamage = Mathf.RoundToInt(_attackPower * randomMultiplier);
 
-        // 크리티컬 데미지 계산
-        if (Random.value < _criticalChance)
+        _isCriticalHit = Random.value < _criticalChance;
+        if (_isCriticalHit)
         {
             baseDamage = Mathf.RoundToInt(baseDamage * _criticalMultiplier);
             Debug.Log("Critical Hit!");
         }
 
         return baseDamage;
+    }
+
+    public bool IsCriticalHit()
+    {
+        return _isCriticalHit;
     }
 
     public void IncreaseCriticalChance(float amount)

@@ -35,12 +35,12 @@ public class PlayerViewModel : CharacterViewModel
                 {
                     int damage = CharacterModel.GetRandomAttackPower();
                     damageable.TakeDamage(damage);
-                    ShowDamage(hitCollider.transform, damage);
+                    bool isCritical = ((PlayerModel)CharacterModel).IsCriticalHit(); // 치명타 여부 확인
+                    ShowDamage(hitCollider.transform, damage, isCritical);
                     break;
                 }
             }
         }
 
-        Debug.Log("ApplyDamage called");
     }
 }
