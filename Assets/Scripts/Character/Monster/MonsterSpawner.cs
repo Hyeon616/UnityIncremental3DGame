@@ -83,6 +83,14 @@ public class MonsterSpawner : MonoBehaviour
 
     void Update()
     {
+        foreach (MonsterViewModel monster in _monsterPool.ActiveObjects())
+        {
+            if (monster.gameObject.activeSelf && !monster.HasTarget)
+            {
+                monster.SetPlayer(Transform_Player);
+            }
+        }
+
         if (AllMonstersDead())
         {
             _killedMonsters++;
@@ -94,4 +102,3 @@ public class MonsterSpawner : MonoBehaviour
         return _monsterPool.AllObjectsInactive();
     }
 }
-

@@ -3,12 +3,18 @@ using UnityEngine;
 public class MonsterViewModel : CharacterViewModel
 {
     private Transform _player;
-
     public override string TargetTag => "Player";
+    public bool HasTarget => _player != null;
 
     public void SetPlayer(Transform playerTransform)
     {
         _player = playerTransform;
+    }
+
+    public void Initialize(Transform playerTransform)
+    {
+        SetPlayer(playerTransform);
+        SetState(new IdleState(this, CharacterModel.DetectionRange, CharacterModel.AttackRange));
     }
 
     public void MoveTo(Vector3 destination)
@@ -17,6 +23,16 @@ public class MonsterViewModel : CharacterViewModel
         {
             Agent.SetDestination(destination);
         }
+    }
+
+    public override void ApplyDamage()
+    {
+        base.ApplyDamage(); // 기본 처리만 합니다.
+    }
+
+    public new void FullHeal()
+    {
+        CharacterModel.FullHeal();
     }
 
     protected override void Die()
@@ -28,30 +44,9 @@ public class MonsterViewModel : CharacterViewModel
     public override void Update()
     {
         base.Update();
-        if (_player != null && Vector3.Distance(transform.position, _player.position) <= 100f)
+        if (_player != null && Vector3.Distance(transform.position, _player.position) <= CharacterModel.DetectionRange)
         {
             MoveTo(_player.position);
         }
-    }
-
-    public override void ApplyDamage()
-    {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, CharacterModel.AttackRange);
-
-        foreach (var hitCollider in hitColliders)
-        {
-            if (hitCollider.CompareTag(TargetTag))
-            {
-                IDamageable damageable = hitCollider.GetComponent<IDamageable>();
-                if (damageable != null)
-                {
-                    int damage = CharacterModel.GetRandomAttackPower();
-                    damageable.TakeDamage(damage);
-                    break;
-                }
-            }
-        }
-
-        Debug.Log("ApplyDamage called");
     }
 }

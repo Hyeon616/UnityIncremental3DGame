@@ -32,6 +32,6 @@ public class IdleState : ICharacterState
 
     public void Exit()
     {
-        // 대기 상태 종료 시 로직
+        // Exit 상태 처리
     }
 }

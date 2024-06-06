@@ -26,14 +26,14 @@ public class AttackingState : ICharacterState
     {
         if (_character.Target == null)
         {
-            _character.ChangeState(new IdleState(_character, 100f, _attackRange));
+            _character.ChangeState(new IdleState(_character, _character.CharacterModel.DetectionRange, _attackRange));
             return;
         }
 
         float distanceToTarget = Vector3.Distance(_character.transform.position, _character.Target.position);
         if (distanceToTarget > _attackRange)
         {
-            _character.ChangeState(new ChasingState(_character, _character.Target, 100f, _attackRange));
+            _character.ChangeState(new ChasingState(_character, _character.Target, _character.CharacterModel.DetectionRange, _attackRange));
             return;
         }
 
@@ -44,9 +44,9 @@ public class AttackingState : ICharacterState
             _attackTimer = _attackCooldown;
         }
 
-        if (_character.FindTarget(100f, _character.TargetTag) == null)
+        if (_character.FindTarget(_character.CharacterModel.DetectionRange, _character.TargetTag) == null)
         {
-            _character.ChangeState(new IdleState(_character, 100f, _attackRange));
+            _character.ChangeState(new IdleState(_character, _character.CharacterModel.DetectionRange, _attackRange));
         }
     }
 

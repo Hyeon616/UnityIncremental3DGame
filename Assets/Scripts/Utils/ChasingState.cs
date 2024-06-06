@@ -31,7 +31,6 @@ public class ChasingState : ICharacterState
         }
 
         float distanceToTarget = Vector3.Distance(_character.transform.position, _target.position);
-
         if (distanceToTarget <= _attackRange)
         {
             _character.ChangeState(new AttackingState(_character, _attackRange));

@@ -6,8 +6,9 @@ public class PlayerModel : CharacterModel
     [SerializeField] private int _initialAttackPower = 6;
     [SerializeField] private float _playerAttackRange = 5f;
     [SerializeField] private float _playerAttackCooldown = 2f;
-    [SerializeField] private float _criticalChance = 0.2f; // 20% 크리티컬 확률
+    [SerializeField] private float _playerCriticalChance = 0.2f; // 20% 크리티컬 확률
     [SerializeField] private float _criticalMultiplier = 2f; // 크리티컬 데미지 배수
+    [SerializeField] private float _playerDetectionRange = 100f;
 
     private bool _isCriticalHit = false;
 
@@ -17,6 +18,8 @@ public class PlayerModel : CharacterModel
         _attackPower = _initialAttackPower;
         _attackRange = _playerAttackRange;
         _attackCooldown = _playerAttackCooldown;
+        _criticalChance = _playerCriticalChance;
+        _detectionRange = _playerDetectionRange;
         base.Start();
     }
 
@@ -29,13 +32,12 @@ public class PlayerModel : CharacterModel
         if (_isCriticalHit)
         {
             baseDamage = Mathf.RoundToInt(baseDamage * _criticalMultiplier);
-            Debug.Log("Critical Hit!");
         }
 
         return baseDamage;
     }
 
-    public bool IsCriticalHit()
+    public override bool IsCriticalHit()
     {
         return _isCriticalHit;
     }

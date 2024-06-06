@@ -9,20 +9,31 @@ public class DamageText : MonoBehaviour
     [SerializeField] private float _moveDistance = 2f;
     [SerializeField] private float _fadeSpeed = 2f;
 
-    private Color _textColor;
-    private static readonly Color _criticalColor = new Color(1f, 1f, 0f);
+    private static readonly Color CriticalColor = Color.yellow;
+    private static readonly Color MonsterDamageColor = Color.red;
+    private Color _originalColor;
 
     private void Awake()
     {
-        // Initialize the text color
-        Text_DamageText.color = new Color(Text_DamageText.color.r, Text_DamageText.color.g, Text_DamageText.color.b, 1f);
+        _originalColor = Text_DamageText.color;
     }
 
-    public void Setup(int damageAmount, bool isCritical)
+    public void Setup(int damageAmount, bool isCritical, bool isMonsterDamage)
     {
         Text_DamageText.text = damageAmount.ToString();
-        _textColor = isCritical ? _criticalColor : Color.white;
-        Text_DamageText.color = _textColor;
+
+        if (isCritical)
+        {
+            Text_DamageText.color = CriticalColor;
+        }
+        else if (isMonsterDamage)
+        {
+            Text_DamageText.color = MonsterDamageColor;
+        }
+        else
+        {
+            Text_DamageText.color = _originalColor;
+        }
 
         // Move up and fade out animation using DOTween
         Sequence sequence = DOTween.Sequence();
@@ -30,5 +41,4 @@ public class DamageText : MonoBehaviour
         sequence.Join(Text_DamageText.DOFade(0, _fadeSpeed).SetEase(Ease.InCubic));
         sequence.OnComplete(() => Destroy(gameObject));
     }
-
 }

@@ -1,17 +1,22 @@
 using UnityEngine;
 using UnityEngine.AI;
-using DG.Tweening;
 
 public abstract class CharacterViewModel : MonoBehaviour
 {
-    [SerializeField] protected CharacterView CharacterView_CharacterView;
-    [SerializeField] protected NavMeshAgent NavMeshAgent_Agent;
-    [SerializeField] protected Transform Transform_Target;
-    [SerializeField] protected CharacterModel CharacterModel_CharacterModel;
-    [SerializeField] protected GameObject GameObject_DamageTextPrefab;
+    [SerializeField] private CharacterView CharacterView_CharacterView;
+    [SerializeField] private NavMeshAgent NavMeshAgent_Agent;
+    [SerializeField] private Transform Transform_Target;
+    [SerializeField] private CharacterModel CharacterModel_CharacterModel;
+    [SerializeField] private GameObject GameObject_DamageTextPrefab;
+    [SerializeField] private GameObject GameObject_AttackEffectPrefab;
+    [SerializeField] private GameObject GameObject_HitEffectPrefab;
+    [SerializeField] private AudioSource AudioSource_Attack;
+    [SerializeField] private AudioClip AudioClip_Attack;
+
 
     private ICharacterState _currentState;
     private float _attackTimer;
+    private AttackHandler _attackHandler;
 
     public ICharacterState CurrentState => _currentState;
     public CharacterView CharacterView => CharacterView_CharacterView;
@@ -29,9 +34,12 @@ public abstract class CharacterViewModel : MonoBehaviour
         set => _attackTimer = value;
     }
 
-
+    public GameObject DamageTextPrefab => GameObject_DamageTextPrefab;
+    public GameObject AttackEffectPrefab => GameObject_AttackEffectPrefab;
+    public GameObject HitEffectPrefab => GameObject_HitEffectPrefab;
+    public AudioSource AttackAudioSource => AudioSource_Attack;
+    public AudioClip AttackAudioClip => AudioClip_Attack;
     public abstract string TargetTag { get; }
-    public virtual bool IsPlayer => false;
 
     private void Awake()
     {
@@ -43,6 +51,8 @@ public abstract class CharacterViewModel : MonoBehaviour
                 Debug.LogError("CharacterModel_CharacterModel is not set and could not be found on the GameObject.");
             }
         }
+
+        _attackHandler = new AttackHandler(this);
     }
 
     public void SetState(ICharacterState newState)
@@ -66,7 +76,6 @@ public abstract class CharacterViewModel : MonoBehaviour
     }
 
     protected abstract void Die();
-    public abstract void ApplyDamage();
 
     public Transform FindTarget(float detectionRange, string targetTag)
     {
@@ -90,58 +99,13 @@ public abstract class CharacterViewModel : MonoBehaviour
         return closestTarget;
     }
 
-    protected virtual void ShowDamage(Transform targetTransform, int damageAmount, bool isCritical)
+    public virtual void ApplyDamage()
     {
-        if (GameObject_DamageTextPrefab == null)
-        {
-            Debug.LogError("GameObject_DamageTextPrefab is not set.");
-            return;
-        }
-
-        Canvas canvas = FindObjectOfType<Canvas>();
-        if (canvas == null)
-        {
-            Debug.LogError("Canvas not found in the scene.");
-            return;
-        }
-
-        Vector3 screenPosition = Camera.main.WorldToScreenPoint(targetTransform.position);
-        Vector3 randomOffset = Random.insideUnitSphere * 50;
-        randomOffset.z = 0;
-        screenPosition += randomOffset;
-
-        // Check if the screen position is within the camera view and apply offset to keep it fully visible
-        float margin = 50f; // Margin from screen edges to ensure full visibility
-        screenPosition.x = Mathf.Clamp(screenPosition.x, margin, Screen.width - margin);
-        screenPosition.y = Mathf.Clamp(screenPosition.y, margin, Screen.height - margin);
-
-        GameObject damageText = Instantiate(GameObject_DamageTextPrefab, canvas.transform);
-        damageText.transform.position = screenPosition;
-
-        DamageText damageTextComponent = damageText.GetComponent<DamageText>();
-        if (damageTextComponent == null)
-        {
-            Debug.LogError("DamageText component is not found on the damageText prefab.");
-            return;
-        }
-
-        damageTextComponent.Setup(damageAmount, isCritical); // 치명타 여부를 전달
-
-        // DOTween 애니메이션 추가
-        damageText.transform.localScale = Vector3.zero;
-        damageText.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
-        damageText.GetComponent<CanvasGroup>().DOFade(0, 2f).SetDelay(0.5f).OnComplete(() =>
-        {
-            Destroy(damageText);
-        });
+        _attackHandler.ApplyDamage();
     }
 
-    public void OnAttackAnimationEnd()
+    public void FullHeal()
     {
-        if (_currentState is AttackingState)
-        {
-            _currentState.Exit();
-            SetState(new IdleState(this, 100f, CharacterModel_CharacterModel.AttackRange));
-        }
+        CharacterModel.FullHeal();
     }
 }

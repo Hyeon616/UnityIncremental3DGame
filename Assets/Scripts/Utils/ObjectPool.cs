@@ -56,4 +56,17 @@ public class ObjectPool<T> where T : Component
         }
         return true;
     }
+
+    public List<T> ActiveObjects()
+    {
+        List<T> activeObjects = new List<T>();
+        foreach (T obj in pool)
+        {
+            if (obj.gameObject.activeInHierarchy)
+            {
+                activeObjects.Add(obj);
+            }
+        }
+        return activeObjects;
+    }
 }

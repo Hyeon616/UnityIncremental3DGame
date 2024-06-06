@@ -2,10 +2,33 @@ using UnityEngine;
 
 public class PlayerViewModel : CharacterViewModel
 {
-    public override string TargetTag => "Monster";
-    public override bool IsPlayer => true;
+    [SerializeField] private Transform AttackEffectSpawnPoint; // 이펙트 스폰 위치
 
-    public void FullHeal()
+    public override string TargetTag => "Monster";
+
+    public override void ApplyDamage()
+    {
+        base.ApplyDamage();
+    }
+
+    public void PlayAttackEffect(Transform targetTransform)
+    {
+        if (AttackEffectPrefab == null)
+        {
+            Debug.LogError("AttackEffectPrefab is not set.");
+            return;
+        }
+
+        Vector3 effectPosition = AttackEffectSpawnPoint.position;
+        GameObject effect = Object.Instantiate(AttackEffectPrefab, effectPosition, Quaternion.identity);
+
+        Vector3 direction = (targetTransform.position - effectPosition).normalized;
+        effect.transform.rotation = Quaternion.LookRotation(direction);
+
+        Object.Destroy(effect, 2f);
+    }
+
+    public new void FullHeal()
     {
         CharacterModel.FullHeal();
     }
@@ -13,34 +36,12 @@ public class PlayerViewModel : CharacterViewModel
     protected override void Die()
     {
         Debug.Log("Player died.");
-        // 추가적인 플레이어 사망 처리 로직
     }
-
-    public override void ApplyDamage()
+    private void PlayAttackSound()
     {
-        if (GameObject_DamageTextPrefab == null)
+        if (AttackAudioSource != null && AttackAudioClip != null)
         {
-            Debug.LogError("GameObject_DamageTextPrefab is not set.");
-            return;
+            AttackAudioSource.PlayOneShot(AttackAudioClip);
         }
-
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, CharacterModel.AttackRange);
-
-        foreach (var hitCollider in hitColliders)
-        {
-            if (hitCollider.CompareTag(TargetTag))
-            {
-                IDamageable damageable = hitCollider.GetComponent<IDamageable>();
-                if (damageable != null)
-                {
-                    int damage = CharacterModel.GetRandomAttackPower();
-                    damageable.TakeDamage(damage);
-                    bool isCritical = ((PlayerModel)CharacterModel).IsCriticalHit(); // 치명타 여부 확인
-                    ShowDamage(hitCollider.transform, damage, isCritical);
-                    break;
-                }
-            }
-        }
-
     }
 }

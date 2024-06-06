@@ -3,44 +3,38 @@ using UnityEngine.AI;
 
 public class MonsterAI : MonoBehaviour
 {
-    [SerializeField] private float detectionRange = 100f;
-    [SerializeField] private float attackRange = 5f;
-    [SerializeField] private float attackCooldown = 3f;
-    private float attackTimer = 0f;
-
     private NavMeshAgent agent;
     private MonsterViewModel monsterViewModel;
-    private Transform playerTransform;
+    private PlayerViewModel playerViewModel;
 
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         monsterViewModel = GetComponent<MonsterViewModel>();
-        playerTransform = FindObjectOfType<PlayerViewModel>().transform;
+        playerViewModel = FindObjectOfType<PlayerViewModel>();
 
-        monsterViewModel.SetState(new IdleState(monsterViewModel, detectionRange, attackRange));
+        // MonsterModel의 값을 사용하여 상태 설정
+        monsterViewModel.SetState(new IdleState(monsterViewModel, monsterViewModel.CharacterModel.DetectionRange, monsterViewModel.CharacterModel.AttackRange));
     }
 
     private void Update()
     {
-        if (playerTransform != null)
+        if (monsterViewModel.CurrentState is IdleState)
         {
-            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
-
-            if (distanceToPlayer <= attackRange)
+            Transform target = monsterViewModel.FindTarget(monsterViewModel.CharacterModel.DetectionRange, "Player");
+            if (target != null)
             {
-                monsterViewModel.ChangeState(new AttackingState(monsterViewModel, attackRange));
-            }
-            else if (distanceToPlayer <= detectionRange)
-            {
-                monsterViewModel.ChangeState(new ChasingState(monsterViewModel, playerTransform, detectionRange, attackRange));
-            }
-            else
-            {
-                monsterViewModel.ChangeState(new IdleState(monsterViewModel, detectionRange, attackRange));
+                monsterViewModel.Target = target;
+                monsterViewModel.SetState(new ChasingState(monsterViewModel, target, monsterViewModel.CharacterModel.DetectionRange, monsterViewModel.CharacterModel.AttackRange));
             }
         }
-
+        else
+        {
+            if (monsterViewModel.Target == null)
+            {
+                monsterViewModel.SetState(new IdleState(monsterViewModel, monsterViewModel.CharacterModel.DetectionRange, monsterViewModel.CharacterModel.AttackRange));
+            }
+        }
         monsterViewModel.CurrentState.Execute();
     }
 }

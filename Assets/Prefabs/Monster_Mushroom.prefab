@@ -460,6 +460,9 @@ MonoBehaviour:
   NavMeshAgent_Agent: {fileID: 399054021839922203}
   Transform_Target: {fileID: 0}
   CharacterModel_CharacterModel: {fileID: 572602385510657411}
+  GameObject_DamageTextPrefab: {fileID: 569608724984682078, guid: 8d2202cdce7043049b5554c232799b50,
+    type: 3}
+  attackEffectPrefab: {fileID: 0}
 --- !u!114 &399054021839922202
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -472,6 +475,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c459914ffa75434aa926092275638d0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  detectionRange: 100
+  attackRange: 5
+  attackCooldown: 3
 --- !u!1 &2163617509410941238
 GameObject:
   m_ObjectHideFlags: 0
