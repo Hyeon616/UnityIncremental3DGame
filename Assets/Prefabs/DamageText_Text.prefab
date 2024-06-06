@@ -96,6 +96,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageText: {fileID: 569608724984682076}
-  disappearSpeed: 1
-  moveSpeed: 1
-  fadeSpeed: 1
+  disappearSpeed: 1.5
+  moveSpeed: 1.5
+  fadeSpeed: 1.5

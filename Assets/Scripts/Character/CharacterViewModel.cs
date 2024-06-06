@@ -1,13 +1,14 @@
 using UnityEngine;
 using UnityEngine.AI;
+using DG.Tweening;
 
 public abstract class CharacterViewModel : MonoBehaviour
 {
-    [SerializeField] private CharacterView CharacterView_CharacterView;
-    [SerializeField] private NavMeshAgent NavMeshAgent_Agent;
-    [SerializeField] private Transform Transform_Target;
-    [SerializeField] private CharacterModel CharacterModel_CharacterModel;
-    [SerializeField] private GameObject GameObject_DamageTextPrefab;
+    [SerializeField] protected CharacterView CharacterView_CharacterView;
+    [SerializeField] protected NavMeshAgent NavMeshAgent_Agent;
+    [SerializeField] protected Transform Transform_Target;
+    [SerializeField] protected CharacterModel CharacterModel_CharacterModel;
+    [SerializeField] protected GameObject GameObject_DamageTextPrefab;
 
     private ICharacterState _currentState;
     private float _attackTimer;
@@ -27,6 +28,10 @@ public abstract class CharacterViewModel : MonoBehaviour
         get => _attackTimer;
         set => _attackTimer = value;
     }
+
+
+    public abstract string TargetTag { get; }
+    public virtual bool IsPlayer => false;
 
     private void Awake()
     {
@@ -61,6 +66,7 @@ public abstract class CharacterViewModel : MonoBehaviour
     }
 
     protected abstract void Die();
+    public abstract void ApplyDamage();
 
     public Transform FindTarget(float detectionRange, string targetTag)
     {
@@ -84,31 +90,6 @@ public abstract class CharacterViewModel : MonoBehaviour
         return closestTarget;
     }
 
-    public void ApplyDamage()
-    {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, CharacterModel_CharacterModel.AttackRange);
-        int targetsHit = 0;
-
-        foreach (var hitCollider in hitColliders)
-        {
-            if (hitCollider.CompareTag("Monster"))
-            {
-                IDamageable damageable = hitCollider.GetComponent<IDamageable>();
-                if (damageable != null)
-                {
-                    damageable.TakeDamage(CharacterModel_CharacterModel.AttackPower);
-                    Debug.Log(hitCollider.transform);
-                    Debug.Log(CharacterModel_CharacterModel.AttackPower);
-                    ShowDamage(hitCollider.transform, CharacterModel_CharacterModel.AttackPower);
-                    targetsHit++;
-                    if (targetsHit >= 2) break;
-                }
-            }
-        }
-
-        Debug.Log("ApplyDamage called");
-    }
-
     protected virtual void ShowDamage(Transform targetTransform, int damageAmount)
     {
         if (GameObject_DamageTextPrefab == null)
@@ -124,8 +105,18 @@ public abstract class CharacterViewModel : MonoBehaviour
             return;
         }
 
+        Vector3 screenPosition = Camera.main.WorldToScreenPoint(targetTransform.position);
+        Vector3 randomOffset = Random.insideUnitSphere * 50;
+        randomOffset.z = 0;
+        screenPosition += randomOffset;
+
+        // Check if the screen position is within the camera view and apply offset to keep it fully visible
+        float margin = 50f; // Margin from screen edges to ensure full visibility
+        screenPosition.x = Mathf.Clamp(screenPosition.x, margin, Screen.width - margin);
+        screenPosition.y = Mathf.Clamp(screenPosition.y, margin, Screen.height - margin);
+
         GameObject damageText = Instantiate(GameObject_DamageTextPrefab, canvas.transform);
-        damageText.transform.position = Camera.main.WorldToScreenPoint(targetTransform.position);
+        damageText.transform.position = screenPosition;
 
         DamageText damageTextComponent = damageText.GetComponent<DamageText>();
         if (damageTextComponent == null)
@@ -135,11 +126,15 @@ public abstract class CharacterViewModel : MonoBehaviour
         }
 
         damageTextComponent.Setup(damageAmount);
+
+        // DOTween 애니메이션 추가
+        damageText.transform.localScale = Vector3.zero;
+        damageText.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+        damageText.GetComponent<CanvasGroup>().DOFade(0, 2f).SetDelay(0.5f).OnComplete(() =>
+        {
+            Destroy(damageText);
+        });
     }
-
-
-
-
 
     public void OnAttackAnimationEnd()
     {

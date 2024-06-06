@@ -4,6 +4,8 @@ public class MonsterViewModel : CharacterViewModel
 {
     private Transform _player;
 
+    public override string TargetTag => "Player";
+
     public void SetPlayer(Transform playerTransform)
     {
         _player = playerTransform;
@@ -32,9 +34,24 @@ public class MonsterViewModel : CharacterViewModel
         }
     }
 
-    protected override void ShowDamage(Transform targetTransform, int damageAmount)
+    public override void ApplyDamage()
     {
-        // 몬스터는 데미지 폰트를 표시하지 않음
-    }
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, CharacterModel.AttackRange);
 
+        foreach (var hitCollider in hitColliders)
+        {
+            if (hitCollider.CompareTag(TargetTag))
+            {
+                IDamageable damageable = hitCollider.GetComponent<IDamageable>();
+                if (damageable != null)
+                {
+                    int damage = CharacterModel.GetRandomAttackPower();
+                    damageable.TakeDamage(damage);
+                    break;
+                }
+            }
+        }
+
+        Debug.Log("ApplyDamage called");
+    }
 }

@@ -7,7 +7,6 @@ public class MonsterModel : CharacterModel
     [SerializeField] private float _monsterAttackRange = 5f;
     [SerializeField] private float _monsterAttackCooldown = 3f;
     private static HealthIncrementer _healthIncrementer = new HealthIncrementer(3);
-
     protected override void Start()
     {
         _maxHealth = _initialHealth;
@@ -17,15 +16,19 @@ public class MonsterModel : CharacterModel
         base.Start();
     }
 
+    public override int GetRandomAttackPower()
+    {
+        float randomMultiplier = Random.Range(0.8f, 1.2f);
+        return Mathf.RoundToInt(_attackPower * randomMultiplier);
+    }
+    public static void ResetHealthIncrementer()
+    {
+        _healthIncrementer.Reset();
+    }
     protected override void Die()
     {
         Debug.Log("Monster died.");
         gameObject.SetActive(false);
-    }
-
-    public static void ResetHealthIncrementer()
-    {
-        _healthIncrementer.Reset();
     }
 
     public void ResetHealth()
@@ -33,3 +36,4 @@ public class MonsterModel : CharacterModel
         FullHeal();
     }
 }
+

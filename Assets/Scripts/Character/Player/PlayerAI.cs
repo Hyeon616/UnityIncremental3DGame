@@ -3,25 +3,25 @@ using UnityEngine.AI;
 
 public class PlayerAI : MonoBehaviour
 {
-    private float _detectionRange = 100f;
-    private float _attackRange = 5f;
-    private float _attackCooldown = 2f;
-    private float _attackTimer = 0f;
+    [SerializeField] private float detectionRange = 100f;
+    [SerializeField] private float attackRange = 5f;
+    [SerializeField] private float attackCooldown = 2f;
+    private float attackTimer = 0f;
 
-    private NavMeshAgent _agent;
-    private PlayerViewModel _playerViewModel;
+    private NavMeshAgent agent;
+    private PlayerViewModel playerViewModel;
 
     private void Start()
     {
-        _agent = GetComponent<NavMeshAgent>();
-        _playerViewModel = GetComponent<PlayerViewModel>();
+        agent = GetComponent<NavMeshAgent>();
+        playerViewModel = GetComponent<PlayerViewModel>();
 
-        _playerViewModel.SetState(new IdleState(_playerViewModel, _detectionRange, _attackRange));
+        playerViewModel.SetState(new IdleState(playerViewModel, detectionRange, attackRange));
     }
 
     private void Update()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, _detectionRange);
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, detectionRange);
         GameObject closestTarget = null;
         float closestDistance = Mathf.Infinity;
 
@@ -42,22 +42,22 @@ public class PlayerAI : MonoBehaviour
         {
             float distanceToTarget = Vector3.Distance(transform.position, closestTarget.transform.position);
 
-            if (distanceToTarget <= _attackRange)
+            if (distanceToTarget <= attackRange)
             {
-                _playerViewModel.ChangeState(new AttackingState(_playerViewModel, closestTarget.transform, _detectionRange, _attackRange));
+                playerViewModel.ChangeState(new AttackingState(playerViewModel, attackRange));
             }
             else
             {
-                _playerViewModel.ChangeState(new ChasingState(_playerViewModel, closestTarget.transform, _detectionRange, _attackRange));
+                playerViewModel.ChangeState(new ChasingState(playerViewModel, closestTarget.transform, detectionRange, attackRange));
             }
 
-            _playerViewModel.Target = closestTarget.transform;
+            playerViewModel.Target = closestTarget.transform;
         }
         else
         {
-            _playerViewModel.ChangeState(new IdleState(_playerViewModel, _detectionRange, _attackRange));
+            playerViewModel.ChangeState(new IdleState(playerViewModel, detectionRange, attackRange));
         }
 
-        _playerViewModel.CurrentState.Execute();
+        playerViewModel.CurrentState.Execute();
     }
 }

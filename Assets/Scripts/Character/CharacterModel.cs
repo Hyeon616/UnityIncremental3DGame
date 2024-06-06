@@ -40,5 +40,9 @@ public abstract class CharacterModel : MonoBehaviour, IDamageable
         Debug.Log($"{name} is attacking {target.name} with {_attackPower} power.");
     }
 
-    
+    public virtual int GetRandomAttackPower()
+    {
+        float randomMultiplier = Random.Range(0.8f, 1.2f); // 80%에서 120% 범위의 무작위 값
+        return Mathf.RoundToInt(_attackPower * randomMultiplier);
+    }
 }

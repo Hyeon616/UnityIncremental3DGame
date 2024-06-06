@@ -8,9 +8,9 @@ public class IdleState : ICharacterState
 
     public IdleState(CharacterViewModel character, float detectionRange, float attackRange)
     {
-        this._character = character;
-        this._detectionRange = detectionRange;
-        this._attackRange = attackRange;
+        _character = character;
+        _detectionRange = detectionRange;
+        _attackRange = attackRange;
     }
 
     public void Enter()
@@ -22,7 +22,7 @@ public class IdleState : ICharacterState
 
     public void Execute()
     {
-        Transform target = _character.FindTarget(_detectionRange, "Player");
+        Transform target = _character.FindTarget(_detectionRange, _character.TargetTag);
         if (target != null)
         {
             _character.Target = target;

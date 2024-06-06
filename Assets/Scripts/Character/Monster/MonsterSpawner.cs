@@ -7,7 +7,7 @@ public class MonsterSpawner : MonoBehaviour
     public GameObject GameObject_MonsterPrefab;
     public Transform Transform_Player;
     private ObjectPool<MonsterViewModel> _monsterPool;
-    private int _totalMonstersPerStage = 25;
+    private int _totalMonstersPerStage = 15;
     private int _spawnedMonsters = 0;
     private int _killedMonsters = 0;
 

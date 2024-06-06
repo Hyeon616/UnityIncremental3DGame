@@ -3,26 +3,44 @@ using UnityEngine.AI;
 
 public class MonsterAI : MonoBehaviour
 {
-    private float _detectionRange = 100f;
-    private float _attackRange = 5f;
-    private float _attackCooldown = 3f;
-    private float _attackTimer = 0f;
+    [SerializeField] private float detectionRange = 100f;
+    [SerializeField] private float attackRange = 5f;
+    [SerializeField] private float attackCooldown = 3f;
+    private float attackTimer = 0f;
 
-    private NavMeshAgent _agent;
-    private MonsterViewModel _monsterViewModel;
-    private PlayerViewModel _playerViewModel;
+    private NavMeshAgent agent;
+    private MonsterViewModel monsterViewModel;
+    private Transform playerTransform;
 
     private void Start()
     {
-        _agent = GetComponent<NavMeshAgent>();
-        _monsterViewModel = GetComponent<MonsterViewModel>();
-        _playerViewModel = FindObjectOfType<PlayerViewModel>();
+        agent = GetComponent<NavMeshAgent>();
+        monsterViewModel = GetComponent<MonsterViewModel>();
+        playerTransform = FindObjectOfType<PlayerViewModel>().transform;
 
-        _monsterViewModel.SetState(new IdleState(_monsterViewModel, _detectionRange, _attackRange));
+        monsterViewModel.SetState(new IdleState(monsterViewModel, detectionRange, attackRange));
     }
 
     private void Update()
     {
-        _monsterViewModel.CurrentState.Execute();
+        if (playerTransform != null)
+        {
+            float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+
+            if (distanceToPlayer <= attackRange)
+            {
+                monsterViewModel.ChangeState(new AttackingState(monsterViewModel, attackRange));
+            }
+            else if (distanceToPlayer <= detectionRange)
+            {
+                monsterViewModel.ChangeState(new ChasingState(monsterViewModel, playerTransform, detectionRange, attackRange));
+            }
+            else
+            {
+                monsterViewModel.ChangeState(new IdleState(monsterViewModel, detectionRange, attackRange));
+            }
+        }
+
+        monsterViewModel.CurrentState.Execute();
     }
 }
