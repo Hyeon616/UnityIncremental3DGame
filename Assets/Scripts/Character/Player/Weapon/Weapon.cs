@@ -8,8 +8,8 @@ public enum WeaponRarity
     Unique,
     Epic,
     Legend,
-    Star,
-    Galaxy
+    Ancient,
+    Mythical
 }
 
 public enum WeaponGrade
@@ -47,29 +47,29 @@ public class Weapon
 
     public string GetRarityName()
     {
-        switch (Rarity)
+        return Rarity switch
         {
-            case WeaponRarity.Normal: return "노말";
-            case WeaponRarity.Magic: return "매직";
-            case WeaponRarity.Rare: return "레어";
-            case WeaponRarity.Unique: return "유니크";
-            case WeaponRarity.Epic: return "에픽";
-            case WeaponRarity.Legend: return "레전드";
-            case WeaponRarity.Star: return "스타";
-            case WeaponRarity.Galaxy: return "갤럭시";
-            default: return Rarity.ToString();
-        }
+            WeaponRarity.Normal => "일반",
+            WeaponRarity.Magic => "고급",
+            WeaponRarity.Rare => "매직",
+            WeaponRarity.Unique => "유물",
+            WeaponRarity.Epic => "영웅",
+            WeaponRarity.Legend => "에픽",
+            WeaponRarity.Ancient => "고대", 
+            WeaponRarity.Mythical => "신화",
+            _ => Rarity.ToString()
+        };
     }
 
     public string GetGradeName()
     {
-        switch (Grade)
+        return Grade switch
         {
-            case WeaponGrade.Lower: return "하급";
-            case WeaponGrade.Intermediate: return "중급";
-            case WeaponGrade.Upper: return "상급";
-            case WeaponGrade.Highest: return "최상급";
-            default: return Grade.ToString();
-        }
+            WeaponGrade.Lower => "하급",
+            WeaponGrade.Intermediate => "중급",
+            WeaponGrade.Upper => "상급",
+            WeaponGrade.Highest => "최상급",
+            _ => Grade.ToString()
+        };
     }
 }
