@@ -1,50 +1,57 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class WeaponInventoryUIManager : MonoBehaviour
 {
-    [SerializeField] private WeaponInventorySlot[] weaponSlots;
-    private WeaponInventory weaponInventory;
+    public static WeaponInventoryUIManager Instance { get; private set; }
+
+    public List<WeaponInventorySlot> slots;
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
 
     private void Start()
     {
-        weaponInventory = new WeaponInventory();
-
-        // Test data
-        weaponInventory.AddWeapon("Normal_Lower", new Weapon(WeaponRarity.Normal, WeaponGrade.Lower, 1, 2, 10, 0.1f, 1.5f, 100));
-        weaponInventory.AddWeapon("Magic_Intermediate", new Weapon(WeaponRarity.Magic, WeaponGrade.Intermediate, 1, 1, 15, 0.2f, 2.0f, 150));
-
         InitializeSlots();
-        UpdateUI();
     }
 
     private void InitializeSlots()
     {
-        WeaponRarity[] rarities = (WeaponRarity[])System.Enum.GetValues(typeof(WeaponRarity));
-        WeaponGrade[] grades = (WeaponGrade[])System.Enum.GetValues(typeof(WeaponGrade));
-
-        for (int i = 0; i < weaponSlots.Length; i++)
+        // 초기 슬롯 상태를 설정합니다.
+        foreach (var slot in slots)
         {
-            WeaponRarity rarity = rarities[i / grades.Length];
-            WeaponGrade grade = grades[i % grades.Length];
-
-            weaponSlots[i].Initialize(rarity, grade);
+            slot.Initialize(slot.Rarity, slot.Grade);
         }
     }
 
-    private void UpdateUI()
+    public void UpdateWeaponSlots(List<Weapon> weapons)
     {
-        for (int i = 0; i < weaponSlots.Length; i++)
+        // 모든 슬롯을 초기화합니다.
+        foreach (var slot in slots)
         {
-            WeaponInventorySlot slot = weaponSlots[i];
-            string slotKey = $"{slot.Rarity}_{slot.Grade}";
-            Weapon weapon = weaponInventory.GetWeapon(slotKey);
-            if (weapon != null)
+            slot.SetSlot(null, false);
+        }
+
+        // 무기에 맞는 슬롯을 업데이트합니다.
+        foreach (var weapon in weapons)
+        {
+            foreach (var slot in slots)
             {
-                slot.SetSlot(weapon, true);
-            }
-            else
-            {
-                slot.SetSlot(null, false);
+                if (slot.Rarity.ToString() == weapon.rarity && slot.Grade.ToString() == weapon.grade)
+                {
+                    slot.SetSlot(weapon, weapon.count > 0);
+                    break; // 이 슬롯은 업데이트 되었으므로 다음 슬롯으로 이동합니다.
+                }
             }
         }
     }

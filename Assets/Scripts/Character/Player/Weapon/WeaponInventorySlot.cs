@@ -10,10 +10,11 @@ public class WeaponInventorySlot : MonoBehaviour
     public Image ItemImage;
     public Image SlotBackgroundImage;
 
-    public WeaponRarity Rarity { get; private set; }
-    public WeaponGrade Grade { get; private set; }
+    public string Rarity { get; private set; }
+    public string Grade { get; private set; }
+    private bool _hasBeenAcquired;
 
-    public void Initialize(WeaponRarity rarity, WeaponGrade grade)
+    public void Initialize(string rarity, string grade)
     {
         Rarity = rarity;
         Grade = grade;
@@ -26,63 +27,73 @@ public class WeaponInventorySlot : MonoBehaviour
         {
             WeaponRarityText.text = weapon.GetRarityName();
             WeaponGradeText.text = weapon.GetGradeName();
-            WeaponCountText.text = $"{weapon.Count}/5";
-            WeaponLevelText.text = $"Lv. {weapon.Level}";
-            ItemImage.color = new Color(1f, 1f, 1f, 1f); // 활성화된 슬롯의 아이템 이미지를 은은하게 표시
-            SlotBackgroundImage.color = GetRarityColor(weapon.Rarity, 1f); // 활성화된 슬롯의 배경색
+            WeaponCountText.text = $"{weapon.count}/5";
+            WeaponLevelText.text = $"Lv. {weapon.level}";
+            ItemImage.color = new Color(1f, 1f, 1f, 0.8f); // 활성화된 슬롯의 아이템 이미지를 은은하게 표시
+            SlotBackgroundImage.color = GetRarityColor(weapon.rarity, 0.8f); // 활성화된 슬롯의 배경색
+            _hasBeenAcquired = true;
+        }
+        else if (_hasBeenAcquired)
+        {
+            WeaponRarityText.text = GetRarityName(Rarity.ToString());
+            WeaponGradeText.text = GetGradeName(Grade.ToString());
+            WeaponCountText.text = "0/5";
+            WeaponLevelText.text = "Lv. 0";
+            ItemImage.color = new Color(1f, 1f, 1f, 0.8f); // 획득한 적 있는 슬롯의 아이템 이미지를 은은하게 표시
+            SlotBackgroundImage.color = GetRarityColor(Rarity.ToString(), 0.8f); // 획득한 적 있는 슬롯의 배경색
         }
         else
         {
-            WeaponRarityText.text = GetRarityName(Rarity);
-            WeaponGradeText.text = GetGradeName(Grade);
+            WeaponRarityText.text = GetRarityName(Rarity.ToString());
+            WeaponGradeText.text = GetGradeName(Grade.ToString());
             WeaponCountText.text = "0/5";
             WeaponLevelText.text = "Lv. 0";
-            ItemImage.color = new Color(1f, 1f, 1f, 0.2f); // 비활성화된 슬롯의 아이템 이미지를 어둡게 표시
-            SlotBackgroundImage.color = GetRarityColor(Rarity, 0.2f); // 비활성화된 슬롯의 배경색
+            ItemImage.color = new Color(1f, 1f, 1f, 0.2f); // 처음 획득되지 않은 슬롯의 아이템 이미지를 더 어둡게 표시
+            SlotBackgroundImage.color = GetRarityColor(Rarity.ToString(), 0.2f); // 처음 획득되지 않은 슬롯의 배경색
         }
     }
 
-    private Color GetRarityColor(WeaponRarity rarity, float alpha)
+    private Color GetRarityColor(string rarity, float alpha)
     {
-        switch (rarity)
+        return rarity switch
         {
-            case WeaponRarity.Normal: return new Color(0.75f, 0.75f, 0.75f, alpha); // 밝은 회색
-            case WeaponRarity.Magic: return new Color(0f, 0f, 1f, alpha);  // 파랑 
-            case WeaponRarity.Rare: return new Color(0f, 1f, 0f, alpha); // 초록색
-            case WeaponRarity.Unique: return new Color(1f, 0.65f, 0f, alpha); // 주황
-            case WeaponRarity.Epic: return new Color(1f, 0f, 1f, alpha); // 마젠타
-            case WeaponRarity.Legend: return new Color(1f, 1f, 0f, alpha); // 노랑
-            case WeaponRarity.Ancient: return new Color(0.5f, 0f, 0.5f, alpha); // 진한 마젠타
-            case WeaponRarity.Mythical: return new Color(0.53f, 0.81f, 0.92f, alpha); // 밝은 파랑
-            default: return new Color(0f, 0f, 0f, alpha);
-        }
+            "Normal" => new Color(0.75f, 0.75f, 0.75f, alpha), // 밝은 회색
+            "Magic" => new Color(0f, 0f, 1f, alpha), // 파랑 
+            "Rare" => new Color(0f, 1f, 0f, alpha), // 초록색
+            "Unique" => new Color(1f, 0.65f, 0f, alpha), // 주황
+            "Epic" => new Color(1f, 0f, 1f, alpha), // 마젠타
+            "Legend" => new Color(1f, 1f, 0f, alpha), // 노랑
+            "Ancient" => new Color(0.5f, 0f, 0.5f, alpha), // 진한 마젠타
+            "Mythical" => new Color(0.53f, 0.81f, 0.92f, alpha), // 밝은 파랑
+            _ => new Color(0f, 0f, 0f, alpha),
+        };
     }
 
-    private string GetRarityName(WeaponRarity rarity)
+    private string GetRarityName(string rarity)
     {
-        switch (rarity)
+        return rarity switch
         {
-            case WeaponRarity.Normal: return "일반";
-            case WeaponRarity.Magic: return "고급";
-            case WeaponRarity.Rare: return "매직";
-            case WeaponRarity.Unique: return "유물";
-            case WeaponRarity.Epic: return "영웅";
-            case WeaponRarity.Legend: return "에픽";
-            case WeaponRarity.Ancient: return "고대";
-            case WeaponRarity.Mythical: return "신화";
-            default: return "알 수 없음";
-        }
+            "Normal" => "일반",
+            "Magic" => "고급",
+            "Rare" => "매직",
+            "Unique" => "유물",
+            "Epic" => "영웅",
+            "Legend" => "에픽",
+            "Ancient" => "고대",
+            "Mythical" => "신화",
+            _ => "알 수 없음",
+        };
     }
 
-    private string GetGradeName(WeaponGrade grade)
+    private string GetGradeName(string grade)
     {
-        switch (grade)
+        return grade switch
         {
-            case WeaponGrade.Lower: return "하급";
-            case WeaponGrade.Intermediate: return "중급";
-            case WeaponGrade.Upper: return "상급";
-            case WeaponGrade.Highest: return "최상급";
-            default: return "알 수 없음";
-        }
+            "Lower" => "하급",
+            "Intermediate" => "중급",
+            "Upper" => "상급",
+            "Highest" => "최상급",
+            _ => "알 수 없음",
+        };
     }
 }

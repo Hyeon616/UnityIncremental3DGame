@@ -14,10 +14,24 @@ const pool = mariadb.createPool({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE,
     port: process.env.DB_PORT,
-    connectionLimit: 5
+    //connectionLimit: 5
 });
 
 app.use(cors());
+
+async function testDBConnection() {
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        await conn.query('SELECT 1');
+        console.log('Database connection successful');
+    } catch (err) {
+        console.error('Database connection failed:', err);
+        process.exit(1); // DB 연결 실패 시 프로세스 종료
+    } finally {
+        if (conn) conn.release();
+    }
+}
 
 app.get('/weapons', async (req, res) => {
     let conn;
@@ -33,6 +47,7 @@ app.get('/weapons', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
+app.listen(port, async () => {
+    await testDBConnection(); // 서버 시작 전 DB 연결 테스트
     console.log(`Server running on port ${port}`);
 });
