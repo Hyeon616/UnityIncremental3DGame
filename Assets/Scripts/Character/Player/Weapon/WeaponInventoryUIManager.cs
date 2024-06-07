@@ -43,15 +43,26 @@ public class WeaponInventoryUIManager : MonoBehaviour
         }
 
         // 무기에 맞는 슬롯을 업데이트합니다.
-        foreach (var weapon in weapons)
+        if (weapons != null)
         {
+            foreach (var weapon in weapons)
+            {
+                foreach (var slot in slots)
+                {
+                    if (slot.Rarity == weapon.rarity && slot.Grade == weapon.grade)
+                    {
+                        slot.SetSlot(weapon, true);
+                        break; // 이 슬롯은 업데이트 되었으므로 다음 슬롯으로 이동합니다.
+                    }
+                }
+            }
+        }
+        else
+        {
+            // 데이터를 못받은 경우에도 기본 슬롯 상태로 유지합니다.
             foreach (var slot in slots)
             {
-                if (slot.Rarity.ToString() == weapon.rarity && slot.Grade.ToString() == weapon.grade)
-                {
-                    slot.SetSlot(weapon, weapon.count > 0);
-                    break; // 이 슬롯은 업데이트 되었으므로 다음 슬롯으로 이동합니다.
-                }
+                slot.SetSlot(null, false);
             }
         }
     }

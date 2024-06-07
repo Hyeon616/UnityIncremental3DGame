@@ -1,45 +1,38 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SingletonDamageFontCanvas : MonoBehaviour
+public class SingletonDamageFontCanvas : Singleton<SingletonDamageFontCanvas>
 {
-    private static SingletonDamageFontCanvas _instance;
-
-    public static SingletonDamageFontCanvas Instance
+    protected override void Awake()
     {
-        get
+        base.Awake();
+
+        if (Instance == this)
         {
-            if (_instance == null)
-            {
-                _instance = FindObjectOfType<SingletonDamageFontCanvas>();
-                if (_instance == null)
-                {
-                    GameObject canvasObject = new GameObject("DamageFontCanvas");
-                    _instance = canvasObject.AddComponent<SingletonDamageFontCanvas>();
-
-                    Canvas canvas = canvasObject.AddComponent<Canvas>();
-                    canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-
-                    CanvasScaler scaler = canvasObject.AddComponent<CanvasScaler>();
-                    scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-                    scaler.referenceResolution = new Vector2(1920, 1080);
-
-                    canvasObject.AddComponent<GraphicRaycaster>();
-                }
-            }
-            return _instance;
+            SetupCanvas();
         }
     }
 
-    private void Awake()
+    private void SetupCanvas()
     {
-        if (_instance == null)
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas == null)
         {
-            _instance = this;
+            canvas = gameObject.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         }
-        else if (_instance != this)
+
+        CanvasScaler scaler = GetComponent<CanvasScaler>();
+        if (scaler == null)
         {
-            Destroy(gameObject);
+            scaler = gameObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+        }
+
+        if (GetComponent<GraphicRaycaster>() == null)
+        {
+            gameObject.AddComponent<GraphicRaycaster>();
         }
     }
 }

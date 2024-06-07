@@ -35,21 +35,19 @@ public class WeaponInventorySlot : MonoBehaviour
         }
         else if (_hasBeenAcquired)
         {
-            WeaponRarityText.text = GetRarityName(Rarity.ToString());
-            WeaponGradeText.text = GetGradeName(Grade.ToString());
+            WeaponRarityText.text = GetRarityName(Rarity);
+            WeaponGradeText.text = GetGradeName(Grade);
             WeaponCountText.text = "0/5";
             WeaponLevelText.text = "Lv. 0";
             ItemImage.color = new Color(1f, 1f, 1f, 0.8f); // 획득한 적 있는 슬롯의 아이템 이미지를 은은하게 표시
-            SlotBackgroundImage.color = GetRarityColor(Rarity.ToString(), 0.8f); // 획득한 적 있는 슬롯의 배경색
+            SlotBackgroundImage.color = GetRarityColor(Rarity, 0.8f); // 획득한 적 있는 슬롯의 배경색
         }
         else
         {
-            WeaponRarityText.text = GetRarityName(Rarity.ToString());
-            WeaponGradeText.text = GetGradeName(Grade.ToString());
             WeaponCountText.text = "0/5";
             WeaponLevelText.text = "Lv. 0";
             ItemImage.color = new Color(1f, 1f, 1f, 0.2f); // 처음 획득되지 않은 슬롯의 아이템 이미지를 더 어둡게 표시
-            SlotBackgroundImage.color = GetRarityColor(Rarity.ToString(), 0.2f); // 처음 획득되지 않은 슬롯의 배경색
+            SlotBackgroundImage.color = GetRarityColor(Rarity, 0.2f); // 처음 획득되지 않은 슬롯의 배경색
         }
     }
 
@@ -57,14 +55,14 @@ public class WeaponInventorySlot : MonoBehaviour
     {
         return rarity switch
         {
-            "Normal" => new Color(0.75f, 0.75f, 0.75f, alpha), // 밝은 회색
-            "Magic" => new Color(0f, 0f, 1f, alpha), // 파랑 
-            "Rare" => new Color(0f, 1f, 0f, alpha), // 초록색
-            "Unique" => new Color(1f, 0.65f, 0f, alpha), // 주황
-            "Epic" => new Color(1f, 0f, 1f, alpha), // 마젠타
-            "Legend" => new Color(1f, 1f, 0f, alpha), // 노랑
-            "Ancient" => new Color(0.5f, 0f, 0.5f, alpha), // 진한 마젠타
-            "Mythical" => new Color(0.53f, 0.81f, 0.92f, alpha), // 밝은 파랑
+            "일반" => new Color(0.75f, 0.75f, 0.75f, alpha), // 밝은 회색
+            "고급" => new Color(0f, 0f, 1f, alpha), // 파랑 
+            "매직" => new Color(0f, 1f, 0f, alpha), // 초록색
+            "유물" => new Color(1f, 0.65f, 0f, alpha), // 주황
+            "영웅" => new Color(1f, 0f, 1f, alpha), // 마젠타
+            "에픽" => new Color(1f, 1f, 0f, alpha), // 노랑
+            "고대" => new Color(0.5f, 0f, 0.5f, alpha), // 진한 마젠타
+            "신화" => new Color(0.53f, 0.81f, 0.92f, alpha), // 밝은 파랑
             _ => new Color(0f, 0f, 0f, alpha),
         };
     }
@@ -73,14 +71,14 @@ public class WeaponInventorySlot : MonoBehaviour
     {
         return rarity switch
         {
-            "Normal" => "일반",
-            "Magic" => "고급",
-            "Rare" => "매직",
-            "Unique" => "유물",
-            "Epic" => "영웅",
-            "Legend" => "에픽",
-            "Ancient" => "고대",
-            "Mythical" => "신화",
+            "일반" => "일반",
+            "고급" => "고급",
+            "매직" => "매직",
+            "유물" => "유물",
+            "영웅" => "영웅",
+            "에픽" => "에픽",
+            "고대" => "고대",
+            "신화" => "신화",
             _ => "알 수 없음",
         };
     }
@@ -89,10 +87,10 @@ public class WeaponInventorySlot : MonoBehaviour
     {
         return grade switch
         {
-            "Lower" => "하급",
-            "Intermediate" => "중급",
-            "Upper" => "상급",
-            "Highest" => "최상급",
+            "하급" => "하급",
+            "중급" => "중급",
+            "상급" => "상급",
+            "최상급" => "최상급",
             _ => "알 수 없음",
         };
     }
