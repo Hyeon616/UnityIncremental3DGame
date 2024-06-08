@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class WeaponManager : MonoBehaviour
+public class WeaponManager : Singleton<WeaponManager>
 {
     public APISettings apiSettings;
-
+    private List<Weapon> activeWeapons = new List<Weapon>();
     void Start()
     {
         if (apiSettings != null)
@@ -20,7 +20,7 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
-    private async UniTaskVoid FetchWeapons()
+    private async UniTask FetchWeapons()
     {
         try
         {
@@ -31,8 +31,12 @@ public class WeaponManager : MonoBehaviour
                 foreach (Weapon weapon in weapons)
                 {
                     Debug.Log($"Rarity: {weapon.rarity}, Grade: {weapon.grade}, Level: {weapon.level}, AttackPower: {weapon.attack_power}, CriticalChance: {weapon.critical_chance}, CriticalDamage: {weapon.critical_damage}, MaxHealth: {weapon.max_health}, Count: {weapon.count}");
+                    if (weapon.count > 0)
+                    {
+                        activeWeapons.Add(weapon);
+                    }
                 }
-                WeaponInventoryUIManager.Instance.UpdateWeaponSlots(weapons);
+                UpdateInventoryUI(weapons);
             }
             else
             {
@@ -62,5 +66,22 @@ public class WeaponManager : MonoBehaviour
 
             return request.downloadHandler.text;
         }
+    }
+    private void UpdateInventoryUI(List<Weapon> weapons)
+    {
+        var uiManager = WeaponInventoryUIManager.Instance;
+        if (uiManager != null)
+        {
+            uiManager.UpdateWeaponSlots(weapons);
+        }
+        else
+        {
+            Debug.LogError("WeaponInventoryUIManager.Instance is not set.");
+        }
+    }
+    public async UniTask<List<Weapon>> GetActiveWeapons()
+    {
+        await FetchWeapons(); // Fetch weapons if not already fetched
+        return activeWeapons;
     }
 }

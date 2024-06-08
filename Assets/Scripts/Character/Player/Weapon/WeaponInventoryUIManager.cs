@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
 {
@@ -53,6 +54,15 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
             {
                 Debug.LogWarning($"No slot found for Weapon Rarity: {weapon.rarity}, Grade: {weapon.grade}");
             }
+        }
+    }
+
+    public void IncreaseWeaponCount(int weaponId)
+    {
+        var slot = slots.FirstOrDefault(s => s.WeaponId == weaponId);
+        if (slot != null)
+        {
+            slot.IncreaseCount();
         }
     }
 }
