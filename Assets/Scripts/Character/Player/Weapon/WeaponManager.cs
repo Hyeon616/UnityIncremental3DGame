@@ -1,10 +1,10 @@
-using UnityEngine;
-using UnityEngine.Networking;
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Networking;
 
-public class WeaponManager : Singleton<WeaponManager>
+public class WeaponManager : MonoBehaviour
 {
     public APISettings apiSettings;
 
@@ -32,8 +32,7 @@ public class WeaponManager : Singleton<WeaponManager>
                 {
                     Debug.Log($"Rarity: {weapon.rarity}, Grade: {weapon.grade}, Level: {weapon.level}, AttackPower: {weapon.attack_power}, CriticalChance: {weapon.critical_chance}, CriticalDamage: {weapon.critical_damage}, MaxHealth: {weapon.max_health}, Count: {weapon.count}");
                 }
-                // 여기서 weapons 리스트를 인벤토리 UI에 적용할 수 있습니다.
-                UpdateInventoryUI(weapons);
+                WeaponInventoryUIManager.Instance.UpdateWeaponSlots(weapons);
             }
             else
             {
@@ -62,19 +61,6 @@ public class WeaponManager : Singleton<WeaponManager>
             }
 
             return request.downloadHandler.text;
-        }
-    }
-
-    private void UpdateInventoryUI(List<Weapon> weapons)
-    {
-        var uiManager = WeaponInventoryUIManager.Instance;
-        if (uiManager != null)
-        {
-            uiManager.UpdateWeaponSlots(weapons);
-        }
-        else
-        {
-            Debug.LogError("WeaponInventoryUIManager.Instance is not set.");
         }
     }
 }

@@ -74,8 +74,8 @@ public class RegistrationManager : MonoBehaviour
             nickname = nickname
         };
 
-        string jsonData = JsonConvert.SerializeObject(requestBody);
 
+        string jsonData = JsonConvert.SerializeObject(requestBody);
         using (UnityWebRequest request = new UnityWebRequest(apiSettings.RegisterUrl, "POST"))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
@@ -88,9 +88,7 @@ public class RegistrationManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
                 feedbackText.text = request.error;
-                Debug.LogError($"Error response: {request.error}");
-                Debug.LogError($"Response code: {request.responseCode}");
-                Debug.LogError($"Response text: {request.downloadHandler.text}");
+                Debug.LogError($"Error: {request.error}");
             }
             else
             {

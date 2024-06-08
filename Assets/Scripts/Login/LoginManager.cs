@@ -1,10 +1,10 @@
-using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.SceneManagement;
+using TMPro;
+using Cysharp.Threading.Tasks;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using Newtonsoft.Json;
 
 public class LoginManager : MonoBehaviour
 {
@@ -31,14 +31,14 @@ public class LoginManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(username))
         {
-            feedbackText.text = "아이디를 입력해주세요.";
+            feedbackText.text = "아이디를 입력하세요.";
             HideFeedbackText();
             return;
         }
 
         if (string.IsNullOrEmpty(password))
         {
-            feedbackText.text = "패스워드를 입력해주세요.";
+            feedbackText.text = "패스워드를 입력하세요.";
             HideFeedbackText();
             return;
         }
@@ -50,7 +50,6 @@ public class LoginManager : MonoBehaviour
         };
 
         string jsonData = JsonConvert.SerializeObject(requestBody);
-
         using (UnityWebRequest request = new UnityWebRequest(apiSettings.LoginUrl, "POST"))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
@@ -63,30 +62,20 @@ public class LoginManager : MonoBehaviour
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
                 feedbackText.text = request.error;
-                Debug.LogError($"Login error: {request.error}");
+                Debug.LogError($"Error: {request.error}");
             }
             else
             {
-                var responseText = request.downloadHandler.text;
-
-                try
-                {
-                    var response = JsonUtility.FromJson<LoginResponse>(responseText);
-                    PlayerPrefs.SetString("authToken", response.token);
-                    feedbackText.text = "Login successful!";
-
-                    SceneManager.LoadScene("GameScene");
-                }
-                catch (System.Exception ex)
-                {
-                    feedbackText.text = "Login failed: Invalid response format";
-                    Debug.LogError($"Error parsing login response: {ex.Message}");
-                }
+                var response = JsonConvert.DeserializeObject<LoginResponse>(request.downloadHandler.text);
+                PlayerPrefs.SetString("authToken", response.token);
+                feedbackText.text = "Login successful!";
+                SceneManager.LoadScene("GameScene");
             }
 
             HideFeedbackText();
         }
     }
+
     private async void HideFeedbackText()
     {
         await UniTask.Delay(3000);
