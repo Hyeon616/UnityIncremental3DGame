@@ -129,4 +129,22 @@ public class WeaponManager : Singleton<WeaponManager>
             }
         }
     }
+
+    public async UniTask<Weapon> GetRandomWeaponByRarity(string rarity)
+    {
+        await FetchWeapons(); // 무기 리스트를 최신화
+
+        var weaponsOfSelectedRarity = allWeapons.Where(w => w.rarity == rarity).ToList();
+        if (weaponsOfSelectedRarity.Count > 0)
+        {
+            return weaponsOfSelectedRarity[Random.Range(0, weaponsOfSelectedRarity.Count)];
+        }
+        else
+        {
+            Debug.LogWarning($"No weapons found for rarity: {rarity}");
+            return null;
+        }
+    }
+
+
 }

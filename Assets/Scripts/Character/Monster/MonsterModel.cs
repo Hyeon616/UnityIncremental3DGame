@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 public class MonsterModel : CharacterModel
@@ -30,13 +31,48 @@ public class MonsterModel : CharacterModel
         _healthIncrementer.Reset();
     }
 
-    protected override void Die()
+    protected override async void Die()
     {
         gameObject.SetActive(false);
+        await TryDropWeapon();
     }
 
     public void ResetHealth()
     {
         FullHeal();
+    }
+
+    private async UniTask TryDropWeapon()
+    {
+        // 10% 확률로 무기 드랍
+        if (Random.value <= 0.1f)
+        {
+            string rarity = GetRandomRarity();
+            Weapon weapon = await WeaponManager.Instance.GetRandomWeaponByRarity(rarity);
+
+            if (weapon != null)
+            {
+                bool success = await WeaponManager.Instance.DrawWeapon(weapon.id);
+                if (success)
+                {
+                    WeaponInventoryUIManager.Instance.IncreaseWeaponCount(weapon);
+                    Debug.Log($"Dropped {rarity} weapon: {weapon.id}");
+                }
+            }
+        }
+    }
+
+    private string GetRandomRarity()
+    {
+        float randomValue = Random.value * 100f;
+
+        if (randomValue <= 0.1f) return "신화";
+        else if (randomValue <= 0.3f) return "고대";
+        else if (randomValue <= 0.8f) return "에픽";
+        else if (randomValue <= 1.6f) return "영웅";
+        else if (randomValue <= 6.7f) return "유물";
+        else if (randomValue <= 16.9f) return "매직";
+        else if (randomValue <= 50f) return "고급";
+        else return "일반";
     }
 }
