@@ -1,10 +1,15 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
-using Cysharp.Threading.Tasks;
+using UnityEngine.UI;
 
 public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
 {
-    public List<WeaponInventorySlot> weaponSlots;
+    [SerializeField] private List<WeaponInventorySlot> weaponSlots;
+    [SerializeField] private Button synthesizeAllButton;
+    [SerializeField] private GameObject combineButtonPrefab; // 합성 버튼 프리팹
+    private GameObject combineButtonInstance;
+    private WeaponInventorySlot selectedSlot;
 
     private Dictionary<int, WeaponInventorySlot> slotDictionary = new Dictionary<int, WeaponInventorySlot>();
 
@@ -12,6 +17,16 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
     {
         base.Awake();
         InitializeSlotDictionary();
+    }
+
+    private void OnEnable()
+    {
+        synthesizeAllButton.onClick.AddListener(OnSynthesizeAllButtonPressed);
+    }
+
+    private void OnDisable()
+    {
+        synthesizeAllButton.onClick.RemoveListener(OnSynthesizeAllButtonPressed);
     }
 
     private void InitializeSlotDictionary()
@@ -75,43 +90,82 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
         }
     }
 
-    public async void OnDrawWeaponButtonPressed(int weaponId)
+    public void ActivateWeaponSlot(Weapon weapon)
     {
-        bool success = await WeaponManager.Instance.DrawWeapon(weaponId);
-        if (success)
+        if (slotDictionary.TryGetValue(weapon.id, out var slot))
         {
-            Weapon weapon = WeaponManager.Instance.GetWeaponById(weaponId);
-            if (weapon != null)
-            {
-                IncreaseWeaponCount(weapon);
-            }
-
-            // 서버에서 다시 데이터를 가져와 인벤토리 업데이트
-            await WeaponManager.Instance.FetchWeapons();
-        }
-        else
-        {
-            Debug.LogError("Failed to draw weapon.");
+            slot.SetSlot(weapon, true);
+            Debug.Log($"Activated slot for Weapon ID: {weapon.id}");
         }
     }
 
-    private async UniTask DrawWeaponAsync(int weaponId)
+    public void ShowCombineButton(WeaponInventorySlot slot)
     {
-        bool success = await WeaponManager.Instance.DrawWeapon(weaponId);
+        if (selectedSlot != null && selectedSlot != slot)
+        {
+            selectedSlot.ResetSlotState(); // 이전 선택된 슬롯 상태 복구
+        }
+
+        if (combineButtonInstance != null)
+        {
+            combineButtonInstance.SetActive(false); // 비활성화
+        }
+
+        selectedSlot = slot;
+        combineButtonInstance = Instantiate(combineButtonPrefab, slot.transform);
+        combineButtonInstance.transform.localPosition = Vector3.zero; // 슬롯 정중앙에 버튼 위치 설정
+
+        var combineButton = combineButtonInstance.GetComponent<Button>();
+        combineButton.onClick.AddListener(OnCombineButtonClicked);
+
+        // 버튼 상태 업데이트
+        slot.UpdateCombineButtonState();
+    }
+
+    private void OnCombineButtonClicked()
+    {
+        if (selectedSlot != null && selectedSlot.Count >= 5)
+        {
+            OnSynthesizeButtonPressed(selectedSlot.WeaponId);
+            combineButtonInstance.SetActive(false); // 합성 후 버튼 비활성화
+        }
+    }
+
+    public void OnSynthesizeButtonPressed(int weaponId)
+    {
+        SynthesizeWeaponAsync(weaponId).Forget();
+    }
+
+    private async UniTask SynthesizeWeaponAsync(int weaponId)
+    {
+        bool success = await WeaponManager.Instance.SynthesizeWeapon(weaponId);
         if (success)
         {
-            Weapon weapon = WeaponManager.Instance.GetWeaponById(weaponId);
-            if (weapon != null)
-            {
-                IncreaseWeaponCount(weapon);
-            }
-
-            // 서버에서 다시 데이터를 가져와 인벤토리 업데이트
             await WeaponManager.Instance.FetchWeapons();
+            UpdateWeaponSlots(WeaponManager.Instance.GetActiveWeapons()); // UI 업데이트
         }
         else
         {
-            Debug.LogError("Failed to draw weapon.");
+            Debug.LogError("Failed to synthesize weapon.");
+        }
+    }
+
+    public void OnSynthesizeAllButtonPressed()
+    {
+        SynthesizeAllWeaponsAsync().Forget();
+    }
+
+    private async UniTask SynthesizeAllWeaponsAsync()
+    {
+        bool success = await WeaponManager.Instance.SynthesizeAllWeapons();
+        if (success)
+        {
+            await WeaponManager.Instance.FetchWeapons();
+            UpdateWeaponSlots(WeaponManager.Instance.GetActiveWeapons()); // UI 업데이트
+        }
+        else
+        {
+            Debug.LogError("Failed to synthesize all weapons.");
         }
     }
 }

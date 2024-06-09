@@ -11,16 +11,16 @@ public class WeaponManager : Singleton<WeaponManager>
     private List<Weapon> activeWeapons = new List<Weapon>();
     private List<Weapon> allWeapons = new List<Weapon>();
 
-    void Start()
+    protected override async void Awake()
     {
-        if (apiSettings != null)
-        {
-            FetchWeapons().Forget();
-        }
-        else
-        {
-            Debug.LogError("APISettings is not set.");
-        }
+        base.Awake();
+        await InitializeInventory();
+    }
+
+    public async UniTask InitializeInventory()
+    {
+        await FetchWeapons();
+        WeaponInventoryUIManager.Instance.UpdateWeaponSlots(activeWeapons);
     }
 
     public async UniTask FetchWeapons()
@@ -30,19 +30,8 @@ public class WeaponManager : Singleton<WeaponManager>
             string json = await GetWeapons();
             if (!string.IsNullOrEmpty(json))
             {
-                allWeapons = JsonConvert.DeserializeObject<List<Weapon>>(json);
-                Debug.Log($"Fetched {allWeapons.Count} weapons from server.");
-
-                activeWeapons.Clear();
-
-                foreach (Weapon weapon in allWeapons)
-                {
-                    Debug.Log($"Weapon: ID={weapon.id}, Rarity={weapon.rarity}, Grade={weapon.grade}, Count={weapon.count}");
-                    activeWeapons.Add(weapon);
-                }
-
-                Debug.Log($"Active weapons count: {activeWeapons.Count}");
-                UpdateInventoryUI(activeWeapons);
+                activeWeapons = JsonConvert.DeserializeObject<List<Weapon>>(json);
+                Debug.Log($"Fetched {activeWeapons.Count} weapons from server.");
             }
             else
             {
@@ -55,35 +44,24 @@ public class WeaponManager : Singleton<WeaponManager>
         }
     }
 
-    private async UniTask<string> GetWeapons()
+    public async UniTask FetchAllWeapons()
     {
-        string token = PlayerPrefs.GetString("authToken");
-
-        using (UnityWebRequest request = UnityWebRequest.Get(apiSettings.WeaponsUrl))
+        try
         {
-            request.SetRequestHeader("Authorization", "Bearer " + token);
-            await request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            string json = await GetAllWeapons();
+            if (!string.IsNullOrEmpty(json))
             {
-                Debug.LogError($"무기 가져오기 중 오류 발생: {request.error}");
-                return null;
+                allWeapons = JsonConvert.DeserializeObject<List<Weapon>>(json);
+                Debug.Log($"Fetched {allWeapons.Count} weapons from WeaponDB.");
             }
-
-            return request.downloadHandler.text;
+            else
+            {
+                Debug.LogError("Received empty JSON from WeaponDB.");
+            }
         }
-    }
-
-    private void UpdateInventoryUI(List<Weapon> weapons)
-    {
-        var uiManager = WeaponInventoryUIManager.Instance;
-        if (uiManager != null)
+        catch (System.Exception ex)
         {
-            uiManager.UpdateWeaponSlots(weapons);
-        }
-        else
-        {
-            Debug.LogError("WeaponInventoryUIManager.Instance is not set.");
+            Debug.LogError($"Error fetching all weapons: {ex.Message}");
         }
     }
 
@@ -92,59 +70,191 @@ public class WeaponManager : Singleton<WeaponManager>
         return activeWeapons;
     }
 
-    public Weapon GetWeaponById(int weaponId)
+    public async UniTask<Weapon> GetRandomWeapon()
     {
-        return allWeapons.FirstOrDefault(w => w.id == weaponId);
+        await FetchAllWeapons(); // 모든 무기 목록을 항상 최신으로 가져옴
+
+        float randomValue = Random.value * 100f;
+        string selectedRarity = GetRarityBasedOnProbability(randomValue);
+        var weaponsOfSelectedRarity = allWeapons.Where(w => w.rarity == selectedRarity).ToList();
+
+        if (weaponsOfSelectedRarity.Count == 0)
+        {
+            Debug.LogError($"No weapons found for rarity: {selectedRarity} in WeaponDB.");
+            return null;
+        }
+
+        var randomWeapon = weaponsOfSelectedRarity[Random.Range(0, weaponsOfSelectedRarity.Count)];
+        bool success = await DrawWeapon(randomWeapon.id);
+        if (success)
+        {
+            await FetchWeapons(); // Fetch updated weapons
+            return randomWeapon;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    private string GetRarityBasedOnProbability(float randomValue)
+    {
+        if (randomValue <= 0.1f) return "신화";
+        else if (randomValue <= 0.3f) return "고대";
+        else if (randomValue <= 0.8f) return "에픽";
+        else if (randomValue <= 1.6f) return "영웅";
+        else if (randomValue <= 6.7f) return "유물";
+        else if (randomValue <= 16.9f) return "매직";
+        else if (randomValue <= 50f) return "고급";
+        else return "일반";
     }
 
     public async UniTask<bool> DrawWeapon(int weaponId)
     {
         string token = PlayerPrefs.GetString("authToken");
+
         using (UnityWebRequest request = new UnityWebRequest(apiSettings.DrawWeaponUrl, "POST"))
         {
-            var requestBody = new { weaponId = weaponId };
+            var requestBody = new { weaponId };
             string jsonData = JsonConvert.SerializeObject(requestBody);
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
-            request.SetRequestHeader("Authorization", "Bearer " + token);
+            request.SetRequestHeader("Authorization", $"Bearer {token}");
 
             await request.SendWebRequest();
 
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
-                Debug.LogError($"Error drawing weapon: {request.error}");
+                Debug.LogError(request.error);
                 return false;
-            }
-
-            if (request.responseCode == 200)
-            {
-                return true;
             }
             else
             {
-                Debug.LogError($"Failed to draw weapon: {request.downloadHandler.text}");
-                return false;
+                if (request.responseCode == 200)
+                {
+                    return true;
+                }
+                else
+                {
+                    Debug.LogError(request.downloadHandler.text);
+                    return false;
+                }
             }
         }
     }
 
-    public async UniTask<Weapon> GetRandomWeaponByRarity(string rarity)
+    public async UniTask<bool> SynthesizeWeapon(int weaponId)
     {
-        await FetchWeapons(); // 무기 리스트를 최신화
+        string token = PlayerPrefs.GetString("authToken");
 
-        var weaponsOfSelectedRarity = allWeapons.Where(w => w.rarity == rarity).ToList();
-        if (weaponsOfSelectedRarity.Count > 0)
+        using (UnityWebRequest request = new UnityWebRequest(apiSettings.SynthesizeWeaponUrl, "POST"))
         {
-            return weaponsOfSelectedRarity[Random.Range(0, weaponsOfSelectedRarity.Count)];
-        }
-        else
-        {
-            Debug.LogWarning($"No weapons found for rarity: {rarity}");
-            return null;
+            var requestBody = new { weaponId };
+            string jsonData = JsonConvert.SerializeObject(requestBody);
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("Authorization", $"Bearer {token}");
+
+            await request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError(request.error);
+                return false;
+            }
+            else
+            {
+                if (request.responseCode == 200)
+                {
+                    return true;
+                }
+                else
+                {
+                    Debug.LogError(request.downloadHandler.text);
+                    return false;
+                }
+            }
         }
     }
 
+    public async UniTask<bool> SynthesizeAllWeapons()
+    {
+        string token = PlayerPrefs.GetString("authToken");
 
+        using (UnityWebRequest request = new UnityWebRequest(apiSettings.SynthesizeAllWeaponsUrl, "POST"))
+        {
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Authorization", $"Bearer {token}");
+
+            await request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError(request.error);
+                return false;
+            }
+            else
+            {
+                if (request.responseCode == 200)
+                {
+                    return true;
+                }
+                else
+                {
+                    Debug.LogError(request.downloadHandler.text);
+                    return false;
+                }
+            }
+        }
+    }
+
+    private async UniTask<string> GetWeapons()
+    {
+        string token = PlayerPrefs.GetString("authToken");
+
+        using (UnityWebRequest request = new UnityWebRequest(apiSettings.WeaponsUrl, "GET"))
+        {
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Authorization", $"Bearer {token}");
+
+            await request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError(request.error);
+                return null;
+            }
+            else
+            {
+                return request.downloadHandler.text;
+            }
+        }
+    }
+
+    private async UniTask<string> GetAllWeapons()
+    {
+        string token = PlayerPrefs.GetString("authToken");
+
+        using (UnityWebRequest request = new UnityWebRequest($"{apiSettings.baseUrl}/weapondb", "GET"))
+        {
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Authorization", $"Bearer {token}");
+
+            await request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError(request.error);
+                return null;
+            }
+            else
+            {
+                return request.downloadHandler.text;
+            }
+        }
+    }
 }

@@ -45,24 +45,18 @@ public class MonsterModel : CharacterModel
     private async UniTask TryDropWeapon()
     {
         // 10% 확률로 무기 드랍
-        if (Random.value <= 0.7f)
+        if (Random.value <= 0.1f)
         {
-            string rarity = GetRandomRarity();
-            Weapon weapon = await WeaponManager.Instance.GetRandomWeaponByRarity(rarity);
-
-            if (weapon != null)
+            Weapon droppedWeapon = await WeaponManager.Instance.GetRandomWeapon();
+            if (droppedWeapon != null)
             {
-                bool success = await WeaponManager.Instance.DrawWeapon(weapon.id);
-                if (success)
-                {
-                    WeaponInventoryUIManager.Instance.IncreaseWeaponCount(weapon);
-                    DropNotificationManager.Instance.ShowDropNotification(weapon.rarity, weapon.grade);
-                    //Debug.Log($"Dropped {weapon.rarity} {weapon.grade} weapon: {weapon.id}");
-                }
+                WeaponInventoryUIManager.Instance.IncreaseWeaponCount(droppedWeapon);
+                WeaponInventoryUIManager.Instance.ActivateWeaponSlot(droppedWeapon); // 슬롯 활성화
+                DropNotificationManager.Instance.ShowDropNotification(droppedWeapon.rarity, droppedWeapon.grade);
+                Debug.Log($"Dropped {droppedWeapon.rarity} {droppedWeapon.grade} weapon: {droppedWeapon.id}");
             }
         }
     }
-
     private string GetRandomRarity()
     {
         float randomValue = Random.value * 100f;

@@ -9,11 +9,32 @@ public class WeaponInventorySlot : MonoBehaviour
     public Text WeaponCountText;
     public Image ItemImage;
     public Image SlotBackgroundImage;
+  //  public Button combineButton;
+
 
     private bool _hasBeenAcquired;
     public int Count { get; private set; }
     public int WeaponId { get; private set; }
     public string SlotName => gameObject.name;
+
+
+    private Button button;
+
+    private void Awake()
+    {
+        button = gameObject.AddComponent<Button>(); // Button 컴포넌트를 추가합니다.
+    }
+
+    private void OnEnable()
+    {
+        button.onClick.AddListener(OnSlotClicked);
+    }
+
+    private void OnDisable()
+    {
+        button.onClick.RemoveListener(OnSlotClicked);
+    }
+
 
     public void Initialize(string rarity, string grade)
     {
@@ -25,8 +46,6 @@ public class WeaponInventorySlot : MonoBehaviour
         if (weapon != null)
         {
             WeaponId = weapon.id; // 무기 ID 설정
-
-           // Debug.Log($"SetSlot called. WeaponId: {WeaponId}, SlotName: {SlotName}"); // 디버그 로그 추가
 
             if (isActive)
             {
@@ -78,4 +97,38 @@ public class WeaponInventorySlot : MonoBehaviour
         Count++;
         WeaponCountText.text = $"{Count}/5";
     }
+    private void OnSlotClicked()
+    {
+        WeaponInventoryUIManager.Instance.ShowCombineButton(this);
+    }
+
+    public void UpdateCombineButtonState()
+    {
+        var combineButton = GetComponentInChildren<Button>();
+        if (combineButton != null)
+        {
+            if (Count >= 5)
+            {
+                combineButton.interactable = true;
+                var colors = combineButton.colors;
+                colors.normalColor = Color.yellow;
+                combineButton.colors = colors;
+            }
+            else
+            {
+                combineButton.interactable = false;
+                var colors = combineButton.colors;
+                colors.normalColor = Color.gray;
+                combineButton.colors = colors;
+            }
+        }
+    }
+
+    public void ResetSlotState()
+    {
+        SetSlot(new Weapon { rarity = WeaponRarityText.text, grade = WeaponGradeText.text, count = Count }, _hasBeenAcquired);
+    }
+
+
+
 }

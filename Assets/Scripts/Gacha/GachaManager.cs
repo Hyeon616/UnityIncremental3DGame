@@ -46,30 +46,21 @@ public class GachaManager : MonoBehaviour
         Debug.Log($"Fetched {activeWeapons.Count} active weapons.");
     }
 
+   
     public async void PerformGacha()
     {
-        if (activeWeapons.Count == 0)
-        {
-            Debug.LogError("No active weapons available for gacha.");
-            return;
-        }
+        await WeaponManager.Instance.FetchWeapons();
+        activeWeapons = WeaponManager.Instance.GetActiveWeapons();
 
         List<Weapon> gachaResults = new List<Weapon>();
         for (int i = 0; i < 10; i++)
         {
-            Weapon selectedWeapon = SelectWeaponBasedOnRarity();
+            Weapon selectedWeapon = await WeaponManager.Instance.GetRandomWeapon();
             if (selectedWeapon != null)
             {
-                bool success = await WeaponManager.Instance.DrawWeapon(selectedWeapon.id);
-                if (success)
-                {
-                    gachaResults.Add(selectedWeapon);
-                    weaponInventoryUIManager.IncreaseWeaponCount(selectedWeapon);
-                }
-                else
-                {
-                    Debug.LogError($"Failed to draw weapon ID: {selectedWeapon.id}");
-                }
+                gachaResults.Add(selectedWeapon);
+                weaponInventoryUIManager.IncreaseWeaponCount(selectedWeapon);
+                weaponInventoryUIManager.ActivateWeaponSlot(selectedWeapon); // 슬롯 활성화
             }
             else
             {
@@ -77,45 +68,12 @@ public class GachaManager : MonoBehaviour
             }
         }
 
-        // 서버에서 다시 데이터를 가져와 인벤토리 업데이트
-        await WeaponManager.Instance.FetchWeapons();
         ShowGachaResults(gachaResults);
     }
-
-    private Weapon SelectWeaponBasedOnRarity()
+    private async UniTask<Weapon> SelectWeaponBasedOnRarity()
     {
-        float randomValue = Random.value * 100f; // 0 to 100
-        string selectedRarity = null;
-
-        if (randomValue <= 0.1f) selectedRarity = "신화";
-        else if (randomValue <= 0.3f) selectedRarity = "고대";
-        else if (randomValue <= 0.8f) selectedRarity = "에픽";
-        else if (randomValue <= 1.6f) selectedRarity = "영웅";
-        else if (randomValue <= 6.7f) selectedRarity = "유물";
-        else if (randomValue <= 16.9f) selectedRarity = "매직";
-        else if (randomValue <= 50f) selectedRarity = "고급";
-        else selectedRarity = "일반";
-
-        var weaponsOfSelectedRarity = activeWeapons.Where(w => w.rarity == selectedRarity).ToList();
-
-        if (weaponsOfSelectedRarity.Count == 0)
-        {
-            Debug.LogWarning($"No weapons found for rarity: {selectedRarity}, falling back to random selection.");
-            // 전체 무기 중 무작위로 선택
-            if (activeWeapons.Count > 0)
-            {
-                return activeWeapons[Random.Range(0, activeWeapons.Count)];
-            }
-            else
-            {
-                Debug.LogError("No active weapons available for random selection.");
-                return null;
-            }
-        }
-
-        return weaponsOfSelectedRarity[Random.Range(0, weaponsOfSelectedRarity.Count)];
+        return await WeaponManager.Instance.GetRandomWeapon();
     }
-
     private void ShowGachaResults(List<Weapon> gachaResults)
     {
         foreach (Transform child in gachaResultContainer)
@@ -158,7 +116,7 @@ public class GachaManager : MonoBehaviour
 
         for (int i = 0; i < numTests; i++)
         {
-            Weapon selectedWeapon = SelectWeaponBasedOnRarity();
+            Weapon selectedWeapon = await WeaponManager.Instance.GetRandomWeapon();
             if (selectedWeapon != null)
             {
                 rarityCounts[selectedWeapon.rarity]++;

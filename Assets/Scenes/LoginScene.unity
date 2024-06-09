@@ -191,7 +191,6 @@ MonoBehaviour:
   feedbackText: {fileID: 253575099}
   loginButton: {fileID: 1226089731}
   apiSettings: {fileID: 11400000, guid: f265937065c098a4a838e8d363b0249a, type: 2}
-  weaponManager: {fileID: 0}
 --- !u!1 &203844586
 GameObject:
   m_ObjectHideFlags: 0
