@@ -45,7 +45,7 @@ public class MonsterModel : CharacterModel
     private async UniTask TryDropWeapon()
     {
         // 10% 확률로 무기 드랍
-        if (Random.value <= 0.1f)
+        if (Random.value <= 0.7f)
         {
             string rarity = GetRandomRarity();
             Weapon weapon = await WeaponManager.Instance.GetRandomWeaponByRarity(rarity);
@@ -56,7 +56,8 @@ public class MonsterModel : CharacterModel
                 if (success)
                 {
                     WeaponInventoryUIManager.Instance.IncreaseWeaponCount(weapon);
-                    Debug.Log($"Dropped {rarity} weapon: {weapon.id}");
+                    DropNotificationManager.Instance.ShowDropNotification(weapon.rarity, weapon.grade);
+                    //Debug.Log($"Dropped {weapon.rarity} {weapon.grade} weapon: {weapon.id}");
                 }
             }
         }

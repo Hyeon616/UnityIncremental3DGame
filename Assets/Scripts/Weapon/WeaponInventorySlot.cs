@@ -66,7 +66,7 @@ public class WeaponInventorySlot : MonoBehaviour
             "매직" => new Color(0f, 0f, 1f, 1f), // 파랑
             "유물" => new Color(1f, 0.65f, 0f, 1f), // 주황
             "영웅" => new Color(1f, 0f, 1f, 1f), // 마젠타
-            "에픽" => new Color(1f, 1f, 0f, 1f), // 상아
+            "에픽" => new Color(1f, 1f, 0f, 1f), // 노랑
             "고대" => new Color(0.55f, 0f, 0f, 1f), // 빨강
             "신화" => new Color(0.53f, 0.81f, 0.92f, 1f), // 밝은 파랑
             _ => new Color(0f, 0f, 0f, 1f), // 기본 검정색
