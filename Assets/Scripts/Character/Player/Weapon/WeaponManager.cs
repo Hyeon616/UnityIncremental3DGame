@@ -10,6 +10,7 @@ public class WeaponManager : Singleton<WeaponManager>
     public APISettings apiSettings;
     private List<Weapon> activeWeapons = new List<Weapon>();
     private List<Weapon> allWeapons = new List<Weapon>();
+
     void Start()
     {
         if (apiSettings != null)
@@ -22,7 +23,7 @@ public class WeaponManager : Singleton<WeaponManager>
         }
     }
 
-    private async UniTask FetchWeapons()
+    public async UniTask FetchWeapons()
     {
         try
         {
@@ -30,15 +31,18 @@ public class WeaponManager : Singleton<WeaponManager>
             if (!string.IsNullOrEmpty(json))
             {
                 allWeapons = JsonConvert.DeserializeObject<List<Weapon>>(json);
+                Debug.Log($"Fetched {allWeapons.Count} weapons from server.");
+
+                activeWeapons.Clear();
+
                 foreach (Weapon weapon in allWeapons)
                 {
-                    Debug.Log($"Rarity: {weapon.rarity}, Grade: {weapon.grade}, Level: {weapon.level}, AttackPower: {weapon.attack_power}, CriticalChance: {weapon.critical_chance}, CriticalDamage: {weapon.critical_damage}, MaxHealth: {weapon.max_health}, Count: {weapon.count}");
-                    if (weapon.count > 0)
-                    {
-                        activeWeapons.Add(weapon);
-                    }
+                    Debug.Log($"Weapon: ID={weapon.id}, Rarity={weapon.rarity}, Grade={weapon.grade}, Count={weapon.count}");
+                    activeWeapons.Add(weapon);
                 }
-                UpdateInventoryUI(allWeapons);
+
+                Debug.Log($"Active weapons count: {activeWeapons.Count}");
+                UpdateInventoryUI(activeWeapons);
             }
             else
             {
@@ -62,7 +66,7 @@ public class WeaponManager : Singleton<WeaponManager>
 
             if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
             {
-                Debug.LogError($"Error fetching weapons: {request.error}");
+                Debug.LogError($"무기 가져오기 중 오류 발생: {request.error}");
                 return null;
             }
 
@@ -83,14 +87,46 @@ public class WeaponManager : Singleton<WeaponManager>
         }
     }
 
-    public async UniTask<List<Weapon>> GetActiveWeapons()
+    public List<Weapon> GetActiveWeapons()
     {
-        await FetchWeapons();
         return activeWeapons;
     }
 
     public Weapon GetWeaponById(int weaponId)
     {
         return allWeapons.FirstOrDefault(w => w.id == weaponId);
+    }
+
+    public async UniTask<bool> DrawWeapon(int weaponId)
+    {
+        string token = PlayerPrefs.GetString("authToken");
+        using (UnityWebRequest request = new UnityWebRequest(apiSettings.DrawWeaponUrl, "POST"))
+        {
+            var requestBody = new { weaponId = weaponId };
+            string jsonData = JsonConvert.SerializeObject(requestBody);
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.SetRequestHeader("Authorization", "Bearer " + token);
+
+            await request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
+            {
+                Debug.LogError($"Error drawing weapon: {request.error}");
+                return false;
+            }
+
+            if (request.responseCode == 200)
+            {
+                return true;
+            }
+            else
+            {
+                Debug.LogError($"Failed to draw weapon: {request.downloadHandler.text}");
+                return false;
+            }
+        }
     }
 }

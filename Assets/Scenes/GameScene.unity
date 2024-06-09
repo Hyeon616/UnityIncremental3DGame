@@ -5243,7 +5243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc93571aa2dace549a39342e5391cd0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slots:
+  weaponSlots:
   - {fileID: 5323128975328840030}
   - {fileID: 1033983982}
   - {fileID: 1424937419}

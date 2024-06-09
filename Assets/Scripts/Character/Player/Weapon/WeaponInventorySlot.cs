@@ -12,36 +12,51 @@ public class WeaponInventorySlot : MonoBehaviour
 
     private bool _hasBeenAcquired;
     public int Count { get; private set; }
+    public int WeaponId { get; private set; }
+    public string SlotName => gameObject.name;
+
     public void Initialize(string rarity, string grade)
     {
         SetSlot(new Weapon { rarity = rarity, grade = grade, count = 0 }, false);
     }
+
     public void SetSlot(Weapon weapon, bool isActive)
     {
-        //WeaponId = weapon.id;
+        if (weapon != null)
+        {
+            WeaponId = weapon.id; // 무기 ID 설정
 
-        if (isActive && weapon != null)
-        {
-            WeaponRarityText.text = weapon.GetRarityName();
-            WeaponGradeText.text = weapon.GetGradeName();
-            WeaponCountText.text = $"{weapon.count}/5";
-            WeaponLevelText.text = $"Lv. {weapon.level}";
-            ItemImage.color = new Color(1f, 1f, 1f, 1f); 
-            SlotBackgroundImage.color = GetRarityColor(weapon.rarity); 
-            _hasBeenAcquired = true;
-        }
-        else if (_hasBeenAcquired)
-        {
-            WeaponCountText.text = $"{weapon.count}/5";
-            WeaponLevelText.text = $"Lv. {weapon.level}";
-            ItemImage.color = new Color(1f, 1f, 1f, 1f);
-            SlotBackgroundImage.color = GetRarityColor(weapon.rarity);
+           // Debug.Log($"SetSlot called. WeaponId: {WeaponId}, SlotName: {SlotName}"); // 디버그 로그 추가
+
+            if (isActive)
+            {
+                WeaponRarityText.text = weapon.GetRarityName();
+                WeaponGradeText.text = weapon.GetGradeName();
+                WeaponCountText.text = $"{weapon.count}/5";
+                WeaponLevelText.text = $"Lv. {weapon.level}";
+                ItemImage.color = new Color(1f, 1f, 1f, 1f);
+                SlotBackgroundImage.color = GetRarityColor(weapon.rarity);
+                _hasBeenAcquired = true;
+                Count = weapon.count;
+            }
+            else if (_hasBeenAcquired)
+            {
+                WeaponCountText.text = $"{weapon.count}/5";
+                WeaponLevelText.text = $"Lv. {weapon.level}";
+                ItemImage.color = new Color(1f, 1f, 1f, 1f);
+                SlotBackgroundImage.color = GetRarityColor(weapon.rarity);
+            }
+            else
+            {
+                ItemImage.color = new Color(1f, 1f, 1f, 0.2f);
+            }
         }
         else
         {
-            ItemImage.color = new Color(1f, 1f, 1f, 0.2f); 
+            ItemImage.color = new Color(1f, 1f, 1f, 0.2f);
         }
     }
+
     private Color GetRarityColor(string rarity)
     {
         return rarity switch
@@ -63,5 +78,4 @@ public class WeaponInventorySlot : MonoBehaviour
         Count++;
         WeaponCountText.text = $"{Count}/5";
     }
-
 }

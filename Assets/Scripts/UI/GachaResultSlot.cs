@@ -21,7 +21,7 @@ public class GachaResultSlot : MonoBehaviour
             ItemImage.sprite = GetWeaponSprite(weapon);
             SlotBackgroundImage.color = GetRarityColor(weapon.rarity); // 활성화된 슬롯의 배경색
         }
-        
+
     }
 
     private Color GetRarityColor(string rarity)
@@ -47,7 +47,6 @@ public class GachaResultSlot : MonoBehaviour
 
         // 영어로 된 경로 및 파일명 사용
         string spritePath = $"Sprites/Weapons/{ConvertToEnglish(rarity)}_{ConvertToEnglish(grade)}";
-        Debug.Log($"Loading sprite from path: {spritePath}");
         Sprite weaponSprite = Resources.Load<Sprite>(spritePath);
 
         if (weaponSprite == null)
