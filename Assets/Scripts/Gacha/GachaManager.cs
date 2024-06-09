@@ -12,7 +12,7 @@ public class GachaManager : MonoBehaviour
     [SerializeField] private GameObject gachaResultSlotPrefab;
     [SerializeField] private Button gachaButton;
     [SerializeField] private Button closeButton;
-
+    [SerializeField] private float resultDelay = 0.2f;
     private List<Weapon> activeWeapons = new List<Weapon>();
 
     private void OnEnable()
@@ -45,50 +45,41 @@ public class GachaManager : MonoBehaviour
         activeWeapons = WeaponManager.Instance.GetActiveWeapons();
         Debug.Log($"Fetched {activeWeapons.Count} active weapons.");
     }
-
-   
     public async void PerformGacha()
     {
         await WeaponManager.Instance.FetchWeapons();
         activeWeapons = WeaponManager.Instance.GetActiveWeapons();
 
-        List<Weapon> gachaResults = new List<Weapon>();
+        gachaResultPanel.SetActive(true); // 패널을 미리 활성화
+
         for (int i = 0; i < 10; i++)
         {
             Weapon selectedWeapon = await WeaponManager.Instance.GetRandomWeapon();
             if (selectedWeapon != null)
             {
-                gachaResults.Add(selectedWeapon);
                 weaponInventoryUIManager.IncreaseWeaponCount(selectedWeapon);
                 weaponInventoryUIManager.ActivateWeaponSlot(selectedWeapon); // 슬롯 활성화
+                ShowGachaResult(selectedWeapon);
+                await UniTask.Delay((int)(resultDelay * 1000)); // 지연 시간 추가
             }
             else
             {
                 Debug.LogError("Failed to select a weapon based on rarity.");
             }
         }
-
-        ShowGachaResults(gachaResults);
     }
+
+    private void ShowGachaResult(Weapon weapon)
+    {
+        GameObject slot = Instantiate(gachaResultSlotPrefab, gachaResultContainer);
+        GachaResultSlot slotScript = slot.GetComponent<GachaResultSlot>();
+        slotScript.SetSlot(weapon);
+    }
+
+
     private async UniTask<Weapon> SelectWeaponBasedOnRarity()
     {
         return await WeaponManager.Instance.GetRandomWeapon();
-    }
-    private void ShowGachaResults(List<Weapon> gachaResults)
-    {
-        foreach (Transform child in gachaResultContainer)
-        {
-            Destroy(child.gameObject);
-        }
-
-        foreach (var weapon in gachaResults)
-        {
-            GameObject slot = Instantiate(gachaResultSlotPrefab, gachaResultContainer);
-            GachaResultSlot slotScript = slot.GetComponent<GachaResultSlot>();
-            slotScript.SetSlot(weapon);
-        }
-
-        gachaResultPanel.SetActive(true);
     }
 
     public void CloseGachaResults()

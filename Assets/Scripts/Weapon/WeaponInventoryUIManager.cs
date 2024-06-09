@@ -7,8 +7,6 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
 {
     [SerializeField] private List<WeaponInventorySlot> weaponSlots;
     [SerializeField] private Button synthesizeAllButton;
-    [SerializeField] private GameObject combineButtonPrefab; // 합성 버튼 프리팹
-    private GameObject combineButtonInstance;
     private WeaponInventorySlot selectedSlot;
 
     private Dictionary<int, WeaponInventorySlot> slotDictionary = new Dictionary<int, WeaponInventorySlot>();
@@ -68,7 +66,6 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
             if (slotDictionary.TryGetValue(weapon.id, out var slot))
             {
                 slot.SetSlot(weapon, true);
-                Debug.Log($"Updated slot for Weapon ID: {weapon.id}");
             }
             else
             {
@@ -82,6 +79,7 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
         if (slotDictionary.TryGetValue(weapon.id, out var slot))
         {
             slot.IncreaseCount();
+            slot.SetSlot(weapon, true); // 추가: UI 업데이트
             Debug.Log($"Increased count for Weapon ID: {weapon.id}, New Count: {slot.Count}");
         }
         else
@@ -95,7 +93,10 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
         if (slotDictionary.TryGetValue(weapon.id, out var slot))
         {
             slot.SetSlot(weapon, true);
-            Debug.Log($"Activated slot for Weapon ID: {weapon.id}");
+        }
+        else
+        {
+            Debug.LogError($"No slot found for Weapon ID: {weapon.id}");
         }
     }
 
@@ -103,32 +104,12 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
     {
         if (selectedSlot != null && selectedSlot != slot)
         {
-            selectedSlot.ResetSlotState(); // 이전 선택된 슬롯 상태 복구
-        }
-
-        if (combineButtonInstance != null)
-        {
-            combineButtonInstance.SetActive(false); // 비활성화
+            selectedSlot.HideCombineButton();
         }
 
         selectedSlot = slot;
-        combineButtonInstance = Instantiate(combineButtonPrefab, slot.transform);
-        combineButtonInstance.transform.localPosition = Vector3.zero; // 슬롯 정중앙에 버튼 위치 설정
-
-        var combineButton = combineButtonInstance.GetComponent<Button>();
-        combineButton.onClick.AddListener(OnCombineButtonClicked);
-
-        // 버튼 상태 업데이트
-        slot.UpdateCombineButtonState();
-    }
-
-    private void OnCombineButtonClicked()
-    {
-        if (selectedSlot != null && selectedSlot.Count >= 5)
-        {
-            OnSynthesizeButtonPressed(selectedSlot.WeaponId);
-            combineButtonInstance.SetActive(false); // 합성 후 버튼 비활성화
-        }
+        selectedSlot.ShowCombineButton();
+        selectedSlot.UpdateCombineButtonState();
     }
 
     public void OnSynthesizeButtonPressed(int weaponId)
@@ -142,7 +123,7 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
         if (success)
         {
             await WeaponManager.Instance.FetchWeapons();
-            UpdateWeaponSlots(WeaponManager.Instance.GetActiveWeapons()); // UI 업데이트
+            UpdateWeaponSlots(WeaponManager.Instance.GetActiveWeapons());
         }
         else
         {

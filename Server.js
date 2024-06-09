@@ -97,10 +97,11 @@ app.post('/login', async (req, res) => {
         if (conn) conn.release();
     }
 });
-
 app.get('/weapons', async (req, res) => {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
+    const { rarity } = req.query;
+
     if (!token) {
         return res.status(401).json({ error: 'No token provided' });
     }
@@ -108,25 +109,32 @@ app.get('/weapons', async (req, res) => {
     let conn;
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('디코딩된 토큰:', decoded); // 토큰 디코딩 결과 확인
+        console.log('디코딩된 토큰:', decoded);
+
         conn = await pool.getConnection();
-        const weapons = await conn.query(`
-            SELECT pw.weapon_id as id, 
-                   IFNULL(pw.level, 1) as level, 
-                   IFNULL(pw.count, 0) as count, 
-                   IFNULL(pw.attack_power, wd.base_attack_power) as attack_power, 
-                   IFNULL(pw.critical_chance, wd.base_critical_chance) as critical_chance, 
-                   IFNULL(pw.critical_damage, wd.base_critical_damage) as critical_damage, 
-                   IFNULL(pw.max_health, wd.base_max_health) as max_health, 
-                   wd.rarity, 
-                   wd.grade 
-            FROM PlayerWeaponInventory pw 
-            JOIN WeaponDB wd ON pw.weapon_id = wd.id 
-            WHERE pw.player_id = ?`, [decoded.userId]);
-        console.log('Fetched weapons from DB:', weapons); // DB에서 가져온 무기 데이터 로그 출력
+
+        let weapons;
+        if (rarity) {
+            weapons = await conn.query('SELECT * FROM WeaponDB WHERE rarity = ?', [rarity]);
+        } else {
+            weapons = await conn.query(`
+                SELECT pw.weapon_id as id, 
+                    IFNULL(pw.level, 1) as level, 
+                    IFNULL(pw.count, 0) as count, 
+                    IFNULL(pw.attack_power, wd.base_attack_power) as attack_power, 
+                    IFNULL(pw.critical_chance, wd.base_critical_chance) as critical_chance, 
+                    IFNULL(pw.critical_damage, wd.base_critical_damage) as critical_damage, 
+                    IFNULL(pw.max_health, wd.base_max_health) as max_health, 
+                    wd.rarity, 
+                    wd.grade 
+                FROM PlayerWeaponInventory pw 
+                JOIN WeaponDB wd ON pw.weapon_id = wd.id 
+                WHERE pw.player_id = ?`, [decoded.userId]);
+        }
+        console.log('Fetched weapons from DB:', weapons);
         res.json(weapons);
     } catch (err) {
-        console.error('토큰 검증 중 오류 발생:', err); // 오류 메시지 개선
+        console.error('토큰 검증 중 오류 발생:', err);
         res.status(403).json({ error: 'Invalid token' });
     } finally {
         if (conn) conn.release();
@@ -345,7 +353,7 @@ function getNextWeaponId(currentWeaponId) {
     return nextWeaponMap[currentWeaponId] || currentWeaponId;
 }
 
-app.get('/fetchWeaponByRarity', authenticateToken, async (req, res) => {
+app.get('/weaponsByRarity', authenticateToken, async (req, res) => {
     const { rarity } = req.query;
 
     if (!rarity) {
@@ -355,12 +363,8 @@ app.get('/fetchWeaponByRarity', authenticateToken, async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const weapon = await conn.query('SELECT * FROM WeaponDB WHERE rarity = ? ORDER BY RAND() LIMIT 1', [rarity]);
-        if (weapon.length === 0) {
-            return res.status(404).json({ error: 'No weapon found for the given rarity' });
-        }
-
-        res.status(200).json(weapon[0]);
+        const weapons = await conn.query('SELECT * FROM WeaponDB WHERE rarity = ?', [rarity]);
+        res.json(weapons); // 무기 목록을 배열 형식으로 반환
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error' });
@@ -368,7 +372,25 @@ app.get('/fetchWeaponByRarity', authenticateToken, async (req, res) => {
         if (conn) conn.release();
     }
 });
+app.get('/weapondb', authenticateToken, async (req, res) => {
+    const { rarity } = req.query;
 
+    if (!rarity) {
+        return res.status(400).json({ error: 'Rarity is required' });
+    }
+
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        const weapons = await conn.query('SELECT * FROM WeaponDB WHERE rarity = ?', [rarity]);
+        res.json(weapons); // 무기 목록을 배열 형식으로 반환
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    } finally {
+        if (conn) conn.release();
+    }
+});
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

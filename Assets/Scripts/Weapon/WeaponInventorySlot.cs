@@ -9,7 +9,10 @@ public class WeaponInventorySlot : MonoBehaviour
     public Text WeaponCountText;
     public Image ItemImage;
     public Image SlotBackgroundImage;
-  //  public Button combineButton;
+
+    public GameObject combineButtonPrefab; // 합성 버튼 프리팹
+
+    private GameObject combineButtonInstance;
 
 
     private bool _hasBeenAcquired;
@@ -20,9 +23,11 @@ public class WeaponInventorySlot : MonoBehaviour
 
     private Button button;
 
+
     private void Awake()
     {
         button = gameObject.AddComponent<Button>(); // Button 컴포넌트를 추가합니다.
+        InitializeCombineButton();
     }
 
     private void OnEnable()
@@ -54,7 +59,7 @@ public class WeaponInventorySlot : MonoBehaviour
                 WeaponCountText.text = $"{weapon.count}/5";
                 WeaponLevelText.text = $"Lv. {weapon.level}";
                 ItemImage.color = new Color(1f, 1f, 1f, 1f);
-                SlotBackgroundImage.color = GetRarityColor(weapon.rarity);
+                SlotBackgroundImage.color = GetRarityColor(weapon.rarity, 1f);
                 _hasBeenAcquired = true;
                 Count = weapon.count;
             }
@@ -63,20 +68,20 @@ public class WeaponInventorySlot : MonoBehaviour
                 WeaponCountText.text = $"{weapon.count}/5";
                 WeaponLevelText.text = $"Lv. {weapon.level}";
                 ItemImage.color = new Color(1f, 1f, 1f, 1f);
-                SlotBackgroundImage.color = GetRarityColor(weapon.rarity);
+                SlotBackgroundImage.color = GetRarityColor(weapon.rarity, 1f);
             }
             else
             {
-                ItemImage.color = new Color(1f, 1f, 1f, 0.2f);
+                ItemImage.color = GetRarityColor(weapon.rarity, 0.2f);
             }
         }
         else
         {
-            ItemImage.color = new Color(1f, 1f, 1f, 0.2f);
+            ItemImage.color = GetRarityColor(weapon.rarity, 0.2f);
         }
     }
 
-    private Color GetRarityColor(string rarity)
+    private Color GetRarityColor(string rarity, float alpha)
     {
         return rarity switch
         {
@@ -97,16 +102,46 @@ public class WeaponInventorySlot : MonoBehaviour
         Count++;
         WeaponCountText.text = $"{Count}/5";
     }
+
+    private void InitializeCombineButton()
+    {
+        if (combineButtonPrefab != null && combineButtonInstance == null)
+        {
+            combineButtonInstance = Instantiate(combineButtonPrefab, transform);
+            combineButtonInstance.GetComponent<Button>().onClick.AddListener(OnCombineButtonClicked);
+            combineButtonInstance.SetActive(false); // 비활성화 상태로 시작
+        }
+    }
+
+
     private void OnSlotClicked()
     {
         WeaponInventoryUIManager.Instance.ShowCombineButton(this);
     }
+    private void OnCombineButtonClicked()
+    {
+        WeaponInventoryUIManager.Instance.OnSynthesizeButtonPressed(WeaponId);
+        combineButtonInstance.SetActive(false);
+    }
+
+    public void ShowCombineButton()
+    {
+        combineButtonInstance.SetActive(true);
+    }
+
+    public void HideCombineButton()
+    {
+        if (combineButtonInstance != null)
+        {
+            combineButtonInstance.SetActive(false);
+        }
+    }
 
     public void UpdateCombineButtonState()
     {
-        var combineButton = GetComponentInChildren<Button>();
-        if (combineButton != null)
+        if (combineButtonInstance != null)
         {
+            var combineButton = combineButtonInstance.GetComponent<Button>();
             if (Count >= 5)
             {
                 combineButton.interactable = true;
