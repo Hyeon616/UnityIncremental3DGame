@@ -16,13 +16,13 @@ public class GachaManager : MonoBehaviour
 
     private void OnEnable()
     {
-        gachaButton.onClick.AddListener(PerformGacha);
+        gachaButton.onClick.AddListener(() => PerformGacha().Forget());
         closeButton.onClick.AddListener(CloseGachaResults);
     }
 
     private void OnDisable()
     {
-        gachaButton.onClick.RemoveListener(PerformGacha);
+        gachaButton.onClick.RemoveListener(() => PerformGacha().Forget());
         closeButton.onClick.RemoveListener(CloseGachaResults);
     }
 
@@ -33,14 +33,10 @@ public class GachaManager : MonoBehaviour
 
     private async UniTaskVoid FetchActiveWeapons()
     {
-        var weaponManager = WeaponManager.Instance;
-        if (weaponManager != null)
-        {
-            activeWeapons = await weaponManager.GetActiveWeapons();
-        }
+        activeWeapons = await WeaponManager.Instance.GetActiveWeapons();
     }
 
-    public void PerformGacha()
+    public async UniTask PerformGacha()
     {
         if (activeWeapons.Count == 0)
         {
@@ -54,7 +50,7 @@ public class GachaManager : MonoBehaviour
             int randomIndex = Random.Range(0, activeWeapons.Count);
             Weapon selectedWeapon = activeWeapons[randomIndex];
             gachaResults.Add(selectedWeapon);
-            weaponInventoryUIManager.IncreaseWeaponCount(selectedWeapon.id);
+            await weaponInventoryUIManager.IncreaseWeaponCount(selectedWeapon);
         }
 
         ShowGachaResults(gachaResults);
@@ -79,12 +75,10 @@ public class GachaManager : MonoBehaviour
 
     public void CloseGachaResults()
     {
-        gachaResultPanel.SetActive(false);
-
-        // Gacha 결과 삭제
         foreach (Transform child in gachaResultContainer)
         {
             Destroy(child.gameObject);
         }
+        gachaResultPanel.SetActive(false);
     }
 }

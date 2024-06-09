@@ -11,21 +11,14 @@ public class WeaponInventorySlot : MonoBehaviour
     public Image SlotBackgroundImage;
 
     private bool _hasBeenAcquired;
-    public int WeaponId { get; private set; }
+    public int Count { get; private set; }
     public void Initialize(string rarity, string grade)
     {
-        WeaponRarityText.text = rarity;
-        WeaponGradeText.text = grade;
-        WeaponCountText.text = "0/5";
-        WeaponLevelText.text = "Lv. 0";
-        ItemImage.color = new Color(1f, 1f, 1f, 0.2f);
-        SlotBackgroundImage.color = GetRarityColor(rarity);
-        _hasBeenAcquired = false;
+        SetSlot(new Weapon { rarity = rarity, grade = grade, count = 0 }, false);
     }
-
     public void SetSlot(Weapon weapon, bool isActive)
     {
-        WeaponId = weapon.id;
+        //WeaponId = weapon.id;
 
         if (isActive && weapon != null)
         {
@@ -36,7 +29,6 @@ public class WeaponInventorySlot : MonoBehaviour
             ItemImage.color = new Color(1f, 1f, 1f, 1f); 
             SlotBackgroundImage.color = GetRarityColor(weapon.rarity); 
             _hasBeenAcquired = true;
-            Debug.Log($"Slot set with Weapon Rarity: {weapon.rarity}, Grade: {weapon.grade}, Count: {weapon.count}");
         }
         else if (_hasBeenAcquired)
         {
@@ -44,12 +36,10 @@ public class WeaponInventorySlot : MonoBehaviour
             WeaponLevelText.text = $"Lv. {weapon.level}";
             ItemImage.color = new Color(1f, 1f, 1f, 1f);
             SlotBackgroundImage.color = GetRarityColor(weapon.rarity);
-            Debug.Log("Slot previously acquired set to default state.");
         }
         else
         {
             ItemImage.color = new Color(1f, 1f, 1f, 0.2f); 
-            Debug.Log("Slot not acquired and set to initial state.");
         }
     }
     private Color GetRarityColor(string rarity)
@@ -70,9 +60,8 @@ public class WeaponInventorySlot : MonoBehaviour
 
     public void IncreaseCount()
     {
-        int currentCount = int.Parse(WeaponCountText.text.Split('/')[0]);
-        currentCount++;
-        WeaponCountText.text = $"{currentCount}/5";
+        Count++;
+        WeaponCountText.text = $"{Count}/5";
     }
 
 }

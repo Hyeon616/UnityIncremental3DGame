@@ -1,6 +1,7 @@
 using Cysharp.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -8,6 +9,7 @@ public class WeaponManager : Singleton<WeaponManager>
 {
     public APISettings apiSettings;
     private List<Weapon> activeWeapons = new List<Weapon>();
+    private List<Weapon> allWeapons = new List<Weapon>();
     void Start()
     {
         if (apiSettings != null)
@@ -27,8 +29,8 @@ public class WeaponManager : Singleton<WeaponManager>
             string json = await GetWeapons();
             if (!string.IsNullOrEmpty(json))
             {
-                List<Weapon> weapons = JsonConvert.DeserializeObject<List<Weapon>>(json);
-                foreach (Weapon weapon in weapons)
+                allWeapons = JsonConvert.DeserializeObject<List<Weapon>>(json);
+                foreach (Weapon weapon in allWeapons)
                 {
                     Debug.Log($"Rarity: {weapon.rarity}, Grade: {weapon.grade}, Level: {weapon.level}, AttackPower: {weapon.attack_power}, CriticalChance: {weapon.critical_chance}, CriticalDamage: {weapon.critical_damage}, MaxHealth: {weapon.max_health}, Count: {weapon.count}");
                     if (weapon.count > 0)
@@ -36,7 +38,7 @@ public class WeaponManager : Singleton<WeaponManager>
                         activeWeapons.Add(weapon);
                     }
                 }
-                UpdateInventoryUI(weapons);
+                UpdateInventoryUI(allWeapons);
             }
             else
             {
@@ -67,6 +69,7 @@ public class WeaponManager : Singleton<WeaponManager>
             return request.downloadHandler.text;
         }
     }
+
     private void UpdateInventoryUI(List<Weapon> weapons)
     {
         var uiManager = WeaponInventoryUIManager.Instance;
@@ -79,9 +82,15 @@ public class WeaponManager : Singleton<WeaponManager>
             Debug.LogError("WeaponInventoryUIManager.Instance is not set.");
         }
     }
+
     public async UniTask<List<Weapon>> GetActiveWeapons()
     {
-        await FetchWeapons(); // Fetch weapons if not already fetched
+        await FetchWeapons();
         return activeWeapons;
+    }
+
+    public Weapon GetWeaponById(int weaponId)
+    {
+        return allWeapons.FirstOrDefault(w => w.id == weaponId);
     }
 }

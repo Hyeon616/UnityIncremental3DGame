@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 
 public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
 {
@@ -18,7 +19,6 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
     {
         slotDictionary = new Dictionary<string, WeaponInventorySlot>();
 
-        // 하드코딩된 슬롯 정보 설정
         string[] rarities = { "일반", "고급", "매직", "유물", "영웅", "에픽", "고대", "신화" };
         string[] grades = { "하급", "중급", "상급", "최상급" };
 
@@ -57,12 +57,18 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
         }
     }
 
-    public void IncreaseWeaponCount(int weaponId)
+    public async UniTask IncreaseWeaponCount(Weapon weapon)
     {
-        var slot = slots.FirstOrDefault(s => s.WeaponId == weaponId);
-        if (slot != null)
+        string key = $"{weapon.rarity}_{weapon.grade}";
+        if (slotDictionary.TryGetValue(key, out WeaponInventorySlot slot))
         {
+            await UniTask.SwitchToMainThread(); // 메인 스레드로 전환
             slot.IncreaseCount();
+            Debug.Log($"Increased count for Weapon Rarity: {weapon.rarity}, Grade: {weapon.grade}, New Count: {slot.Count}");
+        }
+        else
+        {
+            Debug.LogError($"No slot found for key: {key}");
         }
     }
 }
