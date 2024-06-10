@@ -18,7 +18,7 @@ public class DropNotificationManager : Singleton<DropNotificationManager>
         GameObject notification = Instantiate(notificationPrefab, notificationPanel);
         Text notificationText = notification.GetComponent<Text>();
         string rarityColor = ColorUtility.ToHtmlStringRGBA(GetRarityColor(rarity));
-        notificationText.text = $"Dropped <color=#{rarityColor}>{rarity}</color> {grade} weapon";
+        notificationText.text = $"몬스터가<color=#{rarityColor}> {rarity}</color> {grade} 무기 드랍";
         notifications.Add(notification);
 
         // 새 알림 위치 조정

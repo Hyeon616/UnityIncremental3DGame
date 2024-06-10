@@ -372,25 +372,7 @@ app.get('/weaponsByRarity', authenticateToken, async (req, res) => {
         if (conn) conn.release();
     }
 });
-app.get('/weapondb', authenticateToken, async (req, res) => {
-    const { rarity } = req.query;
 
-    if (!rarity) {
-        return res.status(400).json({ error: 'Rarity is required' });
-    }
-
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        const weapons = await conn.query('SELECT * FROM WeaponDB WHERE rarity = ?', [rarity]);
-        res.json(weapons); // 무기 목록을 배열 형식으로 반환
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
-    } finally {
-        if (conn) conn.release();
-    }
-});
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

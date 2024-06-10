@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UI;
 using System.Linq;
+using System;
 
 public class GachaManager : MonoBehaviour
 {
@@ -29,15 +30,22 @@ public class GachaManager : MonoBehaviour
 
     private void Start()
     {
-        FetchActiveWeapons();
+        FetchAllWeapons();
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            TestGachaProbability(10000).Forget();
+            Debug.Log("I key pressed, starting TestGachaProbability.");
+            TestGachaProbability(10000);
         }
+    }
+
+    private void FetchAllWeapons()
+    {
+        activeWeapons = WeaponManager.Instance.GetAllWeapons();
+        Debug.Log($"Fetched {activeWeapons.Count} weapons.");
     }
 
     private void FetchActiveWeapons()
@@ -45,27 +53,35 @@ public class GachaManager : MonoBehaviour
         activeWeapons = WeaponManager.Instance.GetActiveWeapons();
         Debug.Log($"Fetched {activeWeapons.Count} active weapons.");
     }
+
     public async void PerformGacha()
     {
-        await WeaponManager.Instance.FetchWeapons();
-        activeWeapons = WeaponManager.Instance.GetActiveWeapons();
-
-        gachaResultPanel.SetActive(true); // 패널을 미리 활성화
-
-        for (int i = 0; i < 10; i++)
+        try
         {
-            Weapon selectedWeapon = await WeaponManager.Instance.GetRandomWeapon();
-            if (selectedWeapon != null)
+            await WeaponManager.Instance.FetchAllWeapons();
+            List<Weapon> allWeapons = WeaponManager.Instance.GetAllWeapons();
+
+            gachaResultPanel.SetActive(true); // 패널을 미리 활성화
+
+            for (int i = 0; i < 10; i++)
             {
-                weaponInventoryUIManager.IncreaseWeaponCount(selectedWeapon);
-                weaponInventoryUIManager.ActivateWeaponSlot(selectedWeapon); // 슬롯 활성화
-                ShowGachaResult(selectedWeapon);
-                await UniTask.Delay((int)(resultDelay * 1000)); // 지연 시간 추가
+                Weapon selectedWeapon = await WeaponManager.Instance.GetRandomWeaponFromList(allWeapons);
+                if (selectedWeapon != null)
+                {
+                    weaponInventoryUIManager.IncreaseWeaponCount(selectedWeapon);
+                    weaponInventoryUIManager.ActivateWeaponSlot(selectedWeapon); // 슬롯 활성화
+                    ShowGachaResult(selectedWeapon);
+                    await UniTask.Delay((int)(resultDelay * 1000)); // 지연 시간 추가
+                }
+                else
+                {
+                    Debug.LogError("Failed to select a weapon based on rarity.");
+                }
             }
-            else
-            {
-                Debug.LogError("Failed to select a weapon based on rarity.");
-            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception during PerformGacha: {ex.Message}");
         }
     }
 
@@ -75,7 +91,6 @@ public class GachaManager : MonoBehaviour
         GachaResultSlot slotScript = slot.GetComponent<GachaResultSlot>();
         slotScript.SetSlot(weapon);
     }
-
 
     private async UniTask<Weapon> SelectWeaponBasedOnRarity()
     {
@@ -91,8 +106,9 @@ public class GachaManager : MonoBehaviour
         gachaResultPanel.SetActive(false);
     }
 
-    private async UniTaskVoid TestGachaProbability(int numTests)
+    private void TestGachaProbability(int numTests)
     {
+        Debug.Log("Starting TestGachaProbability.");
         Dictionary<string, int> rarityCounts = new Dictionary<string, int>
         {
             { "일반", 0 },
@@ -107,10 +123,17 @@ public class GachaManager : MonoBehaviour
 
         for (int i = 0; i < numTests; i++)
         {
-            Weapon selectedWeapon = await WeaponManager.Instance.GetRandomWeapon();
-            if (selectedWeapon != null)
+            try
             {
-                rarityCounts[selectedWeapon.rarity]++;
+                Weapon selectedWeapon = WeaponManager.Instance.GetRandomWeaponSync();
+                if (selectedWeapon != null)
+                {
+                    rarityCounts[selectedWeapon.rarity]++;
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception during weapon selection in TestGachaProbability: {ex.Message}");
             }
         }
 
@@ -118,5 +141,6 @@ public class GachaManager : MonoBehaviour
         {
             Debug.Log($"Rarity: {rarity}, Count: {rarityCounts[rarity]}, Probability: {(float)rarityCounts[rarity] / numTests * 100}%");
         }
+        Debug.Log("Finished TestGachaProbability.");
     }
 }

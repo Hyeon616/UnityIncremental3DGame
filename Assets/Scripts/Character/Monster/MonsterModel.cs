@@ -45,7 +45,7 @@ public class MonsterModel : CharacterModel
     private async UniTask TryDropWeapon()
     {
         // 10% 확률로 무기 드랍
-        if (Random.value <= 0.1f)
+        if (Random.value <= 0.4f)
         {
             Weapon droppedWeapon = await WeaponManager.Instance.GetRandomWeapon();
             if (droppedWeapon != null)

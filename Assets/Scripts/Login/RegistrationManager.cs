@@ -92,7 +92,7 @@ public class RegistrationManager : MonoBehaviour
             }
             else
             {
-                feedbackText.text = "Signup successful!";
+                feedbackText.text = "회원가입 성공!";
             }
 
             HideFeedbackText();
