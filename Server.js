@@ -4,6 +4,9 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
+const xml2js = require('xml2js');
 
 dotenv.config();
 
@@ -20,6 +23,34 @@ const pool = mariadb.createPool({
 
 app.use(cors());
 app.use(express.json());
+
+// XML 파일 경로
+const xmlFilePath = path.join(__dirname, 'weapon.xml');
+let weaponData = [];
+
+// XML 파일에서 데이터를 읽어오는 함수
+function loadWeaponData() {
+    const xml = fs.readFileSync(xmlFilePath, 'utf-8');
+    xml2js.parseString(xml, { explicitArray: false }, (err, result) => {
+        if (err) {
+            console.error('XML 파싱 중 오류 발생:', err);
+        } else {
+            weaponData = result.root.row.map(weapon => ({
+                id: parseInt(weapon.id, 10),
+                rarity: weapon.rarity,
+                grade: weapon.grade,
+                base_attack_power: parseInt(weapon.base_attack_power, 10),
+                base_critical_chance: parseFloat(weapon.base_critical_chance),
+                base_critical_damage: parseFloat(weapon.base_critical_damage),
+                base_max_health: parseInt(weapon.base_max_health, 10),
+            }));
+            console.log('무기 데이터가 성공적으로 로드되었습니다.');
+        }
+    });
+}
+
+// 서버 시작 시 무기 데이터 로드
+loadWeaponData();
 
 // authenticateToken 미들웨어 정의
 function authenticateToken(req, res, next) {
@@ -54,9 +85,12 @@ app.post('/register', async (req, res) => {
 
         const playerId = result.insertId;
 
-        const allWeapons = await conn.query('SELECT id, base_attack_power, base_critical_chance, base_critical_damage, base_max_health FROM WeaponDB');
-        for (const weapon of allWeapons) {
-            await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 1, ?, ?, ?, ?)',
+        // PlayerAttributes에 기본값 추가
+        await conn.query('INSERT INTO PlayerAttributes (player_id) VALUES (?)', [playerId]);
+
+        // 무기 데이터를 사용하여 PlayerWeaponInventory에 추가
+        for (const weapon of weaponData) {
+            await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 0, ?, ?, ?, ?)',
                 [playerId, weapon.id, weapon.base_attack_power, weapon.base_critical_chance, weapon.base_critical_damage, weapon.base_max_health]);
         }
 
@@ -68,6 +102,7 @@ app.post('/register', async (req, res) => {
         if (conn) conn.release();
     }
 });
+
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -97,73 +132,41 @@ app.post('/login', async (req, res) => {
         if (conn) conn.release();
     }
 });
-app.get('/weapons', async (req, res) => {
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
+
+app.get('/weapons', authenticateToken, async (req, res) => {
     const { rarity } = req.query;
 
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-
-    let conn;
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('디코딩된 토큰:', decoded);
-
-        conn = await pool.getConnection();
-
         let weapons;
         if (rarity) {
-            weapons = await conn.query('SELECT * FROM WeaponDB WHERE rarity = ?', [rarity]);
+            weapons = weaponData.filter(weapon => weapon.rarity === rarity);
         } else {
-            weapons = await conn.query(`
-                SELECT pw.weapon_id as id, 
-                    IFNULL(pw.level, 1) as level, 
-                    IFNULL(pw.count, 0) as count, 
-                    IFNULL(pw.attack_power, wd.base_attack_power) as attack_power, 
-                    IFNULL(pw.critical_chance, wd.base_critical_chance) as critical_chance, 
-                    IFNULL(pw.critical_damage, wd.base_critical_damage) as critical_damage, 
-                    IFNULL(pw.max_health, wd.base_max_health) as max_health, 
-                    wd.rarity, 
-                    wd.grade 
-                FROM PlayerWeaponInventory pw 
-                JOIN WeaponDB wd ON pw.weapon_id = wd.id 
-                WHERE pw.player_id = ?`, [decoded.userId]);
+            weapons = weaponData;
         }
-        console.log('Fetched weapons from DB:', weapons);
         res.json(weapons);
     } catch (err) {
-        console.error('토큰 검증 중 오류 발생:', err);
-        res.status(403).json({ error: 'Invalid token' });
-    } finally {
-        if (conn) conn.release();
+        console.error('무기 데이터 가져오기 중 오류 발생:', err);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
-app.post('/drawWeapon', async (req, res) => {
+app.post('/drawWeapon', authenticateToken, async (req, res) => {
     const { weaponId } = req.body;
-    const authHeader = req.headers.authorization;
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
 
     let conn;
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         conn = await pool.getConnection();
 
-        const [weapon] = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE player_id = ? AND weapon_id = ?', [decoded.userId, weaponId]);
+        const [weapon] = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE player_id = ? AND weapon_id = ?', [req.user.userId, weaponId]);
         if (!weapon) {
-            const [weaponInfo] = await conn.query('SELECT * FROM WeaponDB WHERE id = ?', [weaponId]);
+            const weaponInfo = weaponData.find(w => w.id === weaponId);
             if (!weaponInfo) {
                 return res.status(400).json({ error: 'Invalid weapon ID' });
             }
             await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 1, ?, ?, ?, ?)',
-                [decoded.userId, weaponId, weaponInfo.base_attack_power, weaponInfo.base_critical_chance, weaponInfo.base_critical_damage, weaponInfo.base_max_health]);
+                [req.user.userId, weaponId, weaponInfo.base_attack_power, weaponInfo.base_critical_chance, weaponInfo.base_critical_damage, weaponInfo.base_max_health]);
         } else {
-            const updateResult = await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE player_id = ? AND weapon_id = ?', [decoded.userId, weaponId]);
+            const updateResult = await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE player_id = ? AND weapon_id = ?', [req.user.userId, weaponId]);
             if (updateResult.affectedRows === 0) {
                 return res.status(400).json({ error: 'Failed to update weapon count' });
             }
@@ -298,6 +301,7 @@ app.post('/synthesizeAllWeapons', authenticateToken, async (req, res) => {
         if (conn) conn.release();
     }
 });
+
 function getNextWeaponId(currentWeaponId) {
     // 무기 ID 합성 로직 구현
     const nextWeaponMap = {
@@ -360,16 +364,12 @@ app.get('/weaponsByRarity', authenticateToken, async (req, res) => {
         return res.status(400).json({ error: 'Rarity is required' });
     }
 
-    let conn;
     try {
-        conn = await pool.getConnection();
-        const weapons = await conn.query('SELECT * FROM WeaponDB WHERE rarity = ?', [rarity]);
-        res.json(weapons); // 무기 목록을 배열 형식으로 반환
+        const weapons = weaponData.filter(weapon => weapon.rarity === rarity);
+        res.json(weapons);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
-    } finally {
-        if (conn) conn.release();
+        console.error('무기 데이터 가져오기 중 오류 발생:', err);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 

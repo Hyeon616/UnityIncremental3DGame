@@ -81,45 +81,7 @@ public class WeaponManager : Singleton<WeaponManager>
         return await GetRandomWeaponFromList(allWeapons);
     }
 
-    //public async UniTask<Weapon> GetRandomWeaponFromList(List<Weapon> weaponList)
-    //{
-    //    float randomValue = Random.value * 100f;
-    //    string selectedRarity = GetRarityBasedOnProbability(randomValue);
-    //    var weaponsOfSelectedRarity = weaponList.Where(w => w.rarity == selectedRarity).ToList();
-
-    //    if (weaponsOfSelectedRarity.Count == 0)
-    //    {
-    //        // 해당 희귀도의 무기가 없으면 DB에서 기본 무기를 가져옴
-    //        var defaultWeapons = await GetWeaponFromDB(selectedRarity);
-    //        if (defaultWeapons != null && defaultWeapons.Count > 0)
-    //        {
-    //            var defaultWeapon = defaultWeapons[Random.Range(0, defaultWeapons.Count)];
-    //            await AddWeaponToInventory(defaultWeapon);
-    //            await FetchWeapons(); // Fetch updated weapons
-    //            WeaponInventoryUIManager.Instance.ActivateWeaponSlot(defaultWeapon); // 슬롯 활성화
-    //            return defaultWeapon;
-    //        }
-    //        else
-    //        {
-    //            Debug.LogError($"No weapons found for rarity: {selectedRarity} in WeaponDB.");
-    //            return null;
-    //        }
-    //    }
-
-    //    var randomWeapon = weaponsOfSelectedRarity[Random.Range(0, weaponsOfSelectedRarity.Count)];
-    //    bool success = await DrawWeapon(randomWeapon.id);
-    //    if (success)
-    //    {
-    //        await FetchWeapons(); // Fetch updated weapons
-    //        WeaponInventoryUIManager.Instance.ActivateWeaponSlot(randomWeapon); // 슬롯 활성화
-    //        return randomWeapon;
-    //    }
-    //    else
-    //    {
-    //        return null;
-    //    }
-    //}
-
+    
     private async UniTask<List<Weapon>> GetWeaponFromDB(string rarity)
     {
         string token = PlayerPrefs.GetString("authToken");
