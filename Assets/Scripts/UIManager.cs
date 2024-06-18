@@ -8,7 +8,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button toggleInventoryButton;
     [SerializeField] private Button gachaButton;
     [SerializeField] private GameObject weaponInventoryScrollView;
-    [SerializeField] private RectTransform buttonContainer;
 
     private bool menuOpened = false;
 
@@ -39,23 +38,23 @@ public class UIManager : MonoBehaviour
         toggleInventoryButton.gameObject.SetActive(true);
         gachaButton.gameObject.SetActive(true);
 
-        Sequence sequence = DOTween.Sequence();
-        sequence.Append(toggleInventoryButton.transform.DOMoveX(buttonContainer.position.x + 150, 0.3f).From(buttonContainer.position));
-        sequence.Append(gachaButton.transform.DOMoveX(buttonContainer.position.x + 320, 0.3f).From(buttonContainer.position));
+        //Sequence sequence = DOTween.Sequence();
+        //sequence.Append(toggleInventoryButton.transform.DOMoveX(buttonContainer.position.x + 150, 0.3f).From(buttonContainer.position));
+        //sequence.Append(gachaButton.transform.DOMoveX(buttonContainer.position.x + 320, 0.3f).From(buttonContainer.position));
 
         menuOpened = true;
     }
 
     private void CloseMenu()
     {
-        // Animate buttons to slide left and then deactivate
-        Sequence sequence = DOTween.Sequence();
-        sequence.Append(gachaButton.transform.DOMoveX(buttonContainer.position.x, 0.3f));
-        sequence.Append(toggleInventoryButton.transform.DOMoveX(buttonContainer.position.x, 0.3f)).OnComplete(() =>
-        {
-            toggleInventoryButton.gameObject.SetActive(false);
-            gachaButton.gameObject.SetActive(false);
-        });
+        toggleInventoryButton.gameObject.SetActive(false);
+        gachaButton.gameObject.SetActive(false);
+        //Sequence sequence = DOTween.Sequence();
+        //sequence.Append(gachaButton.transform.DOMoveX(buttonContainer.position.x, 0.3f));
+        //sequence.Append(toggleInventoryButton.transform.DOMoveX(buttonContainer.position.x, 0.3f)).OnComplete(() =>
+        //{
+            
+        //});
 
         menuOpened = false;
     }

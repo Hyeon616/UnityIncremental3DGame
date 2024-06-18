@@ -25,32 +25,68 @@ app.use(cors());
 app.use(express.json());
 
 // XML 파일 경로
-const xmlFilePath = path.join(__dirname, 'weapon.xml');
+const weaponXmlFilePath = path.join(__dirname, 'weapon.xml');
+const blessingsXmlFilePath = path.join(__dirname, 'blessings.xml');
+const skillsXmlFilePath = path.join(__dirname, 'Skills.xml');
 let weaponData = [];
+let blessingsData = [];
+let skillsData = [];
 
 // XML 파일에서 데이터를 읽어오는 함수
-function loadWeaponData() {
-    const xml = fs.readFileSync(xmlFilePath, 'utf-8');
+function loadXmlData(filePath, callback) {
+    const xml = fs.readFileSync(filePath, 'utf-8');
     xml2js.parseString(xml, { explicitArray: false }, (err, result) => {
         if (err) {
             console.error('XML 파싱 중 오류 발생:', err);
         } else {
-            weaponData = result.root.row.map(weapon => ({
-                id: parseInt(weapon.id, 10),
-                rarity: weapon.rarity,
-                grade: weapon.grade,
-                base_attack_power: parseInt(weapon.base_attack_power, 10),
-                base_critical_chance: parseFloat(weapon.base_critical_chance),
-                base_critical_damage: parseFloat(weapon.base_critical_damage),
-                base_max_health: parseInt(weapon.base_max_health, 10),
-            }));
-            console.log('무기 데이터가 성공적으로 로드되었습니다.');
+            callback(result);
+            console.log(`${filePath} 데이터가 성공적으로 로드되었습니다.`);
         }
     });
 }
 
-// 서버 시작 시 무기 데이터 로드
+function loadWeaponData() {
+    loadXmlData(weaponXmlFilePath, (result) => {
+        weaponData = result.root.row.map(weapon => ({
+            id: parseInt(weapon.id, 10),
+            rarity: weapon.rarity,
+            grade: weapon.grade,
+            base_attack_power: parseInt(weapon.base_attack_power, 10),
+            base_critical_chance: parseFloat(weapon.base_critical_chance),
+            base_critical_damage: parseFloat(weapon.base_critical_damage),
+            base_max_health: parseInt(weapon.base_max_health, 10),
+        }));
+    });
+}
+
+function loadBlessingsData() {
+    loadXmlData(blessingsXmlFilePath, (result) => {
+        blessingsData = result.root.row.map(blessing => ({
+            id: parseInt(blessing.id, 10),
+            name: blessing.name,
+            element: blessing.element,
+            level: parseInt(blessing.level, 10),
+            attack_multiplier: parseFloat(blessing.attack_multiplier)
+        }));
+    });
+}
+
+function loadSkillsData() {
+    loadXmlData(skillsXmlFilePath, (result) => {
+        skillsData = result.root.row.map(skill => ({
+            id: parseInt(skill.id, 10),
+            name: skill.name,
+            element: skill.element,
+            rarity: skill.rarity,
+            damage_multiplier: parseFloat(skill.damage_multiplier)
+        }));
+    });
+}
+
+// 서버 시작 시 데이터 로드
 loadWeaponData();
+loadBlessingsData();
+loadSkillsData();
 
 // authenticateToken 미들웨어 정의
 function authenticateToken(req, res, next) {
@@ -94,6 +130,16 @@ app.post('/register', async (req, res) => {
                 [playerId, weapon.id, weapon.base_attack_power, weapon.base_critical_chance, weapon.base_critical_damage, weapon.base_max_health]);
         }
 
+        // 가호 기본 데이터 추가
+        for (const blessing of blessingsData) {
+            await conn.query('INSERT INTO PlayerBlessings (player_id, blessing_id, level, attack_multiplier) VALUES (?, ?, 0, ?)', [playerId, blessing.id, blessing.attack_multiplier]);
+        }
+
+        // 스킬 기본 데이터 추가
+        for (const skill of skillsData) {
+            await conn.query('INSERT INTO PlayerSkills (player_id, skill_id, level, awakening) VALUES (?, ?, 0, 0)', [playerId, skill.id]);
+        }
+
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         console.error(err);
@@ -102,7 +148,6 @@ app.post('/register', async (req, res) => {
         if (conn) conn.release();
     }
 });
-
 
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
@@ -150,6 +195,24 @@ app.get('/weapons', authenticateToken, async (req, res) => {
     }
 });
 
+app.get('/blessings', authenticateToken, async (req, res) => {
+    try {
+        res.json(blessingsData);
+    } catch (err) {
+        console.error('가호 데이터 가져오기 중 오류 발생:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.get('/skills', authenticateToken, async (req, res) => {
+    try {
+        res.json(skillsData);
+    } catch (err) {
+        console.error('스킬 데이터 가져오기 중 오류 발생:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 app.post('/drawWeapon', authenticateToken, async (req, res) => {
     const { weaponId } = req.body;
 
@@ -181,50 +244,6 @@ app.post('/drawWeapon', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/check-username', async (req, res) => {
-    const { username } = req.query;
-    if (!username) {
-        return res.status(400).json({ error: 'Username is required' });
-    }
-
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        const existingUser = await conn.query('SELECT * FROM Players WHERE player_username = ?', [username]);
-        if (existingUser.length > 0) {
-            return res.status(200).json({ exists: true });
-        }
-        res.status(200).json({ exists: false });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
-    } finally {
-        if (conn) conn.release();
-    }
-});
-
-app.get('/check-nickname', async (req, res) => {
-    const { nickname } = req.query;
-    if (!nickname) {
-        return res.status(400).json({ error: 'Nickname is required' });
-    }
-
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        const existingUser = await conn.query('SELECT * FROM Players WHERE player_nickname = ?', [nickname]);
-        if (existingUser.length > 0) {
-            return res.status(200).json({ exists: true });
-        }
-        res.status(200).json({ exists: false });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Database error' });
-    } finally {
-        if (conn) conn.release();
-    }
-});
-
 app.post('/synthesizeWeapon', authenticateToken, async (req, res) => {
     const { weaponId } = req.body;
 
@@ -241,21 +260,14 @@ app.post('/synthesizeWeapon', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Not enough weapons to synthesize' });
         }
 
+        // Decrease the count of the original weapon
         await conn.query('UPDATE PlayerWeaponInventory SET count = count - 5 WHERE weapon_id = ? AND player_id = ?', [weaponId, req.user.userId]);
 
-        const newWeaponId = getNextWeaponId(weaponId); // 무기 ID 합성 로직은 별도 구현 필요
+        // Get the next weapon ID
+        const newWeaponId = getNextWeaponId(weaponId);
 
-        // 기존에 동일한 무기가 있는지 확인
-        const existingWeapon = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE weapon_id = ? AND player_id = ?', [newWeaponId, req.user.userId]);
-
-        if (existingWeapon.length > 0) {
-            // 기존 무기가 있으면 count 증가
-            await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE weapon_id = ? AND player_id = ?', [newWeaponId, req.user.userId]);
-        } else {
-            // 기존 무기가 없으면 새 행 추가
-            await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 1, ?, ?, ?, ?)',
-                [req.user.userId, newWeaponId, weapon[0].attack_power, weapon[0].critical_chance, weapon[0].critical_damage, weapon[0].max_health]);
-        }
+        // Increase the count of the new weapon
+        await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE weapon_id = ? AND player_id = ?', [newWeaponId, req.user.userId]);
 
         res.status(200).json({ message: 'Weapon synthesized successfully' });
     } catch (err) {
@@ -279,14 +291,7 @@ app.post('/synthesizeAllWeapons', authenticateToken, async (req, res) => {
 
                 const newWeaponId = getNextWeaponId(weapon.weapon_id);
 
-                const existingWeapon = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE weapon_id = ? AND player_id = ?', [newWeaponId, req.user.userId]);
-
-                if (existingWeapon.length > 0) {
-                    await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE weapon_id = ? AND player_id = ?', [newWeaponId, req.user.userId]);
-                } else {
-                    await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 1, ?, ?, ?, ?)',
-                        [req.user.userId, newWeaponId, weapon.attack_power, weapon.critical_chance, weapon.critical_damage, weapon.max_health]);
-                }
+                await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE weapon_id = ? AND player_id = ?', [newWeaponId, req.user.userId]);
 
                 // Fetch updated count
                 weapon.count = (await conn.query('SELECT count FROM PlayerWeaponInventory WHERE weapon_id = ? AND player_id = ?', [weapon.weapon_id, req.user.userId]))[0].count;
