@@ -6,7 +6,11 @@ CREATE TABLE Players (
     player_id INT AUTO_INCREMENT PRIMARY KEY,
     player_username VARCHAR(255) UNIQUE NOT NULL,
     player_password VARCHAR(255) NOT NULL,
-    player_nickname VARCHAR(255) UNIQUE NOT NULL
+    player_nickname VARCHAR(255) UNIQUE NOT NULL,
+    star_dust INT DEFAULT 0,
+    pet_summon_tickets INT DEFAULT 0,
+    element_stone INT DEFAULT 0,
+    skill_summon_tickets INT DEFAULT 0
 );
 
 -- PlayerAttributes 테이블 생성
@@ -31,6 +35,18 @@ CREATE TABLE PlayerAttributes (
     wind_enhance INT DEFAULT 0,
     light_enhance INT DEFAULT 0,
     dark_enhance INT DEFAULT 0,
+    combat_power INT AS (
+        (attack_power + max_health) *
+        IF(critical_chance = 0, 1, critical_chance) *
+        IF(critical_damage = 0, 1, critical_damage) *
+        IF(fire_damage = 0, 1, fire_damage) *
+        IF(water_damage = 0, 1, water_damage) *
+        IF(electric_damage = 0, 1, electric_damage) *
+        IF(wind_damage = 0, 1, wind_damage) *
+        IF(light_damage = 0, 1, light_damage) *
+        IF(dark_damage = 0, 1, dark_damage) *
+        IF(awakening = 0, 1, awakening * 10)
+    ) PERSISTENT,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
@@ -66,5 +82,24 @@ CREATE TABLE PlayerWeaponInventory (
     critical_chance FLOAT,
     critical_damage FLOAT,
     max_health INT,
+    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
+);
+
+-- PlayerSkills 테이블 생성
+CREATE TABLE PlayerSkills (
+    player_skill_id INT AUTO_INCREMENT PRIMARY KEY,
+    player_id INT NOT NULL,
+    skill_id INT NOT NULL,
+    level INT DEFAULT 0,
+    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
+);
+
+-- PlayerBlessings 테이블 생성
+CREATE TABLE PlayerBlessings (
+    player_blessing_id INT AUTO_INCREMENT PRIMARY KEY,
+    player_id INT NOT NULL,
+    blessing_id INT NOT NULL,
+    level INT DEFAULT 0,
+    attack_multiplier FLOAT DEFAULT 2,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
