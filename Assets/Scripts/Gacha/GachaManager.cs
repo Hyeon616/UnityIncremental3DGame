@@ -33,15 +33,6 @@ public class GachaManager : MonoBehaviour
         FetchAllWeapons();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            Debug.Log("I key pressed, starting TestGachaProbability.");
-            TestGachaProbability(10000);
-        }
-    }
-
     private void FetchAllWeapons()
     {
         activeWeapons = WeaponManager.Instance.GetAllWeapons();
@@ -106,41 +97,4 @@ public class GachaManager : MonoBehaviour
         gachaResultPanel.SetActive(false);
     }
 
-    private void TestGachaProbability(int numTests)
-    {
-        Debug.Log("Starting TestGachaProbability.");
-        Dictionary<string, int> rarityCounts = new Dictionary<string, int>
-        {
-            { "일반", 0 },
-            { "고급", 0 },
-            { "매직", 0 },
-            { "유물", 0 },
-            { "영웅", 0 },
-            { "에픽", 0 },
-            { "고대", 0 },
-            { "신화", 0 }
-        };
-
-        for (int i = 0; i < numTests; i++)
-        {
-            try
-            {
-                Weapon selectedWeapon = WeaponManager.Instance.GetRandomWeaponSync();
-                if (selectedWeapon != null)
-                {
-                    rarityCounts[selectedWeapon.rarity]++;
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError($"Exception during weapon selection in TestGachaProbability: {ex.Message}");
-            }
-        }
-
-        foreach (var rarity in rarityCounts.Keys)
-        {
-            Debug.Log($"Rarity: {rarity}, Count: {rarityCounts[rarity]}, Probability: {(float)rarityCounts[rarity] / numTests * 100}%");
-        }
-        Debug.Log("Finished TestGachaProbability.");
-    }
 }

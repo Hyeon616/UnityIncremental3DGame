@@ -8,6 +8,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button MailBtn;
     [SerializeField] private Button ContentsMenuBtn;
     [SerializeField] private Button AmuletBtn;
+    [SerializeField] private Button ChattingBtn;
 
     // 퀵 메뉴 버튼
     [Header("QuickMenuButton")]
@@ -21,6 +22,7 @@ public class UIManager : MonoBehaviour
     // 버튼을 누르면 나오게 될 패널
     [Header("ContentsPanel")]
     [SerializeField] private GameObject ContentsPanel;
+    [SerializeField] private GameObject ChattingPanel;
 
     // 퀵 메뉴에서 누르면 나오게 될 패널
     [Header("QuickMenuPanel")]
@@ -48,10 +50,13 @@ public class UIManager : MonoBehaviour
 
     private void OnEnable()
     {
+        //HUDBtn
         MailBtn.onClick.AddListener(OnMailBtnClick);
         ContentsMenuBtn.onClick.AddListener(OnContentsMenuBtnClick);
         AmuletBtn.onClick.AddListener(OnAmuletBtnClick);
+        ChattingBtn.onClick.AddListener(OnChattingBtnBtnClick);
 
+        //QuickMenuBtn
         AbilityBtn.onClick.AddListener(OnAbilityBtnClick);
         EquipmentBtn.onClick.AddListener(OnEquipmentBtnClick);
         SkillBtn.onClick.AddListener(OnSkillBtnClick);
@@ -59,6 +64,7 @@ public class UIManager : MonoBehaviour
         ShopBtn.onClick.AddListener(OnShopBtnClick);
         HUDSummonBtn.onClick.AddListener(OnHUDSummonBtnClick);
 
+        //ContentsMenuBtn
         AttendanceBtn.onClick.AddListener(OnAttendanceBtnClick);
         MissionBtn.onClick.AddListener(OnMissionBtnClick);
         RankBtn.onClick.AddListener(OnRankBtnClick);
@@ -75,10 +81,13 @@ public class UIManager : MonoBehaviour
 
     private void OnDisable()
     {
+        //HUDBtn
         MailBtn.onClick.RemoveListener(OnMailBtnClick);
         ContentsMenuBtn.onClick.RemoveListener(OnContentsMenuBtnClick);
         AmuletBtn.onClick.RemoveListener(OnAmuletBtnClick);
+        ChattingBtn.onClick.RemoveListener(OnChattingBtnBtnClick);
 
+        //QuickMenuBtn
         AbilityBtn.onClick.RemoveListener(OnAbilityBtnClick);
         EquipmentBtn.onClick.RemoveListener(OnEquipmentBtnClick);
         SkillBtn.onClick.RemoveListener(OnSkillBtnClick);
@@ -86,6 +95,7 @@ public class UIManager : MonoBehaviour
         ShopBtn.onClick.RemoveListener(OnShopBtnClick);
         HUDSummonBtn.onClick.RemoveListener(OnHUDSummonBtnClick);
 
+        //ContentsMenuBtn
         AttendanceBtn.onClick.RemoveListener(OnAttendanceBtnClick);
         MissionBtn.onClick.RemoveListener(OnMissionBtnClick);
         RankBtn.onClick.RemoveListener(OnRankBtnClick);
@@ -100,14 +110,17 @@ public class UIManager : MonoBehaviour
         SettingsBtn.onClick.RemoveListener(OnSettingsBtnClick);
     }
 
-    // 빈 함수들 선언
+    #region HUD
     private void OnMailBtnClick()
     {
         // mail 
     }
     private void OnContentsMenuBtnClick() { }
     private void OnAmuletBtnClick() { }
+    private void OnChattingBtnBtnClick() { }
+    #endregion
 
+    #region QuickMenu
     private void OnAbilityBtnClick() { }
     private void OnEquipmentBtnClick() { }
     private void OnSkillBtnClick() { }
@@ -115,6 +128,9 @@ public class UIManager : MonoBehaviour
     private void OnShopBtnClick() { }
     private void OnHUDSummonBtnClick() { }
 
+    #endregion
+
+    #region Contents
     private void OnAttendanceBtnClick() { }
     private void OnMissionBtnClick() { }
     private void OnRankBtnClick() { }
@@ -127,4 +143,5 @@ public class UIManager : MonoBehaviour
     private void OnFriendBtnClick() { }
     private void OnGuildBtnClick() { }
     private void OnSettingsBtnClick() { }
+    #endregion
 }
