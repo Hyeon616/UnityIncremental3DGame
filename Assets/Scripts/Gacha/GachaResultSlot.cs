@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class GachaResultSlot : MonoBehaviour
 {
     public Text WeaponRarityText;
-    public Text WeaponGradeText;
     public Image ItemImage;
     public Image SlotBackgroundImage;
 
@@ -16,7 +15,6 @@ public class GachaResultSlot : MonoBehaviour
         {
             WeaponRarityText.text = weapon.GetRarityName();
             WeaponRarityText.color = GetRarityColor(weapon.rarity);
-            WeaponGradeText.text = weapon.GetGradeName();
             ItemImage.color = new Color(1f, 1f, 1f, 1f); // 활성화된 슬롯의 아이템 이미지를 은은하게 표시
             ItemImage.sprite = GetWeaponSprite(weapon);
             SlotBackgroundImage.color = GetRarityColor(weapon.rarity); // 활성화된 슬롯의 배경색
