@@ -17,7 +17,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private Button SkillBtn;
     [SerializeField] private Button DungeonBtn;
     [SerializeField] private Button ShopBtn;
-    [SerializeField] private Button HUDSummonBtn;
+    [SerializeField] private Button SummonBtn;
 
     // 버튼을 누르면 나오게 될 패널
     [Header("ContentsPanel")]
@@ -62,7 +62,7 @@ public class UIManager : MonoBehaviour
         SkillBtn.onClick.AddListener(OnSkillBtnClick);
         DungeonBtn.onClick.AddListener(OnDungeonBtnClick);
         ShopBtn.onClick.AddListener(OnShopBtnClick);
-        HUDSummonBtn.onClick.AddListener(OnHUDSummonBtnClick);
+        SummonBtn.onClick.AddListener(OnHUDSummonBtnClick);
 
         //ContentsMenuBtn
         AttendanceBtn.onClick.AddListener(OnAttendanceBtnClick);
@@ -93,7 +93,7 @@ public class UIManager : MonoBehaviour
         SkillBtn.onClick.RemoveListener(OnSkillBtnClick);
         DungeonBtn.onClick.RemoveListener(OnDungeonBtnClick);
         ShopBtn.onClick.RemoveListener(OnShopBtnClick);
-        HUDSummonBtn.onClick.RemoveListener(OnHUDSummonBtnClick);
+        SummonBtn.onClick.RemoveListener(OnHUDSummonBtnClick);
 
         //ContentsMenuBtn
         AttendanceBtn.onClick.RemoveListener(OnAttendanceBtnClick);
@@ -115,7 +115,11 @@ public class UIManager : MonoBehaviour
     {
         // mail 
     }
-    private void OnContentsMenuBtnClick() { }
+    private void OnContentsMenuBtnClick()
+    {
+        ContentsPanel.SetActive(!ContentsPanel.activeSelf);
+    
+    }
     private void OnAmuletBtnClick() { }
     private void OnChattingBtnBtnClick() { }
     #endregion
