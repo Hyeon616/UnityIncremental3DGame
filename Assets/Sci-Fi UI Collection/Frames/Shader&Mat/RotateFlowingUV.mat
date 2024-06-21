@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: RotateFlowingUV
+  m_Shader: {fileID: 4800000, guid: add388cbc097e28409f820b1d1cd8e8b, type: 3}
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BlendTex:
+        m_Texture: {fileID: 2800000, guid: eefd9df6a0a080c4f9d7254f9f1a43cf, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _FlowTexture:
+        m_Texture: {fileID: 2800000, guid: 050f8d6f1e606444695f233452211daa, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MainTex:
+        m_Texture: {fileID: 2800000, guid: 5592e564917794048861ef25943d44db, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _OverlayTex:
+        m_Texture: {fileID: 2800000, guid: 89a7ff3263cca3d41ba85dcf1b13014f, type: 3}
+        m_Scale: {x: 10, y: 10}
+        m_Offset: {x: 0, y: 0}
+    - _OverlayTexture:
+        m_Texture: {fileID: 2800000, guid: c60523c02142ffb42badc4488fae57cd, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - Amplitude: 1
+    - Band: 2
+    - _Amplitude: 0.05
+    - _AnimSpeed: 1
+    - _Band: 2
+    - _Clockwise: -1
+    - _CustomTime: 8.1
+    - _DeltaAngle: -155
+    - _DisplayAngle: 56.149754
+    - _EndAngle: 11.714936
+    - _F: -0.29
+    - _FloatAmplitude: 5
+    - _FloatAnimationSpeed: 0.2
+    - _FlowInterval: 0.095
+    - _FlowSpeed: 1
+    - _FlowStrength: 1
+    - _FlowWidth: 0.1
+    - _MaxBrightness: 1
+    - _MinBrightness: 0.144
+    - _Outline: 0.0058
+    - _OverlayPercent: 1
+    - _OverlayStrength: 2.44
+    - _Position: 0.87580395
+    - _RangeAngle: 273
+    - _RotSpeed: 30
+    - _StartAngle: 90
+    - _W: 0.52
+    - _Width: 0.2483921
+    - _includedAngle: 180
+    m_Colors:
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+    - _Direction: {r: 1, g: 1, b: 0, a: 0}
+    - _FlowColor: {r: 1, g: 1, b: 1, a: 1}
+    - _FlowDirection: {r: -0.2, g: 0.73, b: 0, a: 0}
+    - _OverlayColor: {r: 0, g: 0.7210339, b: 0.9339623, a: 1}
+    - _OverlayDirection: {r: 1, g: 1, b: 0, a: 0}
+    - _UVSpeed: {r: 1, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+--- !u!114 &5853417716746748665
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  version: 7
