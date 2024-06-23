@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DropNotificationManager : Singleton<DropNotificationManager>
+public class DropNotificationManager : UnitySingleton<DropNotificationManager>
 {
     [SerializeField] private RectTransform notificationPanel;
     [SerializeField] private GameObject notificationPrefab;

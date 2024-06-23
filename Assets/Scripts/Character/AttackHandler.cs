@@ -42,11 +42,11 @@ public class AttackHandler
                 ShowDamageText(closestCollider.transform, damage, isCritical, isMonsterDamage);
                 ShowHitEffect(closestCollider.transform);
 
-                if (_characterViewModel is PlayerViewModel playerViewModel)
-                {
-                    playerViewModel.PlayAttackEffect(closestCollider.transform);
-                    PlayAttackSound();
-                }
+                //if (_characterViewModel is PlayerViewModel playerViewModel)
+                //{
+                //    playerViewModel.PlayAttackEffect(closestCollider.transform);
+                //    PlayAttackSound();
+                //}
             }
         }
     }
@@ -66,15 +66,15 @@ public class AttackHandler
             screenPosition.x = Mathf.Clamp(screenPosition.x, 50, Screen.width - 50);
             screenPosition.y = Mathf.Clamp(screenPosition.y, 50, Screen.height - 50);
 
-            GameObject damageText = Object.Instantiate(_characterViewModel.DamageTextPrefab, SingletonDamageFontCanvas.Instance.transform);
-            damageText.transform.position = screenPosition;
+            //GameObject damageText = Object.Instantiate(_characterViewModel.DamageTextPrefab, SingletonDamageFontCanvas.Instance.transform);
+            //damageText.transform.position = screenPosition;
 
-            DamageText damageTextComponent = damageText.GetComponent<DamageText>();
-            if (damageTextComponent != null)
-            {
-                damageTextComponent.Setup(damage, isCritical, isMonsterDamage);
+            //DamageText damageTextComponent = damageText.GetComponent<DamageText>();
+            //if (damageTextComponent != null)
+            //{
+            //    damageTextComponent.Setup(damage, isCritical, isMonsterDamage);
                 
-            }
+            //}
         }
     }
 

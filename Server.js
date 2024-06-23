@@ -28,9 +28,11 @@ app.use(express.json());
 const weaponXmlFilePath = path.join(__dirname, 'weapon.xml');
 const blessingsXmlFilePath = path.join(__dirname, 'blessings.xml');
 const skillsXmlFilePath = path.join(__dirname, 'Skills.xml');
+const missionRewardsXmlFilePath = path.join(__dirname, 'MissionRewards.xml');
 let weaponData = [];
 let blessingsData = [];
 let skillsData = [];
+let missionRewardsData = [];
 
 // XML 파일에서 데이터를 읽어오는 함수
 function loadXmlData(filePath, callback) {
@@ -83,10 +85,22 @@ function loadSkillsData() {
     });
 }
 
+function loadMissionRewardsData() {
+    loadXmlData(missionRewardsXmlFilePath, (result) => {
+        missionRewardsData = result.root.row.map(reward => ({
+            id: parseInt(reward.id, 10),
+            type: reward.type,
+            requirement: parseInt(reward.requirement, 10),
+            reward: parseInt(reward.reward, 10)
+        }));
+    });
+}
+
 // 서버 시작 시 데이터 로드
 loadWeaponData();
 loadBlessingsData();
 loadSkillsData();
+loadMissionRewardsData();
 
 // authenticateToken 미들웨어 정의
 function authenticateToken(req, res, next) {
@@ -101,7 +115,6 @@ function authenticateToken(req, res, next) {
         next();
     });
 }
-
 app.post('/register', async (req, res) => {
     const { username, password, nickname } = req.body;
     if (!username || !password || !nickname) {
@@ -124,6 +137,9 @@ app.post('/register', async (req, res) => {
         // PlayerAttributes에 기본값 추가
         await conn.query('INSERT INTO PlayerAttributes (player_id) VALUES (?)', [playerId]);
 
+        // MissionProgress에 기본값 추가
+        await conn.query('INSERT INTO MissionProgress (player_id) VALUES (?)', [playerId]);
+
         // 무기 데이터를 사용하여 PlayerWeaponInventory에 추가
         for (const weapon of weaponData) {
             await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 0, ?, ?, ?, ?)',
@@ -137,7 +153,7 @@ app.post('/register', async (req, res) => {
 
         // 스킬 기본 데이터 추가
         for (const skill of skillsData) {
-            await conn.query('INSERT INTO PlayerSkills (player_id, skill_id, level, awakening) VALUES (?, ?, 0, 0)', [playerId, skill.id]);
+            await conn.query('INSERT INTO PlayerSkills (player_id, skill_id, level) VALUES (?, ?, 0)', [playerId, skill.id]);
         }
 
         res.status(201).json({ message: 'User registered successfully' });
@@ -148,7 +164,6 @@ app.post('/register', async (req, res) => {
         if (conn) conn.release();
     }
 });
-
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -204,6 +219,7 @@ app.get('/blessings', authenticateToken, async (req, res) => {
     }
 });
 
+
 app.get('/skills', authenticateToken, async (req, res) => {
     try {
         res.json(skillsData);
@@ -212,6 +228,41 @@ app.get('/skills', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
+app.get('/rewards', authenticateToken, async (req, res) => {
+    try {
+        res.json(missionRewardsData);
+    } catch (err) {
+        console.error('보상 데이터 가져오기 중 오류 발생:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/claimReward', authenticateToken, async (req, res) => {
+    const { rewardId } = req.body;
+
+    const reward = missionRewardsData.find(r => r.id === rewardId);
+    if (!reward) {
+        return res.status(400).json({ error: 'Invalid reward ID' });
+    }
+
+    let conn;
+    try {
+        conn = await pool.getConnection();
+
+        // 보상을 메일로 보내기
+        const query = 'INSERT INTO mails (user_id, type, reward, expires_at) VALUES (?, ?, ?, NOW() + INTERVAL 3 DAY)';
+        await conn.query(query, [req.user.userId, 'mission', JSON.stringify({ star_dust: reward.reward })]);
+
+        res.status(200).json({ message: 'Reward claimed successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Database error' });
+    } finally {
+        if (conn) conn.release();
+    }
+});
+
 
 app.post('/drawWeapon', authenticateToken, async (req, res) => {
     const { weaponId } = req.body;

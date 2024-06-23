@@ -5,7 +5,7 @@ using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEngine.Networking;
 
-public class WeaponManager : Singleton<WeaponManager>
+public class WeaponManager : UnitySingleton<WeaponManager>
 {
     public APISettings apiSettings;
     private List<Weapon> activeWeapons = new List<Weapon>();

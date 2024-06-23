@@ -34,7 +34,7 @@ public class MonsterSpawner : MonoBehaviour
             {
                 if (_killedMonsters >= _totalMonstersPerStage)
                 {
-                    Transform_Player.GetComponent<PlayerViewModel>().FullHeal();
+                    //Transform_Player.GetComponent<PlayerViewModel>().FullHeal();
                     MonsterModel.ResetHealthIncrementer();
 
                     await UniTask.Delay(10000); // 10초 대기

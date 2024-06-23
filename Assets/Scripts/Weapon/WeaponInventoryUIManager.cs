@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
+public class WeaponInventoryUIManager : UnitySingleton<WeaponInventoryUIManager>
 {
     [SerializeField] private List<WeaponInventorySlot> weaponSlots;
     [SerializeField] private Button synthesizeAllButton;
@@ -11,9 +11,8 @@ public class WeaponInventoryUIManager : Singleton<WeaponInventoryUIManager>
 
     private Dictionary<int, WeaponInventorySlot> slotDictionary = new Dictionary<int, WeaponInventorySlot>();
 
-    protected override void Awake()
+    protected void Awake()
     {
-        base.Awake();
         InitializeSlotDictionary();
     }
 

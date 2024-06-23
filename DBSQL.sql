@@ -6,16 +6,15 @@ CREATE TABLE Players (
     player_id INT AUTO_INCREMENT PRIMARY KEY,
     player_username VARCHAR(255) UNIQUE NOT NULL,
     player_password VARCHAR(255) NOT NULL,
-    player_nickname VARCHAR(255) UNIQUE NOT NULL,
-    star_dust INT DEFAULT 0,
-    pet_summon_tickets INT DEFAULT 0,
-    element_stone INT DEFAULT 0,
-    skill_summon_tickets INT DEFAULT 0
+    player_nickname VARCHAR(255) UNIQUE NOT NULL
 );
 
 -- PlayerAttributes 테이블 생성
 CREATE TABLE PlayerAttributes (
     player_id INT PRIMARY KEY,
+    star_dust INT DEFAULT 0,
+    element_stone INT DEFAULT 0,
+    skill_summon_tickets INT DEFAULT 0,
     money INT DEFAULT 0,
     attack_power INT DEFAULT 10,
     max_health INT DEFAULT 50,
@@ -48,6 +47,18 @@ CREATE TABLE PlayerAttributes (
         IF(awakening = 0, 1, awakening * 10)
     ) PERSISTENT,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
+);
+
+-- mails 테이블 생성
+CREATE TABLE mails (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
+    type ENUM('attendance', 'event', 'offline_reward', 'mission'),
+    reward JSON,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expires_at DATETIME DEFAULT (CURRENT_TIMESTAMP + INTERVAL 3 DAY),
+    is_read BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (user_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
 -- Guilds 테이블 생성
@@ -101,5 +112,15 @@ CREATE TABLE PlayerBlessings (
     blessing_id INT NOT NULL,
     level INT DEFAULT 0,
     attack_multiplier FLOAT DEFAULT 2,
+    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
+);
+
+-- 미션 진행 상태를 저장할 테이블 생성
+CREATE TABLE MissionProgress (
+    player_id INT PRIMARY KEY,
+    last_level_check INT DEFAULT 0,
+    last_combat_power_check INT DEFAULT 0,
+    last_awakening_check INT DEFAULT 0,
+    last_online_time_check DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );

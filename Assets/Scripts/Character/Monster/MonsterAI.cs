@@ -5,13 +5,13 @@ public class MonsterAI : MonoBehaviour
 {
     private NavMeshAgent agent;
     private MonsterViewModel monsterViewModel;
-    private PlayerViewModel playerViewModel;
+    //private PlayerViewModel playerViewModel;
 
     private void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         monsterViewModel = GetComponent<MonsterViewModel>();
-        playerViewModel = FindObjectOfType<PlayerViewModel>();
+        //playerViewModel = FindObjectOfType<PlayerViewModel>();
 
         // MonsterModel의 값을 사용하여 상태 설정
         monsterViewModel.SetState(new IdleState(monsterViewModel, monsterViewModel.CharacterModel.DetectionRange, monsterViewModel.CharacterModel.AttackRange));

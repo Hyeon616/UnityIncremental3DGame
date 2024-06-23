@@ -1,3 +1,4 @@
+using System.Net.NetworkInformation;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -33,6 +34,18 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject ShopPanel;
     [SerializeField] private GameObject SummonPanel;
 
+    // 능력치 창
+    [Header("AbilityBtn")]
+    [SerializeField] private GameObject CharacterAbilityBtn;
+    [SerializeField] private GameObject RuneAbilityBtn;
+
+    [Header("AbilityPanel")]
+    [SerializeField] private GameObject CharacterAbilityPanel;
+    [SerializeField] private GameObject RuneAbilityPanel;
+
+    
+
+
     // ContentsBtn을 누르면 나오게 되는 버튼
     [Header("ContentsMenuButton")]
     [SerializeField] private Button AttendanceBtn;
@@ -51,10 +64,7 @@ public class UIManager : MonoBehaviour
     private void OnEnable()
     {
         //HUDBtn
-        MailBtn.onClick.AddListener(OnMailBtnClick);
-        ContentsMenuBtn.onClick.AddListener(OnContentsMenuBtnClick);
-        AmuletBtn.onClick.AddListener(OnAmuletBtnClick);
-        ChattingBtn.onClick.AddListener(OnChattingBtnBtnClick);
+        OnHUDBtnAddListener();
 
         //QuickMenuBtn
         AbilityBtn.onClick.AddListener(OnAbilityBtnClick);
@@ -82,10 +92,7 @@ public class UIManager : MonoBehaviour
     private void OnDisable()
     {
         //HUDBtn
-        MailBtn.onClick.RemoveListener(OnMailBtnClick);
-        ContentsMenuBtn.onClick.RemoveListener(OnContentsMenuBtnClick);
-        AmuletBtn.onClick.RemoveListener(OnAmuletBtnClick);
-        ChattingBtn.onClick.RemoveListener(OnChattingBtnBtnClick);
+        OnHUDBtnRemoveListener();
 
         //QuickMenuBtn
         AbilityBtn.onClick.RemoveListener(OnAbilityBtnClick);
@@ -108,6 +115,22 @@ public class UIManager : MonoBehaviour
         FriendBtn.onClick.RemoveListener(OnFriendBtnClick);
         GuildBtn.onClick.RemoveListener(OnGuildBtnClick);
         SettingsBtn.onClick.RemoveListener(OnSettingsBtnClick);
+    }
+
+    private void OnHUDBtnAddListener()
+    {
+        MailBtn.onClick.AddListener(OnMailBtnClick);
+        ContentsMenuBtn.onClick.AddListener(OnContentsMenuBtnClick);
+        AmuletBtn.onClick.AddListener(OnAmuletBtnClick);
+        ChattingBtn.onClick.AddListener(OnChattingBtnBtnClick);
+    }
+
+    private void OnHUDBtnRemoveListener()
+    {
+        MailBtn.onClick.RemoveListener(OnMailBtnClick);
+        ContentsMenuBtn.onClick.RemoveListener(OnContentsMenuBtnClick);
+        AmuletBtn.onClick.RemoveListener(OnAmuletBtnClick);
+        ChattingBtn.onClick.RemoveListener(OnChattingBtnBtnClick);
     }
 
     #region HUD

@@ -76,6 +76,7 @@ public class LoginManager : MonoBehaviour
                     {
                         var response = JsonConvert.DeserializeObject<LoginResponse>(request.downloadHandler.text);
                         PlayerPrefs.SetString("authToken", response.token);
+                        PlayerPrefs.SetInt("UserId", response.userId);
                         Debug.Log("토큰 저장: " + response.token);
                         feedbackText.text = "로그인 성공!";
                         SceneManager.LoadScene("GameScene");
@@ -106,6 +107,7 @@ public class LoginManager : MonoBehaviour
     private class LoginResponse
     {
         public string token;
+        public int userId;
     }
 
     [System.Serializable]
