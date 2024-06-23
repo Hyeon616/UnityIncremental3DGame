@@ -125,27 +125,83 @@ public class UIManager : MonoBehaviour
     #endregion
 
     #region QuickMenu
-    private void OnAbilityBtnClick() { }
-    private void OnEquipmentBtnClick() { }
-    private void OnSkillBtnClick() { }
-    private void OnDungeonBtnClick() { }
-    private void OnShopBtnClick() { }
-    private void OnHUDSummonBtnClick() { }
+    private void OnAbilityBtnClick()
+    { 
+    
+    }
+    private void OnEquipmentBtnClick()
+    {
+    
+    }
+    private void OnSkillBtnClick()
+    {
+    
+    }
+    private void OnDungeonBtnClick()
+    {
+    
+    }
+    private void OnShopBtnClick()
+    { 
+    
+    }
+    private void OnHUDSummonBtnClick()
+    { 
+    
+    }
 
     #endregion
 
     #region Contents
-    private void OnAttendanceBtnClick() { }
-    private void OnMissionBtnClick() { }
-    private void OnRankBtnClick() { }
-    private void OnBlessingBtnClick() { }
-    private void OnAttributeBtnClick() { }
-    private void OnAwakeBtnClick() { }
-    private void OnPassBtnClick() { }
-    private void OnInventoryBtnClick() { }
-    private void OnPowerSavingBtnClick() { }
-    private void OnFriendBtnClick() { }
-    private void OnGuildBtnClick() { }
-    private void OnSettingsBtnClick() { }
+    private void OnAttendanceBtnClick()
+    {
+    
+    }
+    private void OnMissionBtnClick() 
+    { 
+    
+    }
+    private void OnRankBtnClick()
+    { 
+    
+    }
+    private void OnBlessingBtnClick()
+    {
+
+    }
+
+    private void OnAttributeBtnClick() 
+    { 
+    
+    }
+    private void OnAwakeBtnClick()
+    {
+    
+    }
+    private void OnPassBtnClick()
+    {
+
+
+    }
+    private void OnInventoryBtnClick()
+    {
+    
+    }
+    private void OnPowerSavingBtnClick() 
+    { 
+    
+    }
+    private void OnFriendBtnClick() 
+    {
+    
+    }
+    private void OnGuildBtnClick()
+    {
+    
+    }
+    private void OnSettingsBtnClick()
+    { 
+    
+    }
     #endregion
 }
