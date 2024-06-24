@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 [Serializable]
 public class PlayerModel
@@ -8,7 +9,7 @@ public class PlayerModel
     public string player_nickname;
     public PlayerAttributes attributes;
 }
-
+[Serializable]
 public class PlayerAttributes
 {
     public int star_dust;
@@ -34,6 +35,7 @@ public class PlayerAttributes
     public int light_enhance;
     public int dark_enhance;
     public int combat_power;
+    public string current_stage;
 }
 
 [Serializable]
@@ -109,8 +111,36 @@ public class MissionProgressModel
 [Serializable]
 public class RewardModel
 {
-    public int ID;
-    public string Type;
-    public int Requirement;
-    public int Reward;
+    public int id;
+    public string type;
+    public int requirement;
+    public int reward;
+}
+
+[Serializable]
+public class MonsterModel
+{
+    public int id;
+    public string name;
+    public int health;
+    public int attack_power;
+    public bool is_boss;
+    public DropTable drop_table;
+}
+
+[Serializable]
+public class DropTable
+{
+    public int money;
+    public int star_dust;
+    public int element_stone;
+    public float star_dust_drop_chance;
+    public float element_stone_drop_chance;
+}
+
+[Serializable]
+public class StageModel
+{
+    public string stage_number;
+    public List<MonsterModel> monsters;
 }

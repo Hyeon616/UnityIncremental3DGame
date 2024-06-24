@@ -15,11 +15,13 @@ CREATE TABLE PlayerAttributes (
     star_dust INT DEFAULT 0,
     element_stone INT DEFAULT 0,
     skill_summon_tickets INT DEFAULT 0,
+    
     money INT DEFAULT 0,
     attack_power INT DEFAULT 10,
     max_health INT DEFAULT 50,
     critical_chance FLOAT DEFAULT 0,
     critical_damage FLOAT DEFAULT 0,
+    current_stage VARCHAR(10) DEFAULT '1-1',
     level INT DEFAULT 1,
     awakening INT DEFAULT 0,
     fire_damage FLOAT DEFAULT 0,

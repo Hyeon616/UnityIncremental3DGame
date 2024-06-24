@@ -6,14 +6,14 @@ public class MonsterSpawner : MonoBehaviour
 {
     public GameObject GameObject_MonsterPrefab;
     public Transform Transform_Player;
-    private ObjectPool<MonsterViewModel> _monsterPool;
+    //private ObjectPool<MonsterViewModel> _monsterPool;
     private int _totalMonstersPerStage = 15;
     private int _spawnedMonsters = 0;
     private int _killedMonsters = 0;
 
     void Start()
     {
-        _monsterPool = new ObjectPool<MonsterViewModel>(GameObject_MonsterPrefab.GetComponent<MonsterViewModel>(), _totalMonstersPerStage);
+        //_monsterPool = new ObjectPool<MonsterViewModel>(GameObject_MonsterPrefab.GetComponent<MonsterViewModel>(), _totalMonstersPerStage);
         SpawnMonstersRoutine().Forget();
     }
 
@@ -35,7 +35,7 @@ public class MonsterSpawner : MonoBehaviour
                 if (_killedMonsters >= _totalMonstersPerStage)
                 {
                     //Transform_Player.GetComponent<PlayerViewModel>().FullHeal();
-                    MonsterModel.ResetHealthIncrementer();
+                   // MonsterModel.ResetHealthIncrementer();
 
                     await UniTask.Delay(10000); // 10초 대기
                     _spawnedMonsters = 0;
@@ -51,16 +51,16 @@ public class MonsterSpawner : MonoBehaviour
 
     void SpawnMonster()
     {
-        MonsterViewModel monster = _monsterPool.GetObject();
-        if (monster != null)
-        {
-            Vector3 spawnPosition = GetRandomPosition();
-            monster.transform.position = spawnPosition;
-            monster.gameObject.SetActive(true);
+        //MonsterViewModel monster = _monsterPool.GetObject();
+        //if (monster != null)
+        //{
+        //    Vector3 spawnPosition = GetRandomPosition();
+        //    monster.transform.position = spawnPosition;
+        //    monster.gameObject.SetActive(true);
 
-            monster.SetPlayer(Transform_Player);
-            monster.GetComponent<MonsterModel>().ResetHealth();
-        }
+        //    monster.SetPlayer(Transform_Player);
+        //    monster.GetComponent<MonsterModel>().ResetHealth();
+        //}
     }
 
     Vector3 GetRandomPosition()
@@ -83,22 +83,22 @@ public class MonsterSpawner : MonoBehaviour
 
     void Update()
     {
-        foreach (MonsterViewModel monster in _monsterPool.ActiveObjects())
-        {
-            if (monster.gameObject.activeSelf && !monster.HasTarget)
-            {
-                monster.SetPlayer(Transform_Player);
-            }
-        }
+        //foreach (MonsterViewModel monster in _monsterPool.ActiveObjects())
+        //{
+        //    if (monster.gameObject.activeSelf && !monster.HasTarget)
+        //    {
+        //        monster.SetPlayer(Transform_Player);
+        //    }
+        //}
 
-        if (AllMonstersDead())
-        {
-            _killedMonsters++;
-        }
+        //if (AllMonstersDead())
+        //{
+        //    _killedMonsters++;
+        //}
     }
 
-    bool AllMonstersDead()
-    {
-        return _monsterPool.AllObjectsInactive();
-    }
+    //bool AllMonstersDead()
+    //{
+    //    return _monsterPool.AllObjectsInactive();
+    //}
 }

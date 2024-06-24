@@ -23,6 +23,11 @@ public class APISettings : ScriptableObject
     public string checkUsernameEndpoint = "check-username";
     public string checkNicknameEndpoint = "check-nickname";
     public string rewardsEndpoint = "rewards";
+    public string stagesEndpoint = "stages"; 
+    public string monstersEndpoint = "monsters";
+    public string currentStageEndpoint = "currentStage";
+    public string updateStageEndpoint = "updateStage";
+
 
     public string RegisterUrl => $"{baseUrl}/{registerEndpoint}";
     public string LoginUrl => $"{baseUrl}/{loginEndpoint}";
@@ -43,4 +48,8 @@ public class APISettings : ScriptableObject
     public string CheckUsernameUrl(string username) => $"{baseUrl}/{checkUsernameEndpoint}?username={username}";
     public string CheckNicknameUrl(string nickname) => $"{baseUrl}/{checkNicknameEndpoint}?nickname={nickname}";
     public string RewardsUrl => $"{baseUrl}/{rewardsEndpoint}";
+    public string StagesUrl => $"{baseUrl}/{stagesEndpoint}";
+    public string CurrentStageUrl(int playerId) => $"{baseUrl}/{currentStageEndpoint}";
+    public string UpdateStageUrl => $"{baseUrl}/{updateStageEndpoint}";
+    public string MonstersUrl => $"{baseUrl}/{monstersEndpoint}"; 
 }
