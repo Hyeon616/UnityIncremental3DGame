@@ -1,19 +1,23 @@
-// 스킬 데이터
-const path = require('path');
-const loadXmlData = require('./loadXmlData');
+const pool = require('../config/db');
+const { getAsync, setAsync } = require('../config/redis');
 
-const skillsXmlFilePath = path.join(__dirname, '../xml/Skills.xml');
+async function loadSkillsData() {
+    try {
+        const skillsCache = await getAsync('skills');
+        if (skillsCache) {
+            return JSON.parse(skillsCache);
+        }
 
-let skillData = [];
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM Skills');
+        conn.release();
 
-loadXmlData(skillsXmlFilePath, (result) => {
-    skillData = result.root.row.map(skill => ({
-        id: parseInt(skill.id, 10),
-        name: skill.name,
-        element: skill.element,
-        rarity: skill.rarity,
-        damage_multiplier: parseFloat(skill.damage_multiplier)
-    }));
-});
+        await setAsync('skills', JSON.stringify(rows), 'EX', 3600);
+        return rows;
+    } catch (err) {
+        console.error('Skills 데이터를 불러오는 중 오류 발생:', err);
+        throw err;
+    }
+}
 
-module.exports = { skillData };
+module.exports = loadSkillsData;

@@ -6,7 +6,9 @@ CREATE TABLE Players (
     player_id INT AUTO_INCREMENT PRIMARY KEY,
     player_username VARCHAR(255) UNIQUE NOT NULL,
     player_password VARCHAR(255) NOT NULL,
-    player_nickname VARCHAR(255) UNIQUE NOT NULL
+    player_nickname VARCHAR(255) UNIQUE NOT NULL,
+    guild_id INT DEFAULT NULL,
+    FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE SET NULL
 );
 
 -- PlayerAttributes 테이블 생성
@@ -15,7 +17,6 @@ CREATE TABLE PlayerAttributes (
     star_dust INT DEFAULT 0,
     element_stone INT DEFAULT 0,
     skill_summon_tickets INT DEFAULT 0,
-    
     money INT DEFAULT 0,
     attack_power INT DEFAULT 10,
     max_health INT DEFAULT 50,
@@ -71,10 +72,6 @@ CREATE TABLE Guilds (
     FOREIGN KEY (guild_leader) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
--- Players 테이블에 guild_id 컬럼 추가 및 외래 키 설정
-ALTER TABLE Players ADD COLUMN guild_id INT DEFAULT NULL;
-ALTER TABLE Players ADD CONSTRAINT FK_Guild FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE SET NULL;
-
 -- Friends 테이블 생성
 CREATE TABLE Friends (
     player_id INT NOT NULL,
@@ -126,3 +123,4 @@ CREATE TABLE MissionProgress (
     last_online_time_check DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
+

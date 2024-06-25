@@ -158,6 +158,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public event Action<int> OnPlayerHealthChanged;
     public event Action<int> OnMonsterHealthChanged;
+    public event Action<int> OnPlayerManaChanged;
     public event Action<MonsterModel> OnMonsterDefeated;
     public event Action OnPlayerDefeated;
     public event Action<int, int, int> OnPlayerRewardsUpdated;
@@ -167,6 +168,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
+    #region LoadData
     public async UniTask LoadPlayerData(int playerId)
     {
         string url = ResourceManager.Instance.APISettings.PlayerDataUrl(playerId);
@@ -390,8 +392,55 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         }
     }
 
+    
+   
 
-    public async UniTask HandleCombat(PlayerModel player, MonsterModel monster)
+    public async UniTask LoadCurrentStage()
+    {
+        string url = ResourceManager.Instance.APISettings.CurrentStageUrl(CurrentPlayer.player_id);
+        using (UnityWebRequest www = UnityWebRequest.Get(url))
+        {
+            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
+            await www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError(www.error);
+            }
+            else
+            {
+                string jsonResult = www.downloadHandler.text;
+                var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResult);
+                CurrentPlayer.attributes.current_stage = result["current_stage"];
+            }
+        }
+    }
+
+
+
+    public async UniTask UpdateCurrentStage(string stage)
+    {
+        string url = ResourceManager.Instance.APISettings.UpdateStageUrl;
+        using (UnityWebRequest www = UnityWebRequest.Post(url, JsonConvert.SerializeObject(new { userId = CurrentPlayer.player_id, stage = stage })))
+        {
+            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
+            www.SetRequestHeader("Content-Type", "application/json");
+            await www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError(www.error);
+            }
+            else
+            {
+                CurrentPlayer.attributes.current_stage = stage;
+            }
+        }
+    }
+
+    #endregion LoadData
+
+    private async UniTask HandleCombat(PlayerModel player, MonsterModel monster)
     {
         while (player.attributes.max_health > 0 && monster.health > 0)
         {
@@ -418,6 +467,10 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
                 break;
             }
 
+            // MP 감소 로직 추가
+            //player.attributes.max_mp -= 10; // 예시로 10씩 감소
+            //OnPlayerManaChanged?.Invoke(player.attributes.max_mp);
+
             await UniTask.Delay(1000); // 1초마다 전투 라운드 진행
         }
     }
@@ -441,47 +494,6 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         player.attributes.star_dust += dropTable.star_dust;
         player.attributes.element_stone += dropTable.element_stone;
         OnPlayerRewardsUpdated?.Invoke(player.attributes.money, player.attributes.star_dust, player.attributes.element_stone);
-    }
-
-    public async UniTask LoadCurrentStage()
-    {
-        string url = ResourceManager.Instance.APISettings.CurrentStageUrl(CurrentPlayer.player_id);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResult);
-                CurrentPlayer.attributes.current_stage = result["current_stage"];
-            }
-        }
-    }
-
-    public async UniTask UpdateCurrentStage(string stage)
-    {
-        string url = ResourceManager.Instance.APISettings.UpdateStageUrl;
-        using (UnityWebRequest www = UnityWebRequest.Post(url, JsonConvert.SerializeObject(new { userId = CurrentPlayer.player_id, stage = stage })))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            www.SetRequestHeader("Content-Type", "application/json");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                CurrentPlayer.attributes.current_stage = stage;
-            }
-        }
     }
 
     private void UpdateCollection<T>(ObservableCollection<T> collection, List<T> newItems)

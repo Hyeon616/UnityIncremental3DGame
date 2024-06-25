@@ -12,13 +12,6 @@ const rewardRoutes = require('./routes/rewardRoutes');
 const stageRoutes = require('./routes/stageRoutes');
 const monsterRoutes = require('./routes/monsterRoutes');
 
-const loadWeaponData = require('./data/weaponData');
-const loadBlessingsData = require('./data/blessingData');
-const loadSkillsData = require('./data/skillData');
-const loadMissionRewardsData = require('./data/rewardData');
-const loadMonsterData = require('./data/monsterData');
-const loadStageData = require('./data/stageData');
-
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -34,5 +27,5 @@ app.use('/stages', stageRoutes);
 app.use('/monsters', monsterRoutes);
 
 app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });

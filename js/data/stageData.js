@@ -1,33 +1,23 @@
-// 스테이지 정보
-const path = require('path');
-const loadXmlData = require('./loadXmlData');
+const pool = require('../config/db');
+const { getAsync, setAsync } = require('../config/redis');
 
-const monsterXmlFilePath = path.join(__dirname, '../xml/Monsters.xml');
-
-let stageData = {};
-
-loadXmlData(monsterXmlFilePath, (result) => {
-    stageData = {};
-    result.root.row.forEach(monster => {
-        let stage = monster.Stage;
-        if (!stageData[stage]) {
-            stageData[stage] = [];
+async function loadStageData() {
+    try {
+        const stagesCache = await getAsync('stages');
+        if (stagesCache) {
+            return JSON.parse(stagesCache);
         }
-        const monsterObj = {
-            name: monster.Name,
-            type: monster.Type,
-            health: parseInt(monster.Health, 10),
-            attack: parseInt(monster.Attack, 10),
-            drops: {
-                money: parseInt(monster.DropMoney, 10),
-                star_dust: parseInt(monster.DropStarDust, 10),
-                element_stone: parseInt(monster.DropElementStone, 10),
-                star_dust_chance: parseFloat(monster.DropStarDustChance),
-                element_stone_chance: parseFloat(monster.DropElementStoneChance),
-            }
-        };
-        stageData[stage].push(monsterObj);
-    });
-});
 
-module.exports = { stageData };
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM Stages');
+        conn.release();
+
+        await setAsync('stages', JSON.stringify(rows), 'EX', 3600);
+        return rows;
+    } catch (err) {
+        console.error('Stages 데이터를 불러오는 중 오류 발생:', err);
+        throw err;
+    }
+}
+
+module.exports = loadStageData;

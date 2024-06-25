@@ -3,7 +3,6 @@ using UnityEngine.Networking;
 using TMPro;
 using Cysharp.Threading.Tasks;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 
 public class LoginManager : MonoBehaviour
@@ -79,7 +78,7 @@ public class LoginManager : MonoBehaviour
                         PlayerPrefs.SetInt("UserId", response.userId);
                         Debug.Log("토큰 저장: " + response.token);
                         feedbackText.text = "로그인 성공!";
-                        SceneManager.LoadScene("GameScene");
+                        //SceneManager.LoadScene("GameScene");
                     }
                     else
                     {

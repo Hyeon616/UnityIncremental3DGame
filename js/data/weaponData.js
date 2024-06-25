@@ -1,21 +1,23 @@
-// 무기 데이터
-const path = require('path');
-const loadXmlData = require('./loadXmlData');
+const pool = require('../config/db');
+const { getAsync, setAsync } = require('../config/redis');
 
-const weaponXmlFilePath = path.join(__dirname, '../xml/Weapon.xml');
+async function loadWeaponData() {
+    try {
+        const weaponsCache = await getAsync('weapons');
+        if (weaponsCache) {
+            return JSON.parse(weaponsCache);
+        }
 
-let weaponData = [];
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM Weapons');
+        conn.release();
 
-loadXmlData(weaponXmlFilePath, (result) => {
-    weaponData = result.root.row.map(weapon => ({
-        id: parseInt(weapon.id, 10),
-        rarity: weapon.rarity,
-        grade: weapon.grade,
-        base_attack_power: parseInt(weapon.base_attack_power, 10),
-        base_critical_chance: parseFloat(weapon.base_critical_chance),
-        base_critical_damage: parseFloat(weapon.base_critical_damage),
-        base_max_health: parseInt(weapon.base_max_health, 10),
-    }));
-});
+        await setAsync('weapons', JSON.stringify(rows), 'EX', 3600);
+        return rows;
+    } catch (err) {
+        console.error('Weapons 데이터를 불러오는 중 오류 발생:', err);
+        throw err;
+    }
+}
 
-module.exports = { weaponData };
+module.exports = loadWeaponData;

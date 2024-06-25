@@ -7,7 +7,7 @@ public class UIManager : MonoBehaviour
     // HUD 화면 버튼
     [Header("HUDButton")]
     [SerializeField] private Button MailBtn;
-    [SerializeField] private Button ContentsMenuBtn;
+    
     [SerializeField] private Button AmuletBtn;
     [SerializeField] private Button ChattingBtn;
 
@@ -22,7 +22,7 @@ public class UIManager : MonoBehaviour
 
     // 버튼을 누르면 나오게 될 패널
     [Header("ContentsPanel")]
-    [SerializeField] private GameObject ContentsPanel;
+    
     [SerializeField] private GameObject ChattingPanel;
 
     // 퀵 메뉴에서 누르면 나오게 될 패널
@@ -120,7 +120,6 @@ public class UIManager : MonoBehaviour
     private void OnHUDBtnAddListener()
     {
         MailBtn.onClick.AddListener(OnMailBtnClick);
-        ContentsMenuBtn.onClick.AddListener(OnContentsMenuBtnClick);
         AmuletBtn.onClick.AddListener(OnAmuletBtnClick);
         ChattingBtn.onClick.AddListener(OnChattingBtnBtnClick);
     }
@@ -128,7 +127,6 @@ public class UIManager : MonoBehaviour
     private void OnHUDBtnRemoveListener()
     {
         MailBtn.onClick.RemoveListener(OnMailBtnClick);
-        ContentsMenuBtn.onClick.RemoveListener(OnContentsMenuBtnClick);
         AmuletBtn.onClick.RemoveListener(OnAmuletBtnClick);
         ChattingBtn.onClick.RemoveListener(OnChattingBtnBtnClick);
     }
@@ -138,11 +136,7 @@ public class UIManager : MonoBehaviour
     {
         // mail 
     }
-    private void OnContentsMenuBtnClick()
-    {
-        ContentsPanel.SetActive(!ContentsPanel.activeSelf);
     
-    }
     private void OnAmuletBtnClick() { }
     private void OnChattingBtnBtnClick() { }
     #endregion

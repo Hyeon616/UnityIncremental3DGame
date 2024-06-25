@@ -1,26 +1,23 @@
-// 몬스터 데이터
-const path = require('path');
-const loadXmlData = require('./loadXmlData');
+const pool = require('../config/db');
+const { getAsync, setAsync } = require('../config/redis');
 
-const monsterXmlFilePath = path.join(__dirname, '../xml/Monsters.xml');
-
-let monsterData = [];
-
-loadXmlData(monsterXmlFilePath, (result) => {
-    monsterData = result.root.row.map(monster => ({
-        stage: monster.Stage,
-        name: monster.Name,
-        type: monster.Type,
-        health: parseInt(monster.Health, 10),
-        attack: parseInt(monster.Attack, 10),
-        drops: {
-            money: parseInt(monster.DropMoney, 10),
-            star_dust: parseInt(monster.DropStarDust, 10),
-            element_stone: parseInt(monster.DropElementStone, 10),
-            star_dust_chance: parseFloat(monster.DropStarDustChance),
-            element_stone_chance: parseFloat(monster.DropElementStoneChance),
+async function loadMonsterData() {
+    try {
+        const monstersCache = await getAsync('monsters');
+        if (monstersCache) {
+            return JSON.parse(monstersCache);
         }
-    }));
-});
 
-module.exports = { monsterData };
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM Monsters');
+        conn.release();
+
+        await setAsync('monsters', JSON.stringify(rows), 'EX', 3600);
+        return rows;
+    } catch (err) {
+        console.error('Monsters 데이터를 불러오는 중 오류 발생:', err);
+        throw err;
+    }
+}
+
+module.exports = loadMonsterData;

@@ -1,18 +1,23 @@
-// 미션 보상 데이터
-const path = require('path');
-const loadXmlData = require('./loadXmlData');
+const pool = require('../config/db');
+const { getAsync, setAsync } = require('../config/redis');
 
-const missionRewardsXmlFilePath = path.join(__dirname, '../xml/MissionRewards.xml');
+async function loadRewardsData() {
+    try {
+        const rewardsCache = await getAsync('rewards');
+        if (rewardsCache) {
+            return JSON.parse(rewardsCache);
+        }
 
-let rewardData = [];
+        const conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM Rewards');
+        conn.release();
 
-loadXmlData(missionRewardsXmlFilePath, (result) => {
-    rewardData = result.root.row.map(reward => ({
-        id: parseInt(reward.id, 10),
-        type: reward.type,
-        requirement: parseInt(reward.requirement, 10),
-        reward: parseInt(reward.reward, 10)
-    }));
-});
+        await setAsync('rewards', JSON.stringify(rows), 'EX', 3600);
+        return rows;
+    } catch (err) {
+        console.error('Rewards 데이터를 불러오는 중 오류 발생:', err);
+        throw err;
+    }
+}
 
-module.exports = { rewardData };
+module.exports = loadRewardsData;
