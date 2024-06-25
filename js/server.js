@@ -11,6 +11,8 @@ const skillRoutes = require('./routes/skillRoutes');
 const rewardRoutes = require('./routes/rewardRoutes');
 const stageRoutes = require('./routes/stageRoutes');
 const monsterRoutes = require('./routes/monsterRoutes');
+const guildRoutes = require('./routes/guildRoutes');
+const friendRoutes = require('./routes/friendRoutes');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -25,6 +27,8 @@ app.use('/skills', skillRoutes);
 app.use('/rewards', rewardRoutes);
 app.use('/stages', stageRoutes);
 app.use('/monsters', monsterRoutes);
+app.use('/guilds', guildRoutes);
+app.use('/friends', friendRoutes);
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
