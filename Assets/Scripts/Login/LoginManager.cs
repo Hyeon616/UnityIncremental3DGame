@@ -78,7 +78,10 @@ public class LoginManager : MonoBehaviour
                         PlayerPrefs.SetInt("UserId", response.userId);
                         Debug.Log("토큰 저장: " + response.token);
                         feedbackText.text = "로그인 성공!";
-                        //SceneManager.LoadScene("GameScene");
+                        await UIManager.Instance.ShowLoadingUI();
+                        await GameManager.Instance.InitializeGameData();
+                        UIManager.Instance.HideLoadingUI();
+
                     }
                     else
                     {
