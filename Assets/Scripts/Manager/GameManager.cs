@@ -1,6 +1,7 @@
 using UnityEngine;
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
+using System;
 
 public class GameManager : UnitySingleton<GameManager>
 {
@@ -29,14 +30,25 @@ public class GameManager : UnitySingleton<GameManager>
     {
         int userId = GetUserId();
 
-        await GameLogic.Instance.LoadPlayerData(userId);
-        await GameLogic.Instance.LoadMails(userId);
-        await GameLogic.Instance.LoadGuilds();
-        await GameLogic.Instance.LoadFriends(userId);
-        await GameLogic.Instance.LoadPlayerWeapons(userId);
-        await GameLogic.Instance.LoadPlayerSkills(userId);
-        await GameLogic.Instance.LoadPlayerBlessings(userId);
-        await GameLogic.Instance.LoadMissionProgress(userId);
+        try
+        {
+            bool loadDataSuccess = await ResourceManager.Instance.LoadAllData(userId);
+            if (loadDataSuccess)
+            {
+                Debug.Log("Game data loaded successfully.");
+                UIManager.Instance.OnGameDataLoaded();
+            }
+            else
+            {
+                Debug.LogError("Failed to load game data.");
+                UIManager.Instance.ShowError("Failed to load game data.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception during game initialization: {ex.Message}");
+            UIManager.Instance.ShowError("An error occurred during game initialization.");
+        }
     }
 
     private int GetUserId()

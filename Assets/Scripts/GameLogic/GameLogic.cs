@@ -1,13 +1,10 @@
 using Cysharp.Threading.Tasks;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 {
@@ -26,7 +23,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     public PlayerModel CurrentPlayer
     {
         get => _currentPlayer;
-        private set
+        set
         {
             if (_currentPlayer != value)
             {
@@ -117,7 +114,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     public MissionProgressModel MissionProgress
     {
         get => _missionProgress;
-        private set
+        set
         {
             if (_missionProgress != value)
             {
@@ -152,7 +149,6 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
             }
         }
     }
- 
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -168,280 +164,16 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    #region LoadData
-    public async UniTask LoadPlayerData(int playerId)
+    public void UpdateCollection<T>(ObservableCollection<T> collection, ObservableCollection<T> newItems)
     {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerId);
-
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
+        collection.Clear();
+        foreach (var item in newItems)
         {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                CurrentPlayer = JsonConvert.DeserializeObject<PlayerModel>(jsonResult);
-            }
-        }
-    }
-
-    public async UniTask LoadMails(int userId)
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Mails, userId);
-
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                UpdateCollection(Mails, JsonConvert.DeserializeObject<List<MailModel>>(jsonResult));
-            }
-        }
-    }
-
-    public async UniTask LoadGuilds()
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Guilds);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                UpdateCollection(Guilds, JsonConvert.DeserializeObject<List<GuildModel>>(jsonResult));
-            }
-        }
-    }
-
-    public async UniTask LoadFriends(int userId)
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Friends, userId);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                UpdateCollection(Friends, JsonConvert.DeserializeObject<List<FriendModel>>(jsonResult));
-            }
-        }
-    }
-
-    public async UniTask LoadPlayerWeapons(int userId)
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.PlayerWeapons, userId);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                UpdateCollection(PlayerWeapons, JsonConvert.DeserializeObject<List<PlayerWeaponModel>>(jsonResult));
-            }
-        }
-    }
-
-    public async UniTask LoadPlayerSkills(int userId)
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.PlayerSkills, userId);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                UpdateCollection(PlayerSkills, JsonConvert.DeserializeObject<List<PlayerSkillModel>>(jsonResult));
-            }
-        }
-    }
-
-    public async UniTask LoadPlayerBlessings(int userId)
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.PlayerBlessings, userId);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                UpdateCollection(PlayerBlessings, JsonConvert.DeserializeObject<List<PlayerBlessingModel>>(jsonResult));
-            }
-        }
-    }
-
-    public async UniTask LoadMissionProgress(int userId)
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.MissionProgress, userId);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                MissionProgress = JsonConvert.DeserializeObject<MissionProgressModel>(jsonResult);
-            }
-        }
-    }
-
-    public async UniTask LoadRewards()
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Rewards);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                UpdateCollection(Rewards, JsonConvert.DeserializeObject<List<RewardModel>>(jsonResult));
-            }
-        }
-    }
-
-    public async UniTask ClaimReward(int rewardId)
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.ClaimReward);
-        using (UnityWebRequest www = UnityWebRequest.Post(url, new WWWForm()))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            www.SetRequestHeader("Content-Type", "application/json");
-            www.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { rewardId })));
-            www.uploadHandler.contentType = "application/json";
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                var mail = Mails.FirstOrDefault(m => m.id == rewardId);
-                if (mail != null)
-                {
-                    Mails.Remove(mail);
-                }
-            }
-        }
-    }
-
-    public async UniTask LoadStages()
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Stages);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                UpdateCollection(Stages, JsonConvert.DeserializeObject<List<StageModel>>(jsonResult));
-            }
+            collection.Add(item);
         }
     }
 
     
-   
-
-    public async UniTask LoadCurrentStage()
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.CurrentStage, CurrentPlayer.player_id);
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                string jsonResult = www.downloadHandler.text;
-                var result = JsonConvert.DeserializeObject<Dictionary<string, string>>(jsonResult);
-                CurrentPlayer.attributes.current_stage = result["current_stage"];
-            }
-        }
-    }
-
-
-
-    public async UniTask UpdateCurrentStage(string stage)
-    {
-        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.UpdateStage);
-        using (UnityWebRequest www = UnityWebRequest.Post(url, JsonConvert.SerializeObject(new { userId = CurrentPlayer.player_id, stage = stage })))
-        {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
-            www.SetRequestHeader("Content-Type", "application/json");
-            await www.SendWebRequest();
-
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError(www.error);
-            }
-            else
-            {
-                CurrentPlayer.attributes.current_stage = stage;
-            }
-        }
-    }
-
-    #endregion LoadData
-
     private async UniTask HandleCombat(PlayerModel player, MonsterModel monster)
     {
         while (player.attributes.max_health > 0 && monster.health > 0)
@@ -498,12 +230,76 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         OnPlayerRewardsUpdated?.Invoke(player.attributes.money, player.attributes.star_dust, player.attributes.element_stone);
     }
 
-    private void UpdateCollection<T>(ObservableCollection<T> collection, List<T> newItems)
+    #region Callbacks
+
+    public void OnPlayerDataLoaded(PlayerModel playerData)
     {
-        collection.Clear();
-        foreach (var item in newItems)
+        CurrentPlayer = playerData;
+    }
+
+    public void OnMailsLoaded(ObservableCollection<MailModel> mails)
+    {
+        UpdateCollection(Mails, mails);
+    }
+
+    public void OnGuildsLoaded(ObservableCollection<GuildModel> guilds)
+    {
+        UpdateCollection(Guilds, guilds);
+    }
+
+    public void OnFriendsLoaded(ObservableCollection<FriendModel> friends)
+    {
+        UpdateCollection(Friends, friends);
+    }
+
+    public void OnPlayerWeaponsLoaded(ObservableCollection<PlayerWeaponModel> weapons)
+    {
+        UpdateCollection(PlayerWeapons, weapons);
+    }
+
+    public void OnPlayerSkillsLoaded(ObservableCollection<PlayerSkillModel> skills)
+    {
+        UpdateCollection(PlayerSkills, skills);
+    }
+
+    public void OnPlayerBlessingsLoaded(ObservableCollection<PlayerBlessingModel> blessings)
+    {
+        UpdateCollection(PlayerBlessings, blessings);
+    }
+
+    public void OnMissionProgressLoaded(MissionProgressModel missionProgress)
+    {
+        MissionProgress = missionProgress;
+    }
+
+    public void OnRewardsLoaded(ObservableCollection<RewardModel> rewards)
+    {
+        UpdateCollection(Rewards, rewards);
+    }
+
+    public void OnStagesLoaded(ObservableCollection<StageModel> stages)
+    {
+        UpdateCollection(Stages, stages);
+    }
+
+    public void OnCurrentStageLoaded(Dictionary<string, string> data)
+    {
+        if (data.TryGetValue("current_stage", out string currentStage))
         {
-            collection.Add(item);
+            CurrentPlayer.attributes.current_stage = currentStage;
         }
     }
+
+    public void OnCurrentStageUpdated()
+    {
+        Debug.Log("Current stage updated successfully");
+    }
+
+    public void OnRewardClaimed()
+    {
+        Debug.Log("Reward claimed successfully");
+    }
+
+    #endregion Callbacks
+
 }

@@ -7,8 +7,9 @@ using UnityEngine;
 public class UIManager : UnitySingleton<UIManager>
 {
     private Dictionary<string, GameObject> activeUIs = new Dictionary<string, GameObject>();
-    private Dictionary<string, CancellationTokenSource> uiCancellationTokens = new Dictionary<string, CancellationTokenSource>();
-    private const float UI_REMOVE_DELAY = 180f; // 3 minutes
+    private Dictionary<string, CancellationTokenSource> removeTimers = new Dictionary<string, CancellationTokenSource>();
+    private Stack<GameObject> uiPool = new Stack<GameObject>();
+    private const float UI_REMOVE_DELAY = 15f; // 3 minutes
 
     public void StartGame()
     {
@@ -27,7 +28,8 @@ public class UIManager : UnitySingleton<UIManager>
 
         if (!activeUIs.ContainsKey(instanceName))
         {
-            InstantiateAndAddUI(instanceName, prefab);
+            var uiInstance = GetOrCreateUIInstance(prefab, instanceName);
+            activeUIs[instanceName] = uiInstance;
         }
         else
         {
@@ -36,34 +38,40 @@ public class UIManager : UnitySingleton<UIManager>
             if (uiInstance == null)
             {
                 Debug.LogWarning($"UI '{uiName}' was destroyed unexpectedly. Re-instantiating...");
-                InstantiateAndAddUI(instanceName, prefab);
+                uiInstance = GetOrCreateUIInstance(prefab, instanceName);
+                activeUIs[instanceName] = uiInstance;
             }
             else
             {
                 uiInstance.SetActive(true);
-                CancelRemoveUITimer(instanceName);
+                CancelRemoveUITimer(instanceName); // 타이머 취소
             }
         }
     }
 
-    private void InstantiateAndAddUI(string instanceName, GameObject prefab)
+    private GameObject GetOrCreateUIInstance(GameObject prefab, string instanceName)
     {
         var canvas = GameObject.Find("@UI_Canvas");
         if (canvas == null)
         {
             Debug.LogError("@UI_Canvas not found!");
-            return;
+            return null;
         }
 
-        var uiInstance = Instantiate(prefab, canvas.transform);
-        if (uiInstance == null)
+        GameObject uiInstance;
+        if (uiPool.Count > 0)
         {
-            Debug.LogError($"Failed to instantiate UI '{instanceName}'!");
-            return;
+            uiInstance = uiPool.Pop();
+            uiInstance.transform.SetParent(canvas.transform);
+            uiInstance.SetActive(true);
+        }
+        else
+        {
+            uiInstance = Instantiate(prefab, canvas.transform);
         }
 
         uiInstance.name = instanceName;
-        activeUIs[instanceName] = uiInstance;
+        return uiInstance;
     }
 
     public void ShowLoadingUI()
@@ -71,7 +79,7 @@ public class UIManager : UnitySingleton<UIManager>
         ShowUI("LoadingUI");
     }
 
-    public async UniTask HideLoadingUI()
+    public void HideLoadingUI()
     {
         HideUI("LoadingUI");
     }
@@ -82,31 +90,32 @@ public class UIManager : UnitySingleton<UIManager>
 
         if (activeUIs.TryGetValue(instanceName, out var uiInstance))
         {
-            if (uiInstance == null)
-            {
-                Debug.LogWarning($"UI '{uiName}' is null but still in the activeUIs dictionary. Removing from dictionary.");
-                activeUIs.Remove(instanceName);
-                return;
-            }
-
             uiInstance.SetActive(false);
-            StartRemoveUITimer(instanceName, UI_REMOVE_DELAY);
+            StartRemoveUITimer(instanceName);
         }
     }
 
-    private async void StartRemoveUITimer(string instanceName, float delay)
+    private void StartRemoveUITimer(string instanceName)
     {
-        var cts = new CancellationTokenSource();
-        uiCancellationTokens[instanceName] = cts;
+        CancelRemoveUITimer(instanceName); // 이전 타이머가 있을 경우 취소
 
+        var cts = new CancellationTokenSource();
+        removeTimers[instanceName] = cts;
+
+        RemoveUIAfterDelay(instanceName, UI_REMOVE_DELAY, cts.Token).Forget();
+    }
+
+    private async UniTask RemoveUIAfterDelay(string instanceName, float delay, CancellationToken token)
+    {
         try
         {
-            await UniTask.Delay((int)(delay * 1000), cancellationToken: cts.Token);
-            if (activeUIs.TryGetValue(instanceName, out var uiInstance) && uiInstance != null && !uiInstance.activeSelf)
+            await UniTask.Delay(TimeSpan.FromSeconds(delay), cancellationToken: token);
+
+            if (activeUIs.TryGetValue(instanceName, out var uiInstance) && !uiInstance.activeSelf)
             {
                 Destroy(uiInstance);
                 activeUIs.Remove(instanceName);
-                uiCancellationTokens.Remove(instanceName);
+                removeTimers.Remove(instanceName);
             }
         }
         catch (OperationCanceledException)
@@ -115,12 +124,12 @@ public class UIManager : UnitySingleton<UIManager>
         }
     }
 
-    public void CancelRemoveUITimer(string instanceName)
+    private void CancelRemoveUITimer(string instanceName)
     {
-        if (uiCancellationTokens.TryGetValue(instanceName, out var cts))
+        if (removeTimers.TryGetValue(instanceName, out var cts))
         {
             cts.Cancel();
-            uiCancellationTokens.Remove(instanceName);
+            removeTimers.Remove(instanceName);
         }
     }
 
@@ -129,6 +138,17 @@ public class UIManager : UnitySingleton<UIManager>
         HideUI("LoginUI");
         ShowLoadingUI();
         await GameManager.Instance.InitializeGame();
-        await HideLoadingUI();
+        HideLoadingUI();
+    }
+
+    public void OnGameDataLoaded()
+    {
+        HideLoadingUI();
+    }
+
+    public void ShowError(string message)
+    {
+        // 에러 메시지를 표시하는 UI
+        Debug.LogError(message);
     }
 }
