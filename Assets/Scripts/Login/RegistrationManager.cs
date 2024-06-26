@@ -12,7 +12,6 @@ public class RegistrationManager : MonoBehaviour
     [SerializeField] private TMP_InputField passwordInputField;
     [SerializeField] private TMP_InputField nicknameInputField;
     [SerializeField] private TMP_Text feedbackText;
-    [SerializeField] private APISettings apiSettings;
     [SerializeField] private Button registerButton;
 
     private void OnEnable()
@@ -60,7 +59,7 @@ public class RegistrationManager : MonoBehaviour
         };
 
         string jsonData = JsonConvert.SerializeObject(requestBody);
-        using (UnityWebRequest request = new UnityWebRequest(apiSettings.GetUrl(APISettings.Endpoint.Register), "POST"))
+        using (UnityWebRequest request = new UnityWebRequest(ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Register), "POST"))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);

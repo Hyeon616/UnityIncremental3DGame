@@ -11,7 +11,6 @@ public class LoginManager : MonoBehaviour
     [SerializeField] private TMP_InputField passwordInputField;
     [SerializeField] private TMP_Text feedbackText;
     [SerializeField] private Button loginButton;
-    [SerializeField] private APISettings apiSettings;
 
     private void OnEnable()
     {
@@ -78,9 +77,7 @@ public class LoginManager : MonoBehaviour
                         PlayerPrefs.SetInt("UserId", response.userId);
                         Debug.Log("토큰 저장: " + response.token);
                         feedbackText.text = "로그인 성공!";
-                        await UIManager.Instance.ShowLoadingUI();
-                        await GameManager.Instance.InitializeGameData();
-                        UIManager.Instance.HideLoadingUI();
+                        UIManager.Instance.HandleLoginSuccess();
 
                     }
                     else
