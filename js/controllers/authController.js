@@ -1,4 +1,3 @@
-// 회원가입, 로그인
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
@@ -12,8 +11,10 @@ exports.register = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const existingUser = await conn.query('SELECT * FROM Players WHERE player_username = ? OR player_nickname = ?', [username, nickname]);
-        if (existingUser.length > 0) {
+        const existingUserResult = await conn.query('SELECT * FROM Players WHERE player_username = ? OR player_nickname = ?', [username, nickname]);
+        const existingUser = existingUserResult[0];
+
+        if (existingUser && existingUser.length > 0) {
             return res.status(400).json({ error: 'Username or nickname already exists' });
         }
 
@@ -43,21 +44,27 @@ exports.login = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const user = await conn.query('SELECT * FROM Players WHERE player_username = ?', [username]);
-        if (user.length === 0) {
+        const [userResult] = await conn.query('SELECT * FROM Players WHERE player_username = ?', [username]);
+
+        // 쿼리 결과를 로그에 출력
+        console.log('userResult:', userResult);
+
+        if (!userResult || userResult.length === 0) {
             return res.status(400).json({ error: 'Invalid username or password' });
         }
 
-        const validPassword = await bcrypt.compare(password, user[0].player_password);
+        const user = userResult;
+
+        const validPassword = await bcrypt.compare(password, user.player_password);
         if (!validPassword) {
             return res.status(400).json({ error: 'Invalid username or password' });
         }
 
-        const token = jwt.sign({ userId: user[0].player_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user.player_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
         const playerData = {
             token: token,
-            current_stage: user[0].current_stage
+            current_stage: user.current_stage
         };
 
         res.json(playerData);

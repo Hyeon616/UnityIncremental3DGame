@@ -9,7 +9,6 @@ async function cacheWeapons() {
         const [weapons] = await conn.query('SELECT * FROM Weapons');
         await setAsync('weapons', JSON.stringify(weapons), 'EX', 3600);
         console.log('Weapons 데이터가 성공적으로 데이터베이스에서 로드되었습니다.');
-        console.log('캐싱된 Weapons 데이터:', weapons); 
 		return weapons;
     } finally {
         if (conn) conn.release();
@@ -21,7 +20,6 @@ async function getCachedWeapons() {
     let weapons = await getAsync('weapons');
     if (weapons) {
         console.log('Weapons 데이터가 성공적으로 Redis에서 로드되었습니다.');
-		console.log('Redis에서 로드된 Weapons 데이터:', JSON.parse(weapons));
         return JSON.parse(weapons);
     } else {
         return await cacheWeapons();
@@ -35,14 +33,14 @@ exports.drawWeapon = async (req, res) => {
     try {
         conn = await pool.getConnection();
 
-        const [existingWeapons] = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE player_id = ? AND weapon_id = ?', [req.user.userId, weaponId]);
-        if (existingWeapons.length === 0) {
+        const [weapon] = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE player_id = ? AND weapon_id = ?', [req.user.userId, weaponId]);
+        if (!weapon || weapon.length === 0) {
             const weapons = await getCachedWeapons();
-            const weaponInfo = weapons.find(w => w.weapon_id === weaponId);
+            const weaponInfo = weapons.find(w => w.id === weaponId);
             if (!weaponInfo) {
                 return res.status(400).json({ error: 'Invalid weapon ID' });
             }
-            await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 1, ?, ?, ?, ?)', 
+            await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 1, ?, ?, ?, ?)',
                 [req.user.userId, weaponId, weaponInfo.base_attack_power, weaponInfo.base_critical_chance, weaponInfo.base_critical_damage, weaponInfo.base_max_health]);
         } else {
             const updateResult = await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE player_id = ? AND weapon_id = ?', [req.user.userId, weaponId]);
@@ -53,7 +51,7 @@ exports.drawWeapon = async (req, res) => {
 
         res.status(200).json({ message: 'Weapon drawn successfully' });
     } catch (err) {
-        console.error('무기 뽑기 중 오류 발생:', err);
+        console.error(err);
         res.status(500).json({ error: 'Database error' });
     } finally {
         if (conn) conn.release();
@@ -81,13 +79,11 @@ exports.synthesizeWeapon = async (req, res) => {
 
         const newWeaponId = getNextWeaponId(weaponId);
 
-        await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 1, ?, ?, ?, ?)', 
-            [req.user.userId, newWeaponId, weapon.attack_power, weapon.critical_chance, weapon.critical_damage, weapon.max_health]);
+        await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE weapon_id = ? AND player_id = ?', [newWeaponId, req.user.userId]);
 
-        console.log(`User ID ${req.user.userId}의 무기 ${weaponId}가 성공적으로 합성되었습니다.`);
         res.status(200).json({ message: 'Weapon synthesized successfully' });
     } catch (err) {
-        console.error('무기 합성 중 오류 발생:', err);
+        console.error(err);
         res.status(500).json({ error: 'Database error' });
     } finally {
         if (conn) conn.release();
@@ -107,23 +103,22 @@ exports.synthesizeAllWeapons = async (req, res) => {
 
                 const newWeaponId = getNextWeaponId(weapon.weapon_id);
 
-                await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, max_health) VALUES (?, ?, 1, ?, ?, ?, ?)', 
-                    [req.user.userId, newWeaponId, weapon.attack_power, weapon.critical_chance, weapon.critical_damage, weapon.max_health]);
+                await conn.query('UPDATE PlayerWeaponInventory SET count = count + 1 WHERE weapon_id = ? AND player_id = ?', [newWeaponId, req.user.userId]);
 
                 const [updatedWeaponRows] = await conn.query('SELECT count FROM PlayerWeaponInventory WHERE weapon_id = ? AND player_id = ?', [weapon.weapon_id, req.user.userId]);
                 weapon.count = updatedWeaponRows[0].count;
-                console.log(`User ID ${req.user.userId}의 무기 ${weapon.weapon_id}가 성공적으로 합성되었습니다.`);
             }
         }
 
         res.status(200).json({ message: 'All weapons synthesized successfully' });
     } catch (err) {
-        console.error('무기 전체 합성 중 오류 발생:', err);
+        console.error(err);
         res.status(500).json({ error: 'Database error' });
     } finally {
         if (conn) conn.release();
     }
 };
+
 
 function getNextWeaponId(currentWeaponId) {
     const nextWeaponMap = {

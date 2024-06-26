@@ -1,55 +1,92 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "APISettings", menuName = "Settings/APISettings")]
 public class APISettings : ScriptableObject
 {
     public string baseUrl;
-    public string registerEndpoint = "register";
-    public string loginEndpoint = "login";
-    public string weaponsEndpoint = "weapons";
-    public string drawWeaponEndpoint = "drawWeapon";
-    public string synthesizeWeaponEndpoint = "synthesizeWeapon";
-    public string synthesizeAllWeaponsEndpoint = "synthesizeAllWeapons";
-    public string getWeaponsByRarityEndpoint = "weaponsByRarity";
-    public string playerDataEndpoint = "player";
-    public string mailsEndpoint = "mails";
-    public string claimRewardEndpoint = "claimReward";
-    public string guildsEndpoint = "guilds";
-    public string friendsEndpoint = "friends";
-    public string playerWeaponsEndpoint = "playerWeapons";
-    public string playerSkillsEndpoint = "playerSkills";
-    public string playerBlessingsEndpoint = "playerBlessings";
-    public string missionProgressEndpoint = "missionProgress";
-    public string checkUsernameEndpoint = "check-username";
-    public string checkNicknameEndpoint = "check-nickname";
-    public string rewardsEndpoint = "rewards";
-    public string stagesEndpoint = "stages"; 
-    public string monstersEndpoint = "monsters";
-    public string currentStageEndpoint = "currentStage";
-    public string updateStageEndpoint = "updateStage";
 
+    public enum Endpoint
+    {
+        Register,
+        Login,
+        CheckUsername,
+        CheckNickname,
+        Weapons,
+        DrawWeapon,
+        SynthesizeWeapon,
+        SynthesizeAllWeapons,
+        GetWeaponsByRarity,
+        PlayerData,
+        Mails,
+        ClaimReward,
+        Guilds,
+        Friends,
+        PlayerWeapons,
+        PlayerSkills,
+        PlayerBlessings,
+        MissionProgress,
+        Rewards,
+        Stages,
+        Monsters,
+        CurrentStage,
+        UpdateStage
+    }
 
-    public string RegisterUrl => $"{baseUrl}/{registerEndpoint}";
-    public string LoginUrl => $"{baseUrl}/{loginEndpoint}";
-    public string WeaponsUrl => $"{baseUrl}/{weaponsEndpoint}";
-    public string DrawWeaponUrl => $"{baseUrl}/{drawWeaponEndpoint}";
-    public string SynthesizeWeaponUrl => $"{baseUrl}/{synthesizeWeaponEndpoint}";
-    public string SynthesizeAllWeaponsUrl => $"{baseUrl}/{synthesizeAllWeaponsEndpoint}";
-    public string GetWeaponsByRarityUrl => $"{baseUrl}/{getWeaponsByRarityEndpoint}";
-    public string PlayerDataUrl(int playerId) => $"{baseUrl}/{playerDataEndpoint}/{playerId}";
-    public string MailsUrl(int userId) => $"{baseUrl}/{mailsEndpoint}/{userId}";
-    public string ClaimRewardUrl => $"{baseUrl}/{claimRewardEndpoint}";
-    public string GuildsUrl => $"{baseUrl}/{guildsEndpoint}";
-    public string FriendsUrl(int userId) => $"{baseUrl}/{friendsEndpoint}/{userId}";
-    public string PlayerWeaponsUrl(int userId) => $"{baseUrl}/{playerWeaponsEndpoint}/{userId}";
-    public string PlayerSkillsUrl(int userId) => $"{baseUrl}/{playerSkillsEndpoint}/{userId}";
-    public string PlayerBlessingsUrl(int userId) => $"{baseUrl}/{playerBlessingsEndpoint}/{userId}";
-    public string MissionProgressUrl(int userId) => $"{baseUrl}/{missionProgressEndpoint}/{userId}";
-    public string CheckUsernameUrl(string username) => $"{baseUrl}/{checkUsernameEndpoint}?username={username}";
-    public string CheckNicknameUrl(string nickname) => $"{baseUrl}/{checkNicknameEndpoint}?nickname={nickname}";
-    public string RewardsUrl => $"{baseUrl}/{rewardsEndpoint}";
-    public string StagesUrl => $"{baseUrl}/{stagesEndpoint}";
-    public string CurrentStageUrl(int playerId) => $"{baseUrl}/{currentStageEndpoint}";
-    public string UpdateStageUrl => $"{baseUrl}/{updateStageEndpoint}";
-    public string MonstersUrl => $"{baseUrl}/{monstersEndpoint}"; 
+    private static readonly Dictionary<Endpoint, string> endpointPaths = new Dictionary<Endpoint, string>
+    {
+        { Endpoint.Register, "auth/register" },
+        { Endpoint.Login, "auth/login" },
+        { Endpoint.CheckUsername, "checks/check-username" }, // 수정된 부분
+        { Endpoint.CheckNickname, "checks/check-nickname" }, // 수정된 부분
+        { Endpoint.Weapons, "weapons" },
+        { Endpoint.DrawWeapon, "weapons/drawWeapon" },
+        { Endpoint.SynthesizeWeapon, "weapons/synthesizeWeapon" },
+        { Endpoint.SynthesizeAllWeapons, "weapons/synthesizeAllWeapons" },
+        { Endpoint.GetWeaponsByRarity, "weapons/weaponsByRarity" },
+        { Endpoint.PlayerData, "player" },
+        { Endpoint.Mails, "mails" },
+        { Endpoint.ClaimReward, "rewards/claimReward" },
+        { Endpoint.Guilds, "guilds" },
+        { Endpoint.Friends, "friends" },
+        { Endpoint.PlayerWeapons, "playerWeapons" },
+        { Endpoint.PlayerSkills, "playerSkills" },
+        { Endpoint.PlayerBlessings, "playerBlessings" },
+        { Endpoint.MissionProgress, "missionProgress" },
+        { Endpoint.Rewards, "rewards" },
+        { Endpoint.Stages, "stages" },
+        { Endpoint.Monsters, "monsters" },
+        { Endpoint.CurrentStage, "stages/currentStage" },
+        { Endpoint.UpdateStage, "stages/updateStage" }
+    };
+
+    public string GetUrl(Endpoint endpoint)
+    {
+        if (endpointPaths.TryGetValue(endpoint, out string path))
+        {
+            return $"{baseUrl}/{path}";
+        }
+        Debug.LogError($"Endpoint '{endpoint}' not found.");
+        return null;
+    }
+
+    public string GetUrl(Endpoint endpoint, int id)
+    {
+        if (endpointPaths.TryGetValue(endpoint, out string path))
+        {
+            return $"{baseUrl}/{path}/{id}";
+        }
+        Debug.LogError($"Endpoint '{endpoint}' not found.");
+        return null;
+    }
+
+    public string GetUrl(Endpoint endpoint, string parameter)
+    {
+        if (endpointPaths.TryGetValue(endpoint, out string path))
+        {
+            return $"{baseUrl}/{path}?{parameter}";
+        }
+        Debug.LogError($"Endpoint '{endpoint}' not found.");
+        return null;
+    }
 }

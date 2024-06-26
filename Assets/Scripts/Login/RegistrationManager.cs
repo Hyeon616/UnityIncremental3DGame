@@ -45,24 +45,9 @@ public class RegistrationManager : MonoBehaviour
             return;
         }
 
-        if(string.IsNullOrEmpty(nickname))
+        if (string.IsNullOrEmpty(nickname))
         {
             feedbackText.text = "닉네임을 입력해주세요.";
-            HideFeedbackText();
-            return;
-        }
-
-
-        if (await IsUsernameTaken(username))
-        {
-            feedbackText.text = "동일한 아이디가 이미 있습니다.";
-            HideFeedbackText();
-            return;
-        }
-
-        if (await IsNicknameTaken(nickname))
-        {
-            feedbackText.text = "동일한 닉네임이 이미 있습니다.";
             HideFeedbackText();
             return;
         }
@@ -74,9 +59,8 @@ public class RegistrationManager : MonoBehaviour
             nickname = nickname
         };
 
-
         string jsonData = JsonConvert.SerializeObject(requestBody);
-        using (UnityWebRequest request = new UnityWebRequest(apiSettings.RegisterUrl, "POST"))
+        using (UnityWebRequest request = new UnityWebRequest(apiSettings.GetUrl(APISettings.Endpoint.Register), "POST"))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -92,46 +76,22 @@ public class RegistrationManager : MonoBehaviour
             }
             else
             {
-                feedbackText.text = "회원가입 성공!";
+                if (request.responseCode == 400)
+                {
+                    var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(request.downloadHandler.text);
+                    feedbackText.text = errorResponse.error;
+                }
+                else if (request.responseCode == 201)
+                {
+                    feedbackText.text = "회원가입 성공!";
+                }
+                else
+                {
+                    feedbackText.text = "회원가입 실패: 알 수 없는 오류.";
+                }
             }
 
             HideFeedbackText();
-        }
-    }
-
-    private async UniTask<bool> IsUsernameTaken(string username)
-    {
-        using (UnityWebRequest request = UnityWebRequest.Get($"{apiSettings.baseUrl}/check-username?username={username}"))
-        {
-            await request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
-            {
-                Debug.LogError($"Error checking username: {request.error}");
-                return true; // 서버 에러 시 중복된 것으로 간주
-            }
-
-            string responseText = request.downloadHandler.text;
-            var response = JsonConvert.DeserializeObject<Dictionary<string, bool>>(responseText);
-            return response["exists"];
-        }
-    }
-
-    private async UniTask<bool> IsNicknameTaken(string nickname)
-    {
-        using (UnityWebRequest request = UnityWebRequest.Get($"{apiSettings.baseUrl}/check-nickname?nickname={nickname}"))
-        {
-            await request.SendWebRequest();
-
-            if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
-            {
-                Debug.LogError($"Error checking nickname: {request.error}");
-                return true; // 서버 에러 시 중복된 것으로 간주
-            }
-
-            string responseText = request.downloadHandler.text;
-            var response = JsonConvert.DeserializeObject<Dictionary<string, bool>>(responseText);
-            return response["exists"];
         }
     }
 
@@ -139,5 +99,11 @@ public class RegistrationManager : MonoBehaviour
     {
         await UniTask.Delay(3000);
         feedbackText.text = "";
+    }
+
+    [System.Serializable]
+    private class ErrorResponse
+    {
+        public string error;
     }
 }

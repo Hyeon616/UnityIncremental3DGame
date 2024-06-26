@@ -6,9 +6,7 @@ CREATE TABLE Players (
     player_id INT AUTO_INCREMENT PRIMARY KEY,
     player_username VARCHAR(255) UNIQUE NOT NULL,
     player_password VARCHAR(255) NOT NULL,
-    player_nickname VARCHAR(255) UNIQUE NOT NULL,
-    INDEX(player_username),
-    INDEX(player_nickname)
+    player_nickname VARCHAR(255) UNIQUE NOT NULL
 );
 
 -- Guilds 테이블 생성
@@ -16,8 +14,7 @@ CREATE TABLE Guilds (
     guild_id INT AUTO_INCREMENT PRIMARY KEY,
     guild_name VARCHAR(255) UNIQUE NOT NULL,
     guild_leader INT NOT NULL,
-    FOREIGN KEY (guild_leader) REFERENCES Players(player_id) ON DELETE CASCADE,
-    INDEX(guild_leader)
+    FOREIGN KEY (guild_leader) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
 -- PlayerGuilds 연결 테이블 생성
@@ -26,9 +23,7 @@ CREATE TABLE PlayerGuilds (
     guild_id INT NOT NULL,
     PRIMARY KEY (player_id, guild_id),
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE CASCADE,
-    INDEX(player_id),
-    INDEX(guild_id)
+    FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE CASCADE
 );
 
 -- PlayerAttributes 테이블 생성
@@ -71,8 +66,7 @@ CREATE TABLE PlayerAttributes (
         IF(awakening = 0, 1, awakening * 10)
     ) PERSISTENT,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE SET NULL,
-    INDEX(guild_id)
+    FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE SET NULL
 );
 
 -- mails 테이블 생성
@@ -84,8 +78,7 @@ CREATE TABLE mails (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     expires_at DATETIME DEFAULT (CURRENT_TIMESTAMP + INTERVAL 3 DAY),
     is_read BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (user_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    INDEX(user_id)
+    FOREIGN KEY (user_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
 -- Friends 테이블 생성
@@ -94,9 +87,7 @@ CREATE TABLE Friends (
     friend_id INT NOT NULL,
     PRIMARY KEY (player_id, friend_id),
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    FOREIGN KEY (friend_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    INDEX(player_id),
-    INDEX(friend_id)
+    FOREIGN KEY (friend_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
 -- FriendRequests 테이블 생성
@@ -107,9 +98,7 @@ CREATE TABLE FriendRequests (
     status ENUM('pending', 'accepted', 'rejected', 'cancelled') DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    FOREIGN KEY (receiver_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    INDEX(sender_id),
-    INDEX(receiver_id)
+    FOREIGN KEY (receiver_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
 -- PlayerWeaponInventory 테이블 생성
@@ -123,8 +112,7 @@ CREATE TABLE PlayerWeaponInventory (
     critical_chance FLOAT,
     critical_damage FLOAT,
     max_health INT,
-    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    INDEX(player_id)
+    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
 -- PlayerSkills 테이블 생성
@@ -133,8 +121,7 @@ CREATE TABLE PlayerSkills (
     player_id INT NOT NULL,
     skill_id INT NOT NULL,
     level INT DEFAULT 0,
-    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    INDEX(player_id)
+    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
 -- PlayerBlessings 테이블 생성
@@ -144,8 +131,7 @@ CREATE TABLE PlayerBlessings (
     blessing_id INT NOT NULL,
     level INT DEFAULT 0,
     attack_multiplier FLOAT DEFAULT 2,
-    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    INDEX(player_id)
+    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
 -- 미션 진행 상태를 저장할 테이블 생성
@@ -155,6 +141,64 @@ CREATE TABLE MissionProgress (
     last_combat_power_check INT DEFAULT 0,
     last_awakening_check INT DEFAULT 0,
     last_online_time_check DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
-    INDEX(player_id)
+    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
+);
+
+-- Skills 테이블 생성
+CREATE TABLE Skills (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    element VARCHAR(255) NOT NULL,
+    rarity VARCHAR(255) NOT NULL,
+    damage_multiplier INT NOT NULL
+);
+
+-- Pets 테이블 생성
+CREATE TABLE Pets (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    element VARCHAR(255) NOT NULL,
+    rarity VARCHAR(255) NOT NULL,
+    base_attack_power INT NOT NULL,
+    base_critical_chance FLOAT NOT NULL,
+    base_critical_damage FLOAT NOT NULL,
+    base_max_health INT NOT NULL
+);
+
+-- Blessings 테이블 생성
+CREATE TABLE Blessings (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL
+);
+
+-- Monsters 테이블 생성
+CREATE TABLE Monsters (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    element VARCHAR(255) NOT NULL,
+    rarity VARCHAR(255) NOT NULL,
+    base_attack_power INT NOT NULL,
+    base_critical_chance FLOAT NOT NULL,
+    base_critical_damage FLOAT NOT NULL,
+    base_max_health INT NOT NULL
+);
+
+-- Rewards 테이블 생성
+CREATE TABLE Rewards (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    reward INT NOT NULL
+);
+
+-- Weapons 테이블 생성
+CREATE TABLE Weapons (
+    id INT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    rarity VARCHAR(255) NOT NULL,
+    base_attack_power INT NOT NULL,
+    base_critical_chance FLOAT NOT NULL,
+    base_critical_damage FLOAT NOT NULL,
+    base_max_health INT NOT NULL
 );

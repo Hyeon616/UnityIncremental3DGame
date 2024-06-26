@@ -51,7 +51,7 @@ public class LoginManager : MonoBehaviour
             };
 
             string jsonData = JsonConvert.SerializeObject(requestBody);
-            using (UnityWebRequest request = new UnityWebRequest(apiSettings.LoginUrl, "POST"))
+            using (UnityWebRequest request = new UnityWebRequest(ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Login), "POST"))
             {
                 byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
                 request.uploadHandler = new UploadHandlerRaw(bodyRaw);

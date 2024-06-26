@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <row>
+    <id>1</id>
+    <name>아그니의 가호</name>
+    <element>불</element>
+    <level>0</level>
+    <attack_multiplier>2</attack_multiplier>
+  </row>
+  <row>
+    <id>2</id>
+    <name>바르나의 가호</name>
+    <element>물</element>
+    <level>0</level>
+    <attack_multiplier>2</attack_multiplier>
+  </row>
+  <row>
+    <id>3</id>
+    <name>인드라의 가호</name>
+    <element>전기</element>
+    <level>0</level>
+    <attack_multiplier>2</attack_multiplier>
+  </row>
+  <row>
+    <id>4</id>
+    <name>바유의 가호</name>
+    <element>바람</element>
+    <level>0</level>
+    <attack_multiplier>2</attack_multiplier>
+  </row>
+  <row>
+    <id>5</id>
+    <name>수르야의 가호</name>
+    <element>빛</element>
+    <level>0</level>
+    <attack_multiplier>2</attack_multiplier>
+  </row>
+  <row>
+    <id>6</id>
+    <name>야마의 가호</name>
+    <element>어둠</element>
+    <level>0</level>
+    <attack_multiplier>2</attack_multiplier>
+  </row>
+</root>

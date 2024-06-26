@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 const authRoutes = require('./routes/authRoutes');
 const weaponRoutes = require('./routes/weaponRoutes');
@@ -13,6 +13,9 @@ const stageRoutes = require('./routes/stageRoutes');
 const monsterRoutes = require('./routes/monsterRoutes');
 const guildRoutes = require('./routes/guildRoutes');
 const friendRoutes = require('./routes/friendRoutes');
+const checkRoutes = require('./routes/checkRoutes');
+const pool = require('./config/db');
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -29,7 +32,25 @@ app.use('/stages', stageRoutes);
 app.use('/monsters', monsterRoutes);
 app.use('/guilds', guildRoutes);
 app.use('/friends', friendRoutes);
+app.use('/checks', checkRoutes);
+
+// MySQL 연결 테스트 함수
+async function testConnection() {
+    let conn;
+    try {
+        conn = await pool.getConnection();
+        console.log("DB 연결 성공");
+    } catch (err) {
+        console.error("Error connecting to the database:", err);
+    } finally {
+        if (conn) conn.release();
+    }
+}
+
+// 서버 시작 시 MySQL 연결 테스트
+testConnection();
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+

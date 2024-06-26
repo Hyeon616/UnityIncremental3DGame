@@ -9,18 +9,18 @@ public class GachaResultSlot : MonoBehaviour
     public Image ItemImage;
     public Image SlotBackgroundImage;
 
-    public void SetSlot(Weapon weapon)
-    {
-        if (weapon != null)
-        {
-            WeaponRarityText.text = weapon.GetRarityName();
-            WeaponRarityText.color = GetRarityColor(weapon.rarity);
-            ItemImage.color = new Color(1f, 1f, 1f, 1f); // 활성화된 슬롯의 아이템 이미지를 은은하게 표시
-            ItemImage.sprite = GetWeaponSprite(weapon);
-            SlotBackgroundImage.color = GetRarityColor(weapon.rarity); // 활성화된 슬롯의 배경색
-        }
+    //public void SetSlot(Weapon weapon)
+    //{
+    //    if (weapon != null)
+    //    {
+    //        WeaponRarityText.text = weapon.GetRarityName();
+    //        WeaponRarityText.color = GetRarityColor(weapon.rarity);
+    //        ItemImage.color = new Color(1f, 1f, 1f, 1f); // 활성화된 슬롯의 아이템 이미지를 은은하게 표시
+    //        ItemImage.sprite = GetWeaponSprite(weapon);
+    //        SlotBackgroundImage.color = GetRarityColor(weapon.rarity); // 활성화된 슬롯의 배경색
+    //    }
 
-    }
+    //}
 
     private Color GetRarityColor(string rarity)
     {
@@ -38,22 +38,22 @@ public class GachaResultSlot : MonoBehaviour
         };
     }
 
-    private Sprite GetWeaponSprite(Weapon weapon)
-    {
-        string rarity = weapon.rarity;
-        string grade = weapon.grade;
+    //private Sprite GetWeaponSprite(Weapon weapon)
+    //{
+    //    string rarity = weapon.rarity;
+    //    string grade = weapon.grade;
 
-        // 영어로 된 경로 및 파일명 사용
-        string spritePath = $"Sprites/Weapons/{ConvertToEnglish(rarity)}_{ConvertToEnglish(grade)}";
-        Sprite weaponSprite = Resources.Load<Sprite>(spritePath);
+    //    // 영어로 된 경로 및 파일명 사용
+    //    string spritePath = $"Sprites/Weapons/{ConvertToEnglish(rarity)}_{ConvertToEnglish(grade)}";
+    //    Sprite weaponSprite = Resources.Load<Sprite>(spritePath);
 
-        if (weaponSprite == null)
-        {
-            Debug.LogError($"Sprite not found at path: {spritePath}");
-        }
+    //    if (weaponSprite == null)
+    //    {
+    //        Debug.LogError($"Sprite not found at path: {spritePath}");
+    //    }
 
-        return weaponSprite;
-    }
+    //    return weaponSprite;
+    //}
 
     private string ConvertToEnglish(string korean)
     {

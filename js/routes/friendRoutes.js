@@ -7,8 +7,8 @@ router.get('/', authenticateToken, friendController.getFriends);
 router.post('/add', authenticateToken, friendController.addFriend);
 router.post('/remove', authenticateToken, friendController.removeFriend);
 router.get('/requests', authenticateToken, friendController.getFriendRequests);
-router.post('/sendRequest', authenticateToken, friendController.sendFriendRequest);
-router.post('/respondRequest', authenticateToken, friendController.respondToFriendRequest);
-router.post('/cancelRequest', authenticateToken, friendController.cancelFriendRequest);
+router.post('/requests/send', authenticateToken, friendController.sendFriendRequest);
+router.post('/requests/respond', authenticateToken, friendController.respondToFriendRequest);
+router.post('/requests/cancel', authenticateToken, friendController.cancelFriendRequest);
 
 module.exports = router;

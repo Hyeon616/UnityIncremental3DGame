@@ -171,7 +171,8 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     #region LoadData
     public async UniTask LoadPlayerData(int playerId)
     {
-        string url = ResourceManager.Instance.APISettings.PlayerDataUrl(playerId);
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerId);
+
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -191,7 +192,8 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadMails(int userId)
     {
-        string url = $"{ResourceManager.Instance.APISettings.MailsUrl(userId)}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Mails, userId);
+
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -211,7 +213,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadGuilds()
     {
-        string url = $"{ResourceManager.Instance.APISettings.GuildsUrl}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Guilds);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             await www.SendWebRequest();
@@ -230,7 +232,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadFriends(int userId)
     {
-        string url = $"{ResourceManager.Instance.APISettings.FriendsUrl(userId)}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Friends, userId);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -250,7 +252,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadPlayerWeapons(int userId)
     {
-        string url = $"{ResourceManager.Instance.APISettings.PlayerWeaponsUrl(userId)}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.PlayerWeapons, userId);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -270,7 +272,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadPlayerSkills(int userId)
     {
-        string url = $"{ResourceManager.Instance.APISettings.PlayerSkillsUrl(userId)}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.PlayerSkills, userId);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -290,7 +292,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadPlayerBlessings(int userId)
     {
-        string url = $"{ResourceManager.Instance.APISettings.PlayerBlessingsUrl(userId)}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.PlayerBlessings, userId);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -310,7 +312,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadMissionProgress(int userId)
     {
-        string url = $"{ResourceManager.Instance.APISettings.MissionProgressUrl(userId)}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.MissionProgress, userId);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -330,7 +332,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadRewards()
     {
-        string url = $"{ResourceManager.Instance.APISettings.RewardsUrl}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Rewards);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             await www.SendWebRequest();
@@ -349,7 +351,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask ClaimReward(int rewardId)
     {
-        string url = $"{ResourceManager.Instance.APISettings.ClaimRewardUrl}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.ClaimReward);
         using (UnityWebRequest www = UnityWebRequest.Post(url, new WWWForm()))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -375,7 +377,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadStages()
     {
-        string url = $"{ResourceManager.Instance.APISettings.StagesUrl}";
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.Stages);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             await www.SendWebRequest();
@@ -397,7 +399,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask LoadCurrentStage()
     {
-        string url = ResourceManager.Instance.APISettings.CurrentStageUrl(CurrentPlayer.player_id);
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.CurrentStage, CurrentPlayer.player_id);
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
@@ -420,7 +422,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public async UniTask UpdateCurrentStage(string stage)
     {
-        string url = ResourceManager.Instance.APISettings.UpdateStageUrl;
+        string url = ResourceManager.Instance.APISettings.GetUrl(APISettings.Endpoint.UpdateStage);
         using (UnityWebRequest www = UnityWebRequest.Post(url, JsonConvert.SerializeObject(new { userId = CurrentPlayer.player_id, stage = stage })))
         {
             www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
