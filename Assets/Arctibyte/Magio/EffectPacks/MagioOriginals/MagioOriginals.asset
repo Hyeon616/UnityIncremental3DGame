@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f98f7c86fcf52204b8bf94e85bfd3043, type: 3}
+  m_Name: MagioOriginals
+  m_EditorClassIdentifier: 
+  meshEffects:
+  - {fileID: 5066539024640995162, guid: 469d9e05d78239f4dbc819a149436a4b, type: 3}
+  - {fileID: 7427847445427522697, guid: 8b71c2763626b0c42b2a21de66c1379f, type: 3}
+  - {fileID: 5576845623080625525, guid: 85e0bda60626ba24ebb170373fa63e50, type: 3}
+  - {fileID: 8687420028520330340, guid: 2dc5059d361365a4e958017b21ce9f88, type: 3}
+  - {fileID: 7499464224105908513, guid: 3ac54fc59a146ab46a9661ba17546d00, type: 3}
+  - {fileID: 5738416729941310829, guid: 0ad96b531a474e842830d83970c4b684, type: 3}
+  skinnedMeshEffects:
+  - {fileID: 2273935085145746104, guid: ea164bbd49b555543811f71142b6420a, type: 3}
+  - {fileID: 3587378726637559557, guid: f3f919b85befd8548ae6d0716c885937, type: 3}
+  - {fileID: 6709996822716943703, guid: db8a2d8a4277712488adb8cb940501af, type: 3}
+  - {fileID: 3394638922353666389, guid: a2e73e61faf0ffb4da2d439f7ba09992, type: 3}
+  - {fileID: 5041120193047632565, guid: 8f383feacf5f81c4aad349b034acf19b, type: 3}
+  - {fileID: 7218817711968063427, guid: 310785f6dbff50d468477e4b045f40a1, type: 3}

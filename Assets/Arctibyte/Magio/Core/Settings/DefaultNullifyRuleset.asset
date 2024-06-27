@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88fd893cbb360ce41975b3f0050f49b8, type: 3}
+  m_Name: DefaultNullifyRuleset
+  m_EditorClassIdentifier: 
+  nullifyRules:
+  - originClass: 2
+    targetClass: 4
+    nullifyLagBehind_m: 0
+  - originClass: 2
+    targetClass: 1
+    nullifyLagBehind_m: 0
+  - originClass: 2
+    targetClass: 3
+    nullifyLagBehind_m: 0
+  - originClass: 2
+    targetClass: 6
+    nullifyLagBehind_m: 0.1
+  - originClass: 2
+    targetClass: 8
+    nullifyLagBehind_m: 0.1
+  - originClass: 1
+    targetClass: 4
+    nullifyLagBehind_m: 1
+  - originClass: 3
+    targetClass: 1
+    nullifyLagBehind_m: 0
+  - originClass: 4
+    targetClass: 3
+    nullifyLagBehind_m: 0
+  - originClass: 1
+    targetClass: 6
+    nullifyLagBehind_m: 0.1

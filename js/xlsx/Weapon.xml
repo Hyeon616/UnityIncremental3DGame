@@ -1,291 +1,219 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <row>
-    <id>1</id>
-    <rarity>일반</rarity>
-    <grade>하급</grade>
-    <base_attack_power>25</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.1</base_critical_damage>
-    <base_max_health>100</base_max_health>
+    <weapon_id>1</weapon_id>
+    <weapon_grade>1</weapon_grade>
+    <attack_power>10</attack_power>
+    <crit_rate>0</crit_rate>
+    <crit_damage>1</crit_damage>
+    <weapon_exp>0</weapon_exp>
+    <prefab_name>Orb1</prefab_name>
   </row>
   <row>
-    <id>2</id>
-    <rarity>일반</rarity>
-    <grade>중급</grade>
-    <base_attack_power>50</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.1</base_critical_damage>
-    <base_max_health>250</base_max_health>
+    <weapon_id>2</weapon_id>
+    <weapon_grade>2</weapon_grade>
+    <attack_power>30</attack_power>
+    <crit_rate>0.02</crit_rate>
+    <crit_damage>1.17</crit_damage>
+    <weapon_exp>5</weapon_exp>
+    <prefab_name>Orb1</prefab_name>
   </row>
   <row>
-    <id>3</id>
-    <rarity>일반</rarity>
-    <grade>상급</grade>
-    <base_attack_power>100</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.1</base_critical_damage>
-    <base_max_health>500</base_max_health>
+    <weapon_id>3</weapon_id>
+    <weapon_grade>3</weapon_grade>
+    <attack_power>50</attack_power>
+    <crit_rate>0.04</crit_rate>
+    <crit_damage>1.36</crit_damage>
+    <weapon_exp>25</weapon_exp>
+    <prefab_name>Orb1</prefab_name>
   </row>
   <row>
-    <id>4</id>
-    <rarity>일반</rarity>
-    <grade>최상급</grade>
-    <base_attack_power>150</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.1</base_critical_damage>
-    <base_max_health>750</base_max_health>
+    <weapon_id>4</weapon_id>
+    <weapon_grade>4</weapon_grade>
+    <attack_power>100</attack_power>
+    <crit_rate>0.06</crit_rate>
+    <crit_damage>1.58</crit_damage>
+    <weapon_exp>125</weapon_exp>
+    <prefab_name>Orb1</prefab_name>
   </row>
   <row>
-    <id>5</id>
-    <rarity>고급</rarity>
-    <grade>하급</grade>
-    <base_attack_power>200</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.2</base_critical_damage>
-    <base_max_health>1000</base_max_health>
+    <weapon_id>5</weapon_id>
+    <weapon_grade>5</weapon_grade>
+    <attack_power>200</attack_power>
+    <crit_rate>0.08</crit_rate>
+    <crit_damage>1.85</crit_damage>
+    <weapon_exp>625</weapon_exp>
+    <prefab_name>Orb1</prefab_name>
   </row>
   <row>
-    <id>6</id>
-    <rarity>고급</rarity>
-    <grade>중급</grade>
-    <base_attack_power>250</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.2</base_critical_damage>
-    <base_max_health>1250</base_max_health>
+    <weapon_id>6</weapon_id>
+    <weapon_grade>6</weapon_grade>
+    <attack_power>400</attack_power>
+    <crit_rate>0.1</crit_rate>
+    <crit_damage>2.15</crit_damage>
+    <weapon_exp>3125</weapon_exp>
+    <prefab_name>Orb1</prefab_name>
   </row>
   <row>
-    <id>7</id>
-    <rarity>고급</rarity>
-    <grade>상급</grade>
-    <base_attack_power>300</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.2</base_critical_damage>
-    <base_max_health>1500</base_max_health>
+    <weapon_id>7</weapon_id>
+    <weapon_grade>7</weapon_grade>
+    <attack_power>1000</attack_power>
+    <crit_rate>0.14</crit_rate>
+    <crit_damage>2.5</crit_damage>
+    <weapon_exp>15625</weapon_exp>
+    <prefab_name>Orb2</prefab_name>
   </row>
   <row>
-    <id>8</id>
-    <rarity>고급</rarity>
-    <grade>최상급</grade>
-    <base_attack_power>350</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.2</base_critical_damage>
-    <base_max_health>1750</base_max_health>
+    <weapon_id>8</weapon_id>
+    <weapon_grade>8</weapon_grade>
+    <attack_power>1500</attack_power>
+    <crit_rate>0.18</crit_rate>
+    <crit_damage>2.93</crit_damage>
+    <weapon_exp>78125</weapon_exp>
+    <prefab_name>Orb2</prefab_name>
   </row>
   <row>
-    <id>9</id>
-    <rarity>매직</rarity>
-    <grade>하급</grade>
-    <base_attack_power>400</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.4</base_critical_damage>
-    <base_max_health>2000</base_max_health>
+    <weapon_id>9</weapon_id>
+    <weapon_grade>9</weapon_grade>
+    <attack_power>2000</attack_power>
+    <crit_rate>0.22</crit_rate>
+    <crit_damage>3.41</crit_damage>
+    <weapon_exp>390625</weapon_exp>
+    <prefab_name>Orb2</prefab_name>
   </row>
   <row>
-    <id>10</id>
-    <rarity>매직</rarity>
-    <grade>중급</grade>
-    <base_attack_power>450</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.4</base_critical_damage>
-    <base_max_health>2250</base_max_health>
+    <weapon_id>10</weapon_id>
+    <weapon_grade>10</weapon_grade>
+    <attack_power>2500</attack_power>
+    <crit_rate>0.26</crit_rate>
+    <crit_damage>3.98</crit_damage>
+    <weapon_exp>1953125</weapon_exp>
+    <prefab_name>Orb2</prefab_name>
   </row>
   <row>
-    <id>11</id>
-    <rarity>매직</rarity>
-    <grade>상급</grade>
-    <base_attack_power>500</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.4</base_critical_damage>
-    <base_max_health>2500</base_max_health>
+    <weapon_id>11</weapon_id>
+    <weapon_grade>11</weapon_grade>
+    <attack_power>3000</attack_power>
+    <crit_rate>0.3</crit_rate>
+    <crit_damage>4.64</crit_damage>
+    <weapon_exp>9765625</weapon_exp>
+    <prefab_name>Orb2</prefab_name>
   </row>
   <row>
-    <id>12</id>
-    <rarity>매직</rarity>
-    <grade>최상급</grade>
-    <base_attack_power>550</base_attack_power>
-    <base_critical_chance>0</base_critical_chance>
-    <base_critical_damage>0.4</base_critical_damage>
-    <base_max_health>2750</base_max_health>
+    <weapon_id>12</weapon_id>
+    <weapon_grade>12</weapon_grade>
+    <attack_power>3500</attack_power>
+    <crit_rate>0.34</crit_rate>
+    <crit_damage>5.41</crit_damage>
+    <weapon_exp>48828125</weapon_exp>
+    <prefab_name>Orb2</prefab_name>
   </row>
   <row>
-    <id>13</id>
-    <rarity>유물</rarity>
-    <grade>하급</grade>
-    <base_attack_power>600</base_attack_power>
-    <base_critical_chance>0.2</base_critical_chance>
-    <base_critical_damage>0.8</base_critical_damage>
-    <base_max_health>3000</base_max_health>
+    <weapon_id>13</weapon_id>
+    <weapon_grade>13</weapon_grade>
+    <attack_power>4000</attack_power>
+    <crit_rate>0.38</crit_rate>
+    <crit_damage>6.31</crit_damage>
+    <weapon_exp>244140625</weapon_exp>
+    <prefab_name>Orb2</prefab_name>
   </row>
   <row>
-    <id>14</id>
-    <rarity>유물</rarity>
-    <grade>중급</grade>
-    <base_attack_power>650</base_attack_power>
-    <base_critical_chance>0.2</base_critical_chance>
-    <base_critical_damage>0.8</base_critical_damage>
-    <base_max_health>3250</base_max_health>
+    <weapon_id>14</weapon_id>
+    <weapon_grade>14</weapon_grade>
+    <attack_power>5000</attack_power>
+    <crit_rate>0.5</crit_rate>
+    <crit_damage>7.2</crit_damage>
+    <weapon_exp>1220703125</weapon_exp>
+    <prefab_name>Orb3</prefab_name>
   </row>
   <row>
-    <id>15</id>
-    <rarity>유물</rarity>
-    <grade>상급</grade>
-    <base_attack_power>700</base_attack_power>
-    <base_critical_chance>0.2</base_critical_chance>
-    <base_critical_damage>0.8</base_critical_damage>
-    <base_max_health>3500</base_max_health>
+    <weapon_id>15</weapon_id>
+    <weapon_grade>15</weapon_grade>
+    <attack_power>6000</attack_power>
+    <crit_rate>0.6</crit_rate>
+    <crit_damage>8.6</crit_damage>
+    <weapon_exp>6103515625</weapon_exp>
+    <prefab_name>Orb3</prefab_name>
   </row>
   <row>
-    <id>16</id>
-    <rarity>유물</rarity>
-    <grade>최상급</grade>
-    <base_attack_power>750</base_attack_power>
-    <base_critical_chance>0.2</base_critical_chance>
-    <base_critical_damage>0.8</base_critical_damage>
-    <base_max_health>3750</base_max_health>
+    <weapon_id>16</weapon_id>
+    <weapon_grade>16</weapon_grade>
+    <attack_power>7000</attack_power>
+    <crit_rate>0.7</crit_rate>
+    <crit_damage>10</crit_damage>
+    <weapon_exp>30517578125</weapon_exp>
+    <prefab_name>Orb3</prefab_name>
   </row>
   <row>
-    <id>17</id>
-    <rarity>영웅</rarity>
-    <grade>하급</grade>
-    <base_attack_power>800</base_attack_power>
-    <base_critical_chance>0.4</base_critical_chance>
-    <base_critical_damage>1.6</base_critical_damage>
-    <base_max_health>4000</base_max_health>
+    <weapon_id>17</weapon_id>
+    <weapon_grade>17</weapon_grade>
+    <attack_power>8000</attack_power>
+    <crit_rate>0.8</crit_rate>
+    <crit_damage>11.4</crit_damage>
+    <weapon_exp>152587890625</weapon_exp>
+    <prefab_name>Orb3</prefab_name>
   </row>
   <row>
-    <id>18</id>
-    <rarity>영웅</rarity>
-    <grade>중급</grade>
-    <base_attack_power>850</base_attack_power>
-    <base_critical_chance>0.4</base_critical_chance>
-    <base_critical_damage>1.6</base_critical_damage>
-    <base_max_health>4250</base_max_health>
+    <weapon_id>18</weapon_id>
+    <weapon_grade>18</weapon_grade>
+    <attack_power>9000</attack_power>
+    <crit_rate>0.9</crit_rate>
+    <crit_damage>12.8</crit_damage>
+    <weapon_exp>762939453125</weapon_exp>
+    <prefab_name>Orb3</prefab_name>
   </row>
   <row>
-    <id>19</id>
-    <rarity>영웅</rarity>
-    <grade>상급</grade>
-    <base_attack_power>900</base_attack_power>
-    <base_critical_chance>0.4</base_critical_chance>
-    <base_critical_damage>1.6</base_critical_damage>
-    <base_max_health>4500</base_max_health>
+    <weapon_id>19</weapon_id>
+    <weapon_grade>19</weapon_grade>
+    <attack_power>10000</attack_power>
+    <crit_rate>1</crit_rate>
+    <crit_damage>15</crit_damage>
+    <weapon_exp>3814697265625</weapon_exp>
+    <prefab_name>Orb4</prefab_name>
   </row>
   <row>
-    <id>20</id>
-    <rarity>영웅</rarity>
-    <grade>최상급</grade>
-    <base_attack_power>950</base_attack_power>
-    <base_critical_chance>0.4</base_critical_chance>
-    <base_critical_damage>1.6</base_critical_damage>
-    <base_max_health>4750</base_max_health>
+    <weapon_id>20</weapon_id>
+    <weapon_grade>20</weapon_grade>
+    <attack_power>15000</attack_power>
+    <crit_rate>1</crit_rate>
+    <crit_damage>17</crit_damage>
+    <weapon_exp>19073486328125</weapon_exp>
+    <prefab_name>Orb4</prefab_name>
   </row>
   <row>
-    <id>21</id>
-    <rarity>에픽</rarity>
-    <grade>하급</grade>
-    <base_attack_power>1000</base_attack_power>
-    <base_critical_chance>0.6</base_critical_chance>
-    <base_critical_damage>3.2</base_critical_damage>
-    <base_max_health>5000</base_max_health>
+    <weapon_id>21</weapon_id>
+    <weapon_grade>21</weapon_grade>
+    <attack_power>20000</attack_power>
+    <crit_rate>1</crit_rate>
+    <crit_damage>19</crit_damage>
+    <weapon_exp>95367431640625</weapon_exp>
+    <prefab_name>Orb4</prefab_name>
   </row>
   <row>
-    <id>22</id>
-    <rarity>에픽</rarity>
-    <grade>중급</grade>
-    <base_attack_power>1050</base_attack_power>
-    <base_critical_chance>0.6</base_critical_chance>
-    <base_critical_damage>3.2</base_critical_damage>
-    <base_max_health>5250</base_max_health>
+    <weapon_id>22</weapon_id>
+    <weapon_grade>22</weapon_grade>
+    <attack_power>25000</attack_power>
+    <crit_rate>1</crit_rate>
+    <crit_damage>21</crit_damage>
+    <weapon_exp>476837158203125</weapon_exp>
+    <prefab_name>Orb4</prefab_name>
   </row>
   <row>
-    <id>23</id>
-    <rarity>에픽</rarity>
-    <grade>상급</grade>
-    <base_attack_power>1100</base_attack_power>
-    <base_critical_chance>0.6</base_critical_chance>
-    <base_critical_damage>3.2</base_critical_damage>
-    <base_max_health>5500</base_max_health>
+    <weapon_id>23</weapon_id>
+    <weapon_grade>23</weapon_grade>
+    <attack_power>30000</attack_power>
+    <crit_rate>1</crit_rate>
+    <crit_damage>23</crit_damage>
+    <weapon_exp>2.38418579101562E+15</weapon_exp>
+    <prefab_name>Orb4</prefab_name>
   </row>
   <row>
-    <id>24</id>
-    <rarity>에픽</rarity>
-    <grade>최상급</grade>
-    <base_attack_power>1150</base_attack_power>
-    <base_critical_chance>0.6</base_critical_chance>
-    <base_critical_damage>3.2</base_critical_damage>
-    <base_max_health>5750</base_max_health>
-  </row>
-  <row>
-    <id>25</id>
-    <rarity>고대</rarity>
-    <grade>하급</grade>
-    <base_attack_power>1200</base_attack_power>
-    <base_critical_chance>0.8</base_critical_chance>
-    <base_critical_damage>6.4</base_critical_damage>
-    <base_max_health>6000</base_max_health>
-  </row>
-  <row>
-    <id>26</id>
-    <rarity>고대</rarity>
-    <grade>중급</grade>
-    <base_attack_power>1250</base_attack_power>
-    <base_critical_chance>0.8</base_critical_chance>
-    <base_critical_damage>6.4</base_critical_damage>
-    <base_max_health>6250</base_max_health>
-  </row>
-  <row>
-    <id>27</id>
-    <rarity>고대</rarity>
-    <grade>상급</grade>
-    <base_attack_power>1300</base_attack_power>
-    <base_critical_chance>0.8</base_critical_chance>
-    <base_critical_damage>6.4</base_critical_damage>
-    <base_max_health>6500</base_max_health>
-  </row>
-  <row>
-    <id>28</id>
-    <rarity>고대</rarity>
-    <grade>최상급</grade>
-    <base_attack_power>1350</base_attack_power>
-    <base_critical_chance>0.8</base_critical_chance>
-    <base_critical_damage>6.4</base_critical_damage>
-    <base_max_health>6750</base_max_health>
-  </row>
-  <row>
-    <id>29</id>
-    <rarity>신화</rarity>
-    <grade>하급</grade>
-    <base_attack_power>1400</base_attack_power>
-    <base_critical_chance>1</base_critical_chance>
-    <base_critical_damage>12.8</base_critical_damage>
-    <base_max_health>7000</base_max_health>
-  </row>
-  <row>
-    <id>30</id>
-    <rarity>신화</rarity>
-    <grade>중급</grade>
-    <base_attack_power>1450</base_attack_power>
-    <base_critical_chance>1</base_critical_chance>
-    <base_critical_damage>12.8</base_critical_damage>
-    <base_max_health>7250</base_max_health>
-  </row>
-  <row>
-    <id>31</id>
-    <rarity>신화</rarity>
-    <grade>상급</grade>
-    <base_attack_power>1500</base_attack_power>
-    <base_critical_chance>1</base_critical_chance>
-    <base_critical_damage>12.8</base_critical_damage>
-    <base_max_health>7500</base_max_health>
-  </row>
-  <row>
-    <id>32</id>
-    <rarity>신화</rarity>
-    <grade>최상급</grade>
-    <base_attack_power>1550</base_attack_power>
-    <base_critical_chance>1</base_critical_chance>
-    <base_critical_damage>12.8</base_critical_damage>
-    <base_max_health>7750</base_max_health>
+    <weapon_id>24</weapon_id>
+    <weapon_grade>24</weapon_grade>
+    <attack_power>50000</attack_power>
+    <crit_rate>1</crit_rate>
+    <crit_damage>30</crit_damage>
+    <weapon_exp>1.19209289550781E+16</weapon_exp>
+    <prefab_name>Orb5</prefab_name>
   </row>
 </root>

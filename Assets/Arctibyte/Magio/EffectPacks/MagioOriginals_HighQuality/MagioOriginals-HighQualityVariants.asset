@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f98f7c86fcf52204b8bf94e85bfd3043, type: 3}
+  m_Name: MagioOriginals-HighQualityVariants
+  m_EditorClassIdentifier: 
+  meshEffects:
+  - {fileID: 5066539024640995162, guid: 1f0f6726c3b7eb949ad9cc11bbe8d41b, type: 3}
+  - {fileID: 8687420028520330340, guid: c081089d3bf423441af8fa01dbdf173b, type: 3}
+  - {fileID: 3738505995952701409, guid: 82f8d4f8a6ba6dd45b79c15ec7ea7f4e, type: 3}
+  skinnedMeshEffects:
+  - {fileID: 2273935085145746104, guid: 66e1fe879ee572448a6e242e2887f8ed, type: 3}
+  - {fileID: 3394638922353666389, guid: 4801fa66c5bdac84c9655b4bac1062e2, type: 3}
+  - {fileID: 8590010434075118242, guid: 54befbfb0122b504986e26aba40cf472, type: 3}

@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 0c1ddf3909643054aac7d38f8461abd4
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - m_ViewDataDictionary: {instanceID: 0}
+  - flameEnginePrefab: {fileID: 5696770371371422430, guid: c240efe879a8bc249b3f1332f485edc1,
+      type: 3}
+  - flammable: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

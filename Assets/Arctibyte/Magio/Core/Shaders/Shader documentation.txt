@@ -1,0 +1,51 @@
+The shader properties are generally used through script, 
+but here is a small documentation to get you started in case you want to customize the shader.
+
+_BaseMap to _CoatMaskMap: Same as in Lit Shaders.
+
+EMISSION_OVERLAY:
+_OverlayTiling: Tiling of the emission Overlay
+_OverlayMap: Texture of the emission overlay
+_OverlaySoftness: How soft the emission overlay is
+_OverlayBrightness: How bright the emission overlay is (0-1)
+_VoronoiMove: Emission overlay has voronoi to make it live. Voronoi speed.
+_OverlayDirection: Which direction emission overlay moves.
+_OverlayHorizontalMultiplier: how much less emission horizontally placed surfaces have.
+_OverlayMoveDirection: Emission Overlay moves a bit. Which direction.
+_OverlayMoveMultiplier: How much emission overlay moves.
+_EffectOrigin: Where the overlay effect has started.
+_EffectSpread: How much overlay effect has spread.
+_BlendTextureAlbedo: Texture map for blending during burning etc.
+_BlendTextureNormal: Texture normal map for blending during burning etc.
+_BlendTextureNormalStrength: Blend texture normal map strength.
+_BlendTextureLerpT: 0-1 how much the texture is blended to original texture.
+_UseOverlay: If emission overlay is used.
+
+DISSOLVE AND EMISSION_OVERLAY:
+_OverlayColor: What color emission overlay has
+_OverlayMaximumBrightness: Maximum brightness for the overlay.
+
+DISSOLVE:
+_UseDissolve: If Dissolve is used.
+_DissolveEdgeWidth: how wide is the dissolve emission edge.
+_DissolveOrigin: Where dissolve effect has started.
+_DissolveSpread: How much dissolve effect has spread.
+
+TEXTURE_OVERRIDE:
+_UseTextureOverride: If texture override is used.
+_OverrideAlbedo: Texture map for the override
+_OverrideNormalMap: Texture Normal Map for the override
+_OverrideTiling: Override texture tiling.
+_OverrideOffset: Offset for override texture
+_TextureOverlayOrigin: Where texture override is originated.
+_TextureOverlaySpread: How much texture override has spread.
+
+NULLIFY:
+_NullifyOrigin: Where nullify is originated
+_NullifySpread: How much nullify has spread
+
+
+
+BASE:
+_IsMagioShader: This is used to detect if this is indeed a magio shader.
+_LifelineMultiplier: 1 if fadeOutStart_s is not reached. Linearly decreased to 0 according to fadeOutLength_s

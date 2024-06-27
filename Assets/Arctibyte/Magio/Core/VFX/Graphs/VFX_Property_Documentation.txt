@@ -1,0 +1,9 @@
+Magio_VFXMultiplier: This is calculated from approximate size of the object. Can be used as particle multiplier or size multiplier etc.
+Magio_Spread: Exact sphere where the effect has been spread. If you use Magio Positioning block a perlin noise is applied automatically to it.
+Magio_Nullify: Exact sphere where the effect has been nullified. If you use Magio Positioning block a perlin noise is applied automatically to it.
+Magio_Transform: Transform of the object where magio effect is bound. This is usually the object where Mesh filter or Renderer is.
+Magio_Mesh: Local mesh which magio uses to sample points for effect spawning. (Only if VFX Spawner type = Mesh)
+Magio_SkinnedMesh: Local skinned mesh renderer which magio uses to sample points for effect spawning. (Only if VFX Spawner type = Skinned Mesh)
+Magio_LifelineMultiplier: This is 1 until fadeOutStart_s is reached. After that it is linearly dropped to 0 according to fadeOutLength_s. Can be used to fade out the effect smoothly.
+Magio_ExternalForce: Vector3 which has external forces and wind added together.
+Magio_NullifyEffectPos: In case you want to spawn steam etc. when effect is nullified the nullify position is stored here. After setting the position magioEffect.SendEvent("Nullify"); called if you want to trigger the event.

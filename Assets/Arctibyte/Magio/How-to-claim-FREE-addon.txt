@@ -1,0 +1,18 @@
+Full instructions and claim page: https://support.arctibyte.com/docs/magio/information/how-to-claim-free-add-on/
+
+1. (Optional, but highly recommended) Leave an honest review for Magio: 
+https://assetstore.unity.com/packages/tools/particles-effects/magio-interactive-effect-engine-urp-hdrp-beta-203817#reviews
+
+2. After leaving the review click on your user name in the asset review
+
+3. Copy the URL and go this website:
+https://support.arctibyte.com/docs/magio/information/how-to-claim-free-add-on/
+
+4. Fill out the form in the bottom of the page.
+
+5. You will receive the download link to your email shortly.
+
+6. Import the package to a project with Magio installed
+https://docs.unity3d.com/560/Documentation/Manual/AssetPackages.html
+
+7. Have fun!

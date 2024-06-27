@@ -76,7 +76,6 @@ public class PlayerWeaponModel
     public int attack_power;
     public float critical_chance;
     public float critical_damage;
-    public int max_health;
 }
 
 [Serializable]
