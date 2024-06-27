@@ -1,28 +1,11 @@
 {
   "dependencies": {
-    "com.coffee.ui-particle": {
-      "version": "https://github.com/mob-sakai/ParticleEffectForUGUI.git#4.6.0",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {
-        "com.unity.ugui": "1.0.0",
-        "com.unity.modules.particlesystem": "1.0.0"
-      },
-      "hash": "293dc43db71d4ce82ee5e6601f9364528919e517"
-    },
     "com.cysharp.unitask": {
       "version": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask",
       "depth": 0,
       "source": "git",
       "dependencies": {},
       "hash": "fbe0bf85155f42f8832205f7b3ac3df571ada33e"
-    },
-    "com.nobi.roundedcorners": {
-      "version": "https://github.com/kirevdokimov/Unity-UI-Rounded-Corners.git",
-      "depth": 0,
-      "source": "git",
-      "dependencies": {},
-      "hash": "06c20cafa885cbb9f14791c269cda6b547e0be30"
     },
     "com.unity.2d.sprite": {
       "version": "1.0.0",

@@ -11,9 +11,9 @@ public class UIManager : UnitySingleton<UIManager>
     private Stack<GameObject> uiPool = new Stack<GameObject>();
     private const float UI_REMOVE_DELAY = 15f; // 3 minutes
 
-    public void StartGame()
+    public void InitializeUI()
     {
-        ShowUI("LoginUI");
+        ShowUI("AuthenticationUI");
     }
 
     public void ShowUI(string uiName)
@@ -26,25 +26,22 @@ public class UIManager : UnitySingleton<UIManager>
 
         string instanceName = $"@UI_{uiName}";
 
-        if (!activeUIs.ContainsKey(instanceName))
+        if (!activeUIs.TryGetValue(instanceName, out var uiInstance))
         {
-            var uiInstance = GetOrCreateUIInstance(prefab, instanceName);
+            uiInstance = GetOrCreateUIInstance(prefab, instanceName);
             activeUIs[instanceName] = uiInstance;
         }
         else
         {
-            var uiInstance = activeUIs[instanceName];
-
             if (uiInstance == null)
             {
-                Debug.LogWarning($"UI '{uiName}' was destroyed unexpectedly. Re-instantiating...");
                 uiInstance = GetOrCreateUIInstance(prefab, instanceName);
                 activeUIs[instanceName] = uiInstance;
             }
             else
             {
                 uiInstance.SetActive(true);
-                CancelRemoveUITimer(instanceName); // 타이머 취소
+                CancelUITimer(instanceName); // 타이머 취소
             }
         }
     }
@@ -74,15 +71,6 @@ public class UIManager : UnitySingleton<UIManager>
         return uiInstance;
     }
 
-    public void ShowLoadingUI()
-    {
-        ShowUI("LoadingUI");
-    }
-
-    public void HideLoadingUI()
-    {
-        HideUI("LoadingUI");
-    }
 
     public void HideUI(string uiName)
     {
@@ -97,15 +85,16 @@ public class UIManager : UnitySingleton<UIManager>
 
     private void StartRemoveUITimer(string instanceName)
     {
-        CancelRemoveUITimer(instanceName); // 이전 타이머가 있을 경우 취소
+        CancelUITimer(instanceName);
 
         var cts = new CancellationTokenSource();
         removeTimers[instanceName] = cts;
 
-        RemoveUIAfterDelay(instanceName, UI_REMOVE_DELAY, cts.Token).Forget();
+        ExpiredUI(instanceName, UI_REMOVE_DELAY, cts.Token).Forget();
     }
 
-    private async UniTask RemoveUIAfterDelay(string instanceName, float delay, CancellationToken token)
+
+    private async UniTask ExpiredUI(string instanceName, float delay, CancellationToken token)
     {
         try
         {
@@ -124,7 +113,8 @@ public class UIManager : UnitySingleton<UIManager>
         }
     }
 
-    private void CancelRemoveUITimer(string instanceName)
+    // 삭제 취소
+    private void CancelUITimer(string instanceName)
     {
         if (removeTimers.TryGetValue(instanceName, out var cts))
         {
@@ -133,22 +123,9 @@ public class UIManager : UnitySingleton<UIManager>
         }
     }
 
-    public async void HandleLoginSuccess()
-    {
-        HideUI("LoginUI");
-        ShowLoadingUI();
-        await GameManager.Instance.InitializeGame();
-        HideLoadingUI();
-    }
-
-    public void OnGameDataLoaded()
-    {
-        HideLoadingUI();
-    }
-
     public void ShowError(string message)
     {
-        // 에러 메시지를 표시하는 UI
+        // 데이터를 불러오는데 실패했다는 에러 메시지를 표시하는 UI
         Debug.LogError(message);
     }
 }

@@ -18,7 +18,7 @@ public class ResourceManager : Singleton<ResourceManager>
 
     #region LoadData
 
-    public async UniTask<bool> LoadAllData(int userId)
+    public async UniTask LoadAllData(int userId)
     {
         try
         {
@@ -33,12 +33,10 @@ public class ResourceManager : Singleton<ResourceManager>
             await LoadRewards();
             await LoadStages();
             await LoadCurrentStage(userId);
-            return true;
         }
         catch (Exception ex)
         {
             Debug.LogError($"Error loading data: {ex.Message}");
-            return false;
         }
     }
 
@@ -124,8 +122,7 @@ public class ResourceManager : Singleton<ResourceManager>
 
     #endregion LoadData
 
-    #region HelperMethods
-
+    #region Logic
     private async UniTask LoadData<T>(string url, Action<T> onSuccess)
     {
         using (UnityWebRequest www = UnityWebRequest.Get(url))
@@ -169,6 +166,6 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
-    #endregion HelperMethods
+    #endregion Logic
 
 }

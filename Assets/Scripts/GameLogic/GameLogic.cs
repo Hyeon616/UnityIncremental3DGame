@@ -201,10 +201,6 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
                 break;
             }
 
-            // MP 감소 로직 추가
-            //player.attributes.max_mp -= 10; // 예시로 10씩 감소
-            //OnPlayerManaChanged?.Invoke(player.attributes.max_mp);
-
             await UniTask.Delay(1000); // 1초마다 전투 라운드 진행
         }
     }

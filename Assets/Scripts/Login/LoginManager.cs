@@ -1,48 +1,15 @@
 using UnityEngine;
 using UnityEngine.Networking;
-using TMPro;
-using Cysharp.Threading.Tasks;
-using UnityEngine.UI;
 using Newtonsoft.Json;
+using Cysharp.Threading.Tasks;
+using System;
 
-public class LoginManager : MonoBehaviour
+public class LoginManager
 {
-    [SerializeField] private TMP_InputField usernameInputField;
-    [SerializeField] private TMP_InputField passwordInputField;
-    [SerializeField] private TMP_Text feedbackText;
-    [SerializeField] private Button loginButton;
-
-    private void OnEnable()
-    {
-        loginButton.onClick.AddListener(Login);
-    }
-
-    private void OnDisable()
-    {
-        loginButton.onClick.RemoveListener(Login);
-    }
-
-    public async void Login()
+    public async UniTask<bool> Login(string username, string password, Action<string> setFeedbackText)
     {
         try
         {
-            string username = usernameInputField.text;
-            string password = passwordInputField.text;
-
-            if (string.IsNullOrEmpty(username))
-            {
-                feedbackText.text = "아이디를 입력하세요.";
-                HideFeedbackText();
-                return;
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                feedbackText.text = "패스워드를 입력하세요.";
-                HideFeedbackText();
-                return;
-            }
-
             var requestBody = new
             {
                 username = username,
@@ -61,14 +28,16 @@ public class LoginManager : MonoBehaviour
 
                 if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
                 {
-                    feedbackText.text = request.error;
+                    setFeedbackText(request.error);
+                    return false;
                 }
                 else
                 {
                     if (request.responseCode == 400)
                     {
                         var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(request.downloadHandler.text);
-                        feedbackText.text = errorResponse.error;
+                        setFeedbackText(errorResponse.error);
+                        return false;
                     }
                     else if (request.responseCode == 200)
                     {
@@ -76,30 +45,22 @@ public class LoginManager : MonoBehaviour
                         PlayerPrefs.SetString("authToken", response.token);
                         PlayerPrefs.SetInt("UserId", response.userId);
                         Debug.Log("토큰 저장: " + response.token);
-                        feedbackText.text = "로그인 성공!";
-                        UIManager.Instance.HandleLoginSuccess();
-
+                        setFeedbackText("로그인 성공!");
+                        return true;
                     }
                     else
                     {
-                        feedbackText.text = "로그인 실패: 알 수 없는 오류.";
+                        setFeedbackText("로그인 실패: 알 수 없는 오류.");
+                        return false;
                     }
                 }
-
-                HideFeedbackText();
             }
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
-            feedbackText.text = $"오류 발생: {ex.Message}";
-            HideFeedbackText();
+            setFeedbackText($"오류 발생: {ex.Message}");
+            return false;
         }
-    }
-
-    private async void HideFeedbackText()
-    {
-        await UniTask.Delay(3000);
-        feedbackText.text = "";
     }
 
     [System.Serializable]
@@ -114,5 +75,4 @@ public class LoginManager : MonoBehaviour
     {
         public string error;
     }
-
 }
