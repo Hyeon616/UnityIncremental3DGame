@@ -244,12 +244,16 @@ Material:
     - _OverlayMinimumBrightness: 0
     - _OverlayMoveMultiplier: 1
     - _OverlaySoftness: 0.5
+    - _OverrideAddWetness: 0
+    - _OverrideStrength: 1
     - _PPDLodThreshold: 5
     - _PPDMaxSamples: 15
     - _PPDMinSamples: 5
     - _PPDPrimitiveLength: 1
     - _PPDPrimitiveWidth: 1
     - _Parallax: 0.02
+    - _QueueControl: 0
+    - _QueueOffset: 0
     - _RayTracing: 0
     - _ReceivesSSR: 1
     - _ReceivesSSRTransparent: 0
@@ -327,6 +331,7 @@ Material:
     - _OverlayDirection: {r: 0, g: 1, b: 0, a: 0}
     - _OverlayMoveDirection: {r: 0, g: -0.001, b: 0, a: 0}
     - _OverlayTiling: {r: 1, g: 1, b: 0, a: 0}
+    - _OverrideColor: {r: 1, g: 1, b: 1, a: 0}
     - _OverrideOffset: {r: 0, g: 0, b: 0, a: 0}
     - _OverrideTiling: {r: 0, g: 0, b: 0, a: 0}
     - _SmoothnessRemap: {r: 0.5, g: 0.5, b: 0, a: 0}

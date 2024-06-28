@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : UnitySingleton<UIManager>
 {
@@ -68,6 +69,7 @@ public class UIManager : UnitySingleton<UIManager>
         }
 
         uiInstance.name = instanceName;
+
         return uiInstance;
     }
 

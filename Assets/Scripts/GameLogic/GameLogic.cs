@@ -154,7 +154,6 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public event Action<int> OnPlayerHealthChanged;
     public event Action<int> OnMonsterHealthChanged;
-    public event Action<int> OnPlayerManaChanged;
     public event Action<MonsterModel> OnMonsterDefeated;
     public event Action OnPlayerDefeated;
     public event Action<int, int, int> OnPlayerRewardsUpdated;
