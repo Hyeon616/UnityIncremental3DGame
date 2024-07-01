@@ -7,6 +7,9 @@ public class GameManager : UnitySingleton<GameManager>
 {
     public Dictionary<string, GameObject> UIPrefabs { get; private set; } = new Dictionary<string, GameObject>();
 
+    private string authToken;
+    private int userId;
+
     private async void Awake()
     {
         await LoadAllUIPrefabs();
@@ -26,7 +29,7 @@ public class GameManager : UnitySingleton<GameManager>
 
     public async UniTask InitializeGame()
     {
-        int userId = GetUserId();
+        
         try
         {
             await ResourceManager.Instance.LoadAllData(userId);
@@ -39,8 +42,23 @@ public class GameManager : UnitySingleton<GameManager>
         }
     }
 
-    private int GetUserId()
+    public void SetAuthToken(string token)
     {
-        return PlayerPrefs.GetInt("UserId");
+        authToken = token;
+    }
+
+    public void SetUserId(int id)
+    {
+        userId = id;
+    }
+
+    public string GetAuthToken()
+    {
+        return authToken;
+    }
+
+    public int GetUserId()
+    {
+        return userId;
     }
 }

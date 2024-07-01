@@ -30,7 +30,8 @@ public class APISettings : ScriptableObject
         Stages,
         Monsters,
         CurrentStage,
-        UpdateStage
+        UpdateStage,
+        EquipSkill
     }
 
     private static readonly Dictionary<Endpoint, string> endpointPaths = new Dictionary<Endpoint, string>
@@ -57,7 +58,8 @@ public class APISettings : ScriptableObject
         { Endpoint.Stages, "stages" },
         { Endpoint.Monsters, "monsters" },
         { Endpoint.CurrentStage, "stages/currentStage" },
-        { Endpoint.UpdateStage, "stages/updateStage" }
+        { Endpoint.UpdateStage, "stages/updateStage" },
+        { Endpoint.EquipSkill, "player/equip-skill" }
     };
 
     public string GetUrl(Endpoint endpoint)

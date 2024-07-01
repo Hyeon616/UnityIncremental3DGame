@@ -28,28 +28,41 @@ public class LoginManager
 
                 if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
                 {
+                    Debug.LogError($"Error: {request.error}");
+                    Debug.LogError($"Response: {request.downloadHandler.text}");
                     setFeedbackText(request.error);
                     return false;
                 }
                 else
                 {
+                    var responseJson = request.downloadHandler.text;
+                    Debug.Log($"Server response : {responseJson}!");
                     if (request.responseCode == 400)
                     {
-                        var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(request.downloadHandler.text);
+                        var errorResponse = JsonConvert.DeserializeObject<ErrorResponse>(responseJson);
                         setFeedbackText(errorResponse.error);
                         return false;
                     }
                     else if (request.responseCode == 200)
                     {
-                        var response = JsonConvert.DeserializeObject<LoginResponse>(request.downloadHandler.text);
-                        PlayerPrefs.SetString("authToken", response.token);
-                        PlayerPrefs.SetInt("UserId", response.userId);
-                        Debug.Log("토큰 저장: " + response.token);
-                        setFeedbackText("로그인 성공!");
-                        return true;
+                        var response = JsonConvert.DeserializeObject<LoginResponse>(responseJson);
+                        if (response.token != null && response.userId != 0)
+                        {
+                            GameManager.Instance.SetAuthToken(response.token);
+                            GameManager.Instance.SetUserId(response.userId);
+                            setFeedbackText("로그인 성공!");
+                            return true;
+                        }
+                        else
+                        {
+                            Debug.LogError("Invalid response data");
+                            setFeedbackText("로그인 실패: 서버 응답 오류");
+                            return false;
+                        }
                     }
                     else
                     {
+                        Debug.LogError($"Unknown error occurred. Status code: {request.responseCode}");
                         setFeedbackText("로그인 실패: 알 수 없는 오류.");
                         return false;
                     }
@@ -58,19 +71,20 @@ public class LoginManager
         }
         catch (Exception ex)
         {
+            Debug.LogError($"Exception occurred: {ex.Message}");
             setFeedbackText($"오류 발생: {ex.Message}");
             return false;
         }
     }
 
-    [System.Serializable]
+    [Serializable]
     private class LoginResponse
     {
         public string token;
         public int userId;
     }
 
-    [System.Serializable]
+    [Serializable]
     private class ErrorResponse
     {
         public string error;

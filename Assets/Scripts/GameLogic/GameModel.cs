@@ -9,10 +9,10 @@ public class PlayerModel
     public string player_nickname;
     public PlayerAttributes attributes;
 }
+
 [Serializable]
 public class PlayerAttributes
 {
-    public int star_dust;
     public int element_stone;
     public int skill_summon_tickets;
     public int money;
@@ -20,22 +20,24 @@ public class PlayerAttributes
     public int max_health;
     public float critical_chance;
     public float critical_damage;
+    public string current_stage;
     public int level;
     public int awakening;
-    public float fire_damage;
-    public float water_damage;
-    public float electric_damage;
-    public float wind_damage;
-    public float light_damage;
-    public float dark_damage;
-    public int fire_enhance;
-    public int water_enhance;
-    public int electric_enhance;
-    public int wind_enhance;
-    public int light_enhance;
-    public int dark_enhance;
+    public int? guild_id;
+    public int? equipped_skill1_id;
+    public int? equipped_skill2_id;
+    public int? equipped_skill3_id;
     public int combat_power;
-    public string current_stage;
+    public int rank;
+
+    public void CalculateCombatPower()
+    {
+        double baseStats = attack_power + critical_chance + max_health + critical_damage;
+        double awakeningMultiplier = awakening == 0 ? 1 : awakening * 10;
+        double levelMultiplier = level * 0.1;
+
+        combat_power = (int)(baseStats * awakeningMultiplier * levelMultiplier);
+    }
 }
 
 [Serializable]
@@ -79,22 +81,24 @@ public class PlayerWeaponModel
 }
 
 [Serializable]
+public class SkillModel
+{
+    public int id;
+    public string name;
+    public string description;
+    public int damage_percentage;
+    public string image;
+    public int cooldown;
+}
+
+[Serializable]
 public class PlayerSkillModel
 {
     public int player_skill_id;
     public int player_id;
     public int skill_id;
     public int level;
-}
-
-[Serializable]
-public class PlayerBlessingModel
-{
-    public int player_blessing_id;
-    public int player_id;
-    public int blessing_id;
-    public int level;
-    public float attack_multiplier;
+    public SkillModel skill;
 }
 
 [Serializable]
@@ -111,8 +115,8 @@ public class MissionProgressModel
 public class RewardModel
 {
     public int id;
-    public string type;
-    public int requirement;
+    public string name;
+    public string description;
     public int reward;
 }
 
@@ -120,26 +124,43 @@ public class RewardModel
 public class MonsterModel
 {
     public int id;
-    public string name;
-    public int health;
+    public string Stage;
+    public string Type;
+    public string Name;
+    public int Health;
+    public int Attack;
+    public int DropMoney;
+    public int DropElementStone;
+    public float DropElementStoneChance;
+}
+
+
+[Serializable]
+public class WeaponModel
+{
+    public int weapon_id;
+    public int weapon_grade;
     public int attack_power;
-    public bool is_boss;
-    public DropTable drop_table;
+    public float crit_rate;
+    public float crit_damage;
+    public long weapon_exp;
+    public string prefab_name;
 }
 
 [Serializable]
-public class DropTable
+public class SkillSlotModel
 {
-    public int money;
-    public int star_dust;
-    public int element_stone;
-    public float star_dust_drop_chance;
-    public float element_stone_drop_chance;
-}
+    public PlayerSkillModel playerSkill; 
+    public bool is_empty;
 
-[Serializable]
-public class StageModel
-{
-    public string stage_number;
-    public List<MonsterModel> monsters;
+    public SkillSlotModel(PlayerSkillModel playerSkill)
+    {
+        this.playerSkill = playerSkill;
+        is_empty = playerSkill == null;
+    }
+
+    // 편의를 위한 프로퍼티들
+    public int SkillId => playerSkill?.skill_id ?? -1;
+    public string SkillName => playerSkill?.skill.name ?? "Empty";
+    public string IconFileName => playerSkill?.skill.image ?? "empty_slot";
 }

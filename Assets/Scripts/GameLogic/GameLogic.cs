@@ -14,10 +14,9 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     private ObservableCollection<FriendModel> _friends = new ObservableCollection<FriendModel>();
     private ObservableCollection<PlayerWeaponModel> _playerWeapons = new ObservableCollection<PlayerWeaponModel>();
     private ObservableCollection<PlayerSkillModel> _playerSkills = new ObservableCollection<PlayerSkillModel>();
-    private ObservableCollection<PlayerBlessingModel> _playerBlessings = new ObservableCollection<PlayerBlessingModel>();
     private MissionProgressModel _missionProgress;
     private ObservableCollection<RewardModel> _rewards = new ObservableCollection<RewardModel>();
-    private ObservableCollection<StageModel> _stages = new ObservableCollection<StageModel>();
+   // private ObservableCollection<StageModel> _stages = new ObservableCollection<StageModel>();
 
 
     public PlayerModel CurrentPlayer
@@ -98,19 +97,6 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         }
     }
 
-    public ObservableCollection<PlayerBlessingModel> PlayerBlessings
-    {
-        get => _playerBlessings;
-        private set
-        {
-            if (_playerBlessings != value)
-            {
-                _playerBlessings = value;
-                OnPropertyChanged();
-            }
-        }
-    }
-
     public MissionProgressModel MissionProgress
     {
         get => _missionProgress;
@@ -137,18 +123,18 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         }
     }
 
-    public ObservableCollection<StageModel> Stages
-    {
-        get => _stages;
-        private set
-        {
-            if (_stages != value)
-            {
-                _stages = value;
-                OnPropertyChanged();
-            }
-        }
-    }
+    //public ObservableCollection<StageModel> Stages
+    //{
+    //    get => _stages;
+    //    private set
+    //    {
+    //        if (_stages != value)
+    //        {
+    //            _stages = value;
+    //            OnPropertyChanged();
+    //        }
+    //    }
+    //}
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -173,36 +159,36 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     }
 
     
-    private async UniTask HandleCombat(PlayerModel player, MonsterModel monster)
-    {
-        while (player.attributes.max_health > 0 && monster.health > 0)
-        {
-            // 플레이어가 몬스터를 공격
-            int playerDamage = CalculateDamage(player);
-            monster.health -= playerDamage;
-            OnMonsterHealthChanged?.Invoke(monster.health);
+    //private async UniTask HandleCombat(PlayerModel player, MonsterModel monster)
+    //{
+    //    while (player.attributes.max_health > 0 && monster.health > 0)
+    //    {
+    //        // 플레이어가 몬스터를 공격
+    //        int playerDamage = CalculateDamage(player);
+    //        monster.health -= playerDamage;
+    //        OnMonsterHealthChanged?.Invoke(monster.health);
 
-            if (monster.health <= 0)
-            {
-                OnMonsterDefeated?.Invoke(monster);
-                AwardPlayer(player, monster.drop_table);
-                break;
-            }
+    //        if (monster.health <= 0)
+    //        {
+    //            OnMonsterDefeated?.Invoke(monster);
+    //            AwardPlayer(player, monster.drop_table);
+    //            break;
+    //        }
 
-            // 몬스터가 플레이어를 공격
-            int monsterDamage = CalculateDamage(monster);
-            player.attributes.max_health -= monsterDamage;
-            OnPlayerHealthChanged?.Invoke(player.attributes.max_health);
+    //        // 몬스터가 플레이어를 공격
+    //        int monsterDamage = CalculateDamage(monster);
+    //        player.attributes.max_health -= monsterDamage;
+    //        OnPlayerHealthChanged?.Invoke(player.attributes.max_health);
 
-            if (player.attributes.max_health <= 0)
-            {
-                OnPlayerDefeated?.Invoke();
-                break;
-            }
+    //        if (player.attributes.max_health <= 0)
+    //        {
+    //            OnPlayerDefeated?.Invoke();
+    //            break;
+    //        }
 
-            await UniTask.Delay(1000); // 1초마다 전투 라운드 진행
-        }
-    }
+    //        await UniTask.Delay(1000); // 1초마다 전투 라운드 진행
+    //    }
+    //}
 
     private int CalculateDamage(PlayerModel player)
     {
@@ -210,20 +196,20 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         return player.attributes.attack_power;
     }
 
-    private int CalculateDamage(MonsterModel monster)
-    {
-        // 몬스터의 공격력 계산 로직
-        return monster.attack_power;
-    }
+    //private int CalculateDamage(MonsterModel monster)
+    //{
+    //    // 몬스터의 공격력 계산 로직
+    //    return monster.attack_power;
+    //}
 
-    private void AwardPlayer(PlayerModel player, DropTable dropTable)
-    {
-        // 플레이어에게 드롭 아이템 지급
-        player.attributes.money += dropTable.money;
-        player.attributes.star_dust += dropTable.star_dust;
-        player.attributes.element_stone += dropTable.element_stone;
-        OnPlayerRewardsUpdated?.Invoke(player.attributes.money, player.attributes.star_dust, player.attributes.element_stone);
-    }
+    //private void AwardPlayer(PlayerModel player, DropTable dropTable)
+    //{
+    //    // 플레이어에게 드롭 아이템 지급
+    //    player.attributes.money += dropTable.money;
+    //    player.attributes.star_dust += dropTable.star_dust;
+    //    player.attributes.element_stone += dropTable.element_stone;
+    //    OnPlayerRewardsUpdated?.Invoke(player.attributes.money, player.attributes.star_dust, player.attributes.element_stone);
+    //}
 
     #region Callbacks
 
@@ -257,11 +243,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         UpdateCollection(PlayerSkills, skills);
     }
 
-    public void OnPlayerBlessingsLoaded(ObservableCollection<PlayerBlessingModel> blessings)
-    {
-        UpdateCollection(PlayerBlessings, blessings);
-    }
-
+    
     public void OnMissionProgressLoaded(MissionProgressModel missionProgress)
     {
         MissionProgress = missionProgress;
@@ -272,10 +254,10 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         UpdateCollection(Rewards, rewards);
     }
 
-    public void OnStagesLoaded(ObservableCollection<StageModel> stages)
-    {
-        UpdateCollection(Stages, stages);
-    }
+    //public void OnStagesLoaded(ObservableCollection<StageModel> stages)
+    //{
+    //    UpdateCollection(Stages, stages);
+    //}
 
     public void OnCurrentStageLoaded(Dictionary<string, string> data)
     {

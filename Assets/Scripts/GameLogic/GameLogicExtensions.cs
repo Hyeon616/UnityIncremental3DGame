@@ -17,7 +17,6 @@ public static class GameLogicExtensions
                 ResourceManager.Instance.LoadFriends(playerId),
                 ResourceManager.Instance.LoadPlayerWeapons(playerId),
                 ResourceManager.Instance.LoadPlayerSkills(playerId),
-                ResourceManager.Instance.LoadPlayerBlessings(playerId),
                 ResourceManager.Instance.LoadMissionProgress(playerId),
                 ResourceManager.Instance.LoadRewards()
             };

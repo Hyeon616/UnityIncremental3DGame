@@ -9,6 +9,7 @@ using UnityEngine.Networking;
 public class ResourceManager : Singleton<ResourceManager>
 {
     public APISettings APISettings { get; private set; }
+    
 
     private ResourceManager()
     {
@@ -28,10 +29,9 @@ public class ResourceManager : Singleton<ResourceManager>
             await LoadFriends(userId);
             await LoadPlayerWeapons(userId);
             await LoadPlayerSkills(userId);
-            await LoadPlayerBlessings(userId);
             await LoadMissionProgress(userId);
             await LoadRewards();
-            await LoadStages();
+            //await LoadStages();
             await LoadCurrentStage(userId);
         }
         catch (Exception ex)
@@ -43,6 +43,7 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadPlayerData(int playerId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerId);
+        Debug.Log($"Loading player data from URL: {url}");
         await LoadData<PlayerModel>(url, GameLogic.Instance.OnPlayerDataLoaded);
     }
 
@@ -76,11 +77,6 @@ public class ResourceManager : Singleton<ResourceManager>
         await LoadData<ObservableCollection<PlayerSkillModel>>(url, GameLogic.Instance.OnPlayerSkillsLoaded);
     }
 
-    public async UniTask LoadPlayerBlessings(int userId)
-    {
-        string url = APISettings.GetUrl(APISettings.Endpoint.PlayerBlessings, userId);
-        await LoadData<ObservableCollection<PlayerBlessingModel>>(url, GameLogic.Instance.OnPlayerBlessingsLoaded);
-    }
 
     public async UniTask LoadMissionProgress(int userId)
     {
@@ -94,11 +90,11 @@ public class ResourceManager : Singleton<ResourceManager>
         await LoadData<ObservableCollection<RewardModel>>(url, GameLogic.Instance.OnRewardsLoaded);
     }
 
-    public async UniTask LoadStages()
-    {
-        string url = APISettings.GetUrl(APISettings.Endpoint.Stages);
-        await LoadData<ObservableCollection<StageModel>>(url, GameLogic.Instance.OnStagesLoaded);
-    }
+    //public async UniTask LoadStages()
+    //{
+    //    string url = APISettings.GetUrl(APISettings.Endpoint.Stages);
+    //    await LoadData<ObservableCollection<StageModel>>(url, GameLogic.Instance.OnStagesLoaded);
+    //}
 
     public async UniTask LoadCurrentStage(int playerId)
     {
@@ -127,7 +123,7 @@ public class ResourceManager : Singleton<ResourceManager>
     {
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
+            www.SetRequestHeader("Authorization", $"Bearer {GameManager.Instance.GetAuthToken()}");
             await www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
@@ -151,7 +147,7 @@ public class ResourceManager : Singleton<ResourceManager>
             www.uploadHandler = new UploadHandlerRaw(System.Text.Encoding.UTF8.GetBytes(jsonData));
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
-            www.SetRequestHeader("Authorization", $"Bearer {PlayerPrefs.GetString("AuthToken")}");
+            www.SetRequestHeader("Authorization", $"Bearer {GameManager.Instance.GetAuthToken()}");
 
             await www.SendWebRequest();
 

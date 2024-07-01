@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,15 +38,27 @@ public class UI_Authentication : MonoBehaviour
 
     private void Start()
     {
-        // 초기 상태 설정
         ShowLoginTabUI();
 
+    }
+
+    private void OnEnable()
+    {
         // 버튼 클릭 이벤트 추가
         LoginTabButton.onClick.AddListener(ShowLoginTabUI);
         RegisterTabButton.onClick.AddListener(ShowRegisterTabUI);
         LoginButton.onClick.AddListener(Login);
         RegisterButton.onClick.AddListener(Register);
     }
+
+    private void OnDisable()
+    {
+        LoginTabButton.onClick.RemoveListener(ShowLoginTabUI);
+        RegisterTabButton.onClick.RemoveListener(ShowRegisterTabUI);
+        LoginButton.onClick.RemoveListener(Login);
+        RegisterButton.onClick.RemoveListener(Register);
+    }
+
 
     private void ShowLoginTabUI()
     {
@@ -76,14 +90,35 @@ public class UI_Authentication : MonoBehaviour
         }
 
         SetFeedbackText("로그인 중...");
-        bool success = await loginManager.Login(username, password, SetFeedbackText);
+        Debug.Log("로그인 중");
+
+        bool success = false;
+
+        try
+        {
+            Debug.Log($"Sending login request for username: {username}");
+            // 로그인 요청 코드
+            
+            success = await loginManager.Login(username, password, SetFeedbackText);
+            Debug.Log($"로그인 시도 결과: {success}");
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Login failed with exception: {ex.Message}");
+            SetFeedbackText("로그인에 실패했습니다.");
+        }
 
         if (success)
         {
-            await OnLoginSuccess();
+            Debug.Log("로그인 성공, UI 전환");
+            UIManager.Instance.HideUI("AuthenticationUI");
+            UIManager.Instance.ShowUI("LoadingUI");
+            await GameManager.Instance.InitializeGame();
+            UIManager.Instance.HideUI("LoadingUI");
         }
         else
         {
+            Debug.LogError("로그인 실패");
             SetFeedbackText("로그인에 실패했습니다.");
         }
     }
@@ -116,11 +151,5 @@ public class UI_Authentication : MonoBehaviour
         FeedbackText.text = "";
     }
 
-    // 로그인이 성공했을때의 처리
-    private async UniTask OnLoginSuccess()
-    {
-        UIManager.Instance.HideUI("AuthenticationUI");
-        UIManager.Instance.ShowUI("LoadingUI");
-        await GameManager.Instance.InitializeGame();
-    }
+    
 }

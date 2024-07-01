@@ -14,6 +14,7 @@ const monsterRoutes = require('./routes/monsterRoutes');
 const guildRoutes = require('./routes/guildRoutes');
 const friendRoutes = require('./routes/friendRoutes');
 const checkRoutes = require('./routes/checkRoutes');
+const playerRoutes = require('./routes/playerRoutes');
 const pool = require('./config/db');
 
 
@@ -33,6 +34,7 @@ app.use('/monsters', monsterRoutes);
 app.use('/guilds', guildRoutes);
 app.use('/friends', friendRoutes);
 app.use('/checks', checkRoutes);
+app.use('/player', playerRoutes);
 
 // MySQL 연결 테스트 함수
 async function testConnection() {
