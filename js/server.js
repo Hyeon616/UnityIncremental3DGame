@@ -4,6 +4,9 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 dotenv.config({ path: '../.env' });
 
+const { connectRedis } = require('./config/redis');
+const pool = require('./config/db');
+
 const authRoutes = require('./routes/authRoutes');
 const weaponRoutes = require('./routes/weaponRoutes');
 const blessingRoutes = require('./routes/blessingRoutes');
@@ -15,7 +18,8 @@ const guildRoutes = require('./routes/guildRoutes');
 const friendRoutes = require('./routes/friendRoutes');
 const checkRoutes = require('./routes/checkRoutes');
 const playerRoutes = require('./routes/playerRoutes');
-const pool = require('./config/db');
+const mailRoutes = require('./routes/mailRoutes');
+
 
 
 const app = express();
@@ -35,24 +39,42 @@ app.use('/guilds', guildRoutes);
 app.use('/friends', friendRoutes);
 app.use('/checks', checkRoutes);
 app.use('/player', playerRoutes);
+app.use('/mails',mailRoutes);
 
-// MySQL 연결 테스트 함수
-async function testConnection() {
+async function startServer() {
+    try {
+        await connectRedis();
+        await testDbConnection();
+        
+        app.listen(port, () => {
+            console.log(`Server running on port ${port}`);
+        });
+    } catch (err) {
+        console.error('Failed to start server:', err);
+        process.exit(1);
+    }
+}
+
+async function testDbConnection() {
     let conn;
     try {
         conn = await pool.getConnection();
         console.log("DB 연결 성공");
     } catch (err) {
         console.error("Error connecting to the database:", err);
+        throw err;
     } finally {
         if (conn) conn.release();
     }
 }
 
-// 서버 시작 시 MySQL 연결 테스트
-testConnection();
+startServer();
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+process.on('SIGINT', async () => {
+    const redisClient = require('./config/redis').getClient();
+    if (redisClient) {
+        console.log('Closing Redis client connection...');
+        await redisClient.quit();
+    }
+    process.exit();
 });
-

@@ -32,6 +32,7 @@ public class GameManager : UnitySingleton<GameManager>
         
         try
         {
+            Debug.Log($"Initializing game for user ID: {userId}");
             await ResourceManager.Instance.LoadAllData(userId);
             UIManager.Instance.HideUI("LoadingUI");
         }
@@ -39,6 +40,7 @@ public class GameManager : UnitySingleton<GameManager>
         {
             UIManager.Instance.ShowError("An error occurred during game initialization.");
             Debug.LogError($"Exception during game initialization: {ex.Message}");
+            Debug.LogError($"Stack trace: {ex.StackTrace}");
         }
     }
 

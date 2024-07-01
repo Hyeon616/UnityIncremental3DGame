@@ -31,7 +31,7 @@ public class ResourceManager : Singleton<ResourceManager>
             await LoadPlayerSkills(userId);
             await LoadMissionProgress(userId);
             await LoadRewards();
-            //await LoadStages();
+           // await LoadStages();
             await LoadCurrentStage(userId);
         }
         catch (Exception ex)
@@ -43,13 +43,42 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadPlayerData(int playerId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerId);
-        Debug.Log($"Loading player data from URL: {url}");
-        await LoadData<PlayerModel>(url, GameLogic.Instance.OnPlayerDataLoaded);
+        Debug.Log($"Attempting to load player data from URL: {url}");
+
+        try
+        {
+            using (UnityWebRequest www = UnityWebRequest.Get(url))
+            {
+                www.SetRequestHeader("Authorization", $"Bearer {GameManager.Instance.GetAuthToken()}");
+                await www.SendWebRequest();
+
+                if (www.result != UnityWebRequest.Result.Success)
+                {
+                    Debug.LogError($"Error: {www.error}");
+                    Debug.LogError($"Response Code: {www.responseCode}");
+                    Debug.LogError($"Response Body: {www.downloadHandler.text}");
+                }
+                else
+                {
+                    string jsonResult = www.downloadHandler.text;
+                    Debug.Log($"Player data received: {jsonResult}");
+                    PlayerModel playerData = JsonConvert.DeserializeObject<PlayerModel>(jsonResult);
+                    GameLogic.Instance.OnPlayerDataLoaded(playerData);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Exception in LoadPlayerData: {ex.Message}");
+            Debug.LogError($"Stack Trace: {ex.StackTrace}");
+        }
     }
+
 
     public async UniTask LoadMails(int userId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.Mails, userId);
+        Debug.Log($"Loading mails from URL: {url}");
         await LoadData<ObservableCollection<MailModel>>(url, GameLogic.Instance.OnMailsLoaded);
     }
 
@@ -116,6 +145,23 @@ public class ResourceManager : Singleton<ResourceManager>
         await PostData(url, requestData, GameLogic.Instance.OnRewardClaimed);
     }
 
+
+
+    public async UniTask ClaimAttendanceReward()
+    {
+        string url = APISettings.GetUrl(APISettings.Endpoint.AttendanceReward);
+        await LoadData<AttendanceRewardResponse>(url, GameLogic.Instance.OnAttendanceRewardClaimed);
+    }
+
+    private async void OnAttendanceRewardResponse(string jsonResponse)
+    {
+        AttendanceRewardResponse response = JsonConvert.DeserializeObject<AttendanceRewardResponse>(jsonResponse);
+        GameLogic.Instance.OnAttendanceRewardClaimed(response);
+
+        // 메일 목록을 새로고침합니다.
+        await LoadMails(GameManager.Instance.GetUserId());
+    }
+
     #endregion LoadData
 
     #region Logic
@@ -128,13 +174,25 @@ public class ResourceManager : Singleton<ResourceManager>
 
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError(www.error);
+                Debug.LogError($"Error: {www.error}");
+                Debug.LogError($"URL: {url}");
+                Debug.LogError($"Response Code: {www.responseCode}");
+                Debug.LogError($"Response Body: {www.downloadHandler.text}");
             }
             else
             {
                 string jsonResult = www.downloadHandler.text;
-                T data = JsonConvert.DeserializeObject<T>(jsonResult);
-                onSuccess?.Invoke(data);
+                Debug.Log($"Successful response from {url}: {jsonResult}");
+                if (!string.IsNullOrEmpty(jsonResult))
+                {
+                    T data = JsonConvert.DeserializeObject<T>(jsonResult);
+                    onSuccess?.Invoke(data);
+                }
+                else
+                {
+                    Debug.LogWarning($"Empty response from {url}");
+                    onSuccess?.Invoke(default(T));
+                }
             }
         }
     }

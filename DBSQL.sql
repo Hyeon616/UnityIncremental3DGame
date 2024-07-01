@@ -155,6 +155,16 @@ CREATE TABLE MissionProgress (
     last_online_time_check DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE AttendanceCheck (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    player_id INT NOT NULL,
+    check_date DATE NOT NULL,
+    day_count INT NOT NULL,
+    FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
+    UNIQUE KEY (player_id, check_date)
+);
+
+
 -- 외래 키 제약 조건 추가
 ALTER TABLE Guilds
 ADD FOREIGN KEY (guild_leader) REFERENCES Players(player_id) ON DELETE CASCADE;
@@ -419,17 +429,5 @@ INSERT INTO Monsters (id, Stage, Type, Name, Health, Attack, DropMoney, DropElem
 INSERT INTO Monsters (id, Stage, Type, Name, Health, Attack, DropMoney, DropElementStone, DropElementStoneChance) VALUES (148, '10-13', 'Normal', 'Wraith Swordsman Purple', 1480, 286, 740, 0, 0.05);
 INSERT INTO Monsters (id, Stage, Type, Name, Health, Attack, DropMoney, DropElementStone, DropElementStoneChance) VALUES (149, '10-14', 'Normal', 'Wraith Swordsman Purple', 1490, 288, 745, 0, 0.05);
 INSERT INTO Monsters (id, Stage, Type, Name, Health, Attack, DropMoney, DropElementStone, DropElementStoneChance) VALUES (150, '10-15', 'Boss', 'Wraith Swordsman Red', 5000, 500, 5000, 10, 1.0);
-
-
-
-
-
-
-
-
-
-
-
-
 
 

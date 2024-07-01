@@ -15,7 +15,7 @@ public class UI_ProfilePanel : MonoBehaviour
 
     void OnEnable()
     {
-        UpdateProfile();
+        //UpdateProfile();
         if (GameLogic.Instance != null)
         {
             GameLogic.Instance.OnPlayerHealthChanged += UpdateHP;

@@ -1,22 +1,35 @@
 const pool = require('../config/db');
-const { getAsync, setAsync } = require('../config/redis');
+const { getClient, connectRedis } = require('../config/redis');
+
 
 // 친구 데이터를 Redis에 캐싱하는 함수
 async function cacheFriends(playerId) {
+    let client = getClient();
+    if (!client.isOpen) {
+        client = await connectRedis();
+    }
+
     const conn = await pool.getConnection();
     try {
         const [friends] = await conn.query('SELECT * FROM Friends WHERE player_id = ?', [playerId]);
-        await setAsync(`friends:${playerId}`, JSON.stringify(friends), 'EX', 3600);
+        const friendsData = friends ? friends : [];
+        await client.set(`friends:${playerId}`, JSON.stringify(friendsData), 'EX', 3600);
         console.log(`플레이어 ${playerId}의 친구 목록이 성공적으로 캐싱되었습니다.`);
-        return friends;
+        return friendsData;
     } finally {
         if (conn) conn.release();
     }
 }
 
+
 // Redis에서 친구 목록을 가져오는 함수
 async function getCachedFriends(playerId) {
-    let friends = await getAsync(`friends:${playerId}`);
+    let client = getClient();
+    if (!client.isOpen) {
+        client = await connectRedis();
+    }
+
+    let friends = await client.get(`friends:${playerId}`);
     if (friends) {
         console.log(`플레이어 ${playerId}의 친구 목록이 성공적으로 Redis에서 로드되었습니다.`);
         return JSON.parse(friends);

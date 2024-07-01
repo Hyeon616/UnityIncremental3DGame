@@ -164,3 +164,10 @@ public class SkillSlotModel
     public string SkillName => playerSkill?.skill.name ?? "Empty";
     public string IconFileName => playerSkill?.skill.image ?? "empty_slot";
 }
+
+[Serializable]
+public class AttendanceRewardResponse
+{
+    public string message;
+    public int dayCount;
+}

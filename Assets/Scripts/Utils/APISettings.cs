@@ -31,7 +31,10 @@ public class APISettings : ScriptableObject
         Monsters,
         CurrentStage,
         UpdateStage,
-        EquipSkill
+        EquipSkill,
+        SendMail,
+        MarkMailAsRead,
+        AttendanceReward
     }
 
     private static readonly Dictionary<Endpoint, string> endpointPaths = new Dictionary<Endpoint, string>
@@ -45,8 +48,8 @@ public class APISettings : ScriptableObject
         { Endpoint.SynthesizeWeapon, "weapons/synthesizeWeapon" },
         { Endpoint.SynthesizeAllWeapons, "weapons/synthesizeAllWeapons" },
         { Endpoint.GetWeaponsByRarity, "weapons/weaponsByRarity" },
-        { Endpoint.PlayerData, "player" },
-        { Endpoint.Mails, "mails" },
+        { Endpoint.PlayerData, "player/{0}" },
+        { Endpoint.Mails, "mails/{0}" },
         { Endpoint.ClaimReward, "rewards/claimReward" },
         { Endpoint.Guilds, "guilds" },
         { Endpoint.Friends, "friends" },
@@ -59,7 +62,10 @@ public class APISettings : ScriptableObject
         { Endpoint.Monsters, "monsters" },
         { Endpoint.CurrentStage, "stages/currentStage" },
         { Endpoint.UpdateStage, "stages/updateStage" },
-        { Endpoint.EquipSkill, "player/equip-skill" }
+        { Endpoint.EquipSkill, "player/{0}/equip-skill" },
+        {Endpoint.SendMail, "mails/send" },
+        { Endpoint.MarkMailAsRead, "mails/{0}/read" },
+        { Endpoint.AttendanceReward, "mails/attendance-reward" }
     };
 
     public string GetUrl(Endpoint endpoint)
@@ -76,7 +82,7 @@ public class APISettings : ScriptableObject
     {
         if (endpointPaths.TryGetValue(endpoint, out string path))
         {
-            return $"{baseUrl}/{path}/{id}";
+            return $"{baseUrl}/{string.Format(path, id)}";
         }
         Debug.LogError($"Endpoint '{endpoint}' not found.");
         return null;

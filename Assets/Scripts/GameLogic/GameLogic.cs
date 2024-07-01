@@ -220,7 +220,16 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public void OnMailsLoaded(ObservableCollection<MailModel> mails)
     {
-        UpdateCollection(Mails, mails);
+        if (mails != null)
+        {
+            UpdateCollection(Mails, mails);
+        }
+        else
+        {
+            Debug.LogWarning("Received null mails collection");
+            Mails.Clear();
+        }
+
     }
 
     public void OnGuildsLoaded(ObservableCollection<GuildModel> guilds)
@@ -275,6 +284,13 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     public void OnRewardClaimed()
     {
         Debug.Log("Reward claimed successfully");
+    }
+
+    public void OnAttendanceRewardClaimed(AttendanceRewardResponse response)
+    {
+        Debug.Log($"Attendance reward claimed: {response.message}, Day count: {response.dayCount}");
+        // 여기서 필요한 추가 로직을 구현합니다.
+        // 예: 플레이어 데이터 업데이트, UI 업데이트 등
     }
 
     #endregion Callbacks

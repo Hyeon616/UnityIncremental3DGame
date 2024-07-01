@@ -1,22 +1,44 @@
 const pool = require('../config/db');
-const { getAsync, setAsync } = require('../config/redis');
+const { getClient, connectRedis } = require('../config/redis');
 
-// 길드 데이터를 Redis에 캐싱하는 함수
 async function cacheGuilds() {
-    const conn = await pool.getConnection();
+    let client = getClient();
+    if (!client.isOpen) {
+        client = await connectRedis();
+    }
+
+    let conn;
     try {
+        conn = await pool.getConnection();
         const [guilds] = await conn.query('SELECT * FROM Guilds');
-        await setAsync('guilds', JSON.stringify(guilds), 'EX', 3600);
+        if (!guilds) {
+            console.error('길드 목록을 가져오지 못했습니다.');
+            return [];
+        }
+        console.log('DB에서 가져온 길드 목록:', guilds);
+
+        await client.set('guilds', JSON.stringify(guilds), {
+            EX: 3600
+        });
         console.log('길드 목록이 성공적으로 캐싱되었습니다.');
         return guilds;
+    } catch (error) {
+        console.error('길드 목록 캐싱 중 오류 발생:', error);
+        throw error;
     } finally {
         if (conn) conn.release();
     }
 }
 
-// Redis에서 길드 목록을 가져오는 함수
 async function getCachedGuilds() {
-    let guilds = await getAsync('guilds');
+    let client = getClient();
+    if (!client.isOpen) {
+        client = await connectRedis();
+    }
+
+    let guilds = await client.get('guilds');
+    console.log('Redis에서 가져온 길드 목록:', guilds);
+
     if (guilds) {
         console.log('길드 목록이 성공적으로 Redis에서 로드되었습니다.');
         return JSON.parse(guilds);
@@ -42,7 +64,7 @@ exports.createGuild = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const result = await conn.query('INSERT INTO Guilds (guild_name, guild_leader) VALUES (?, ?)', [guildName, guildLeader]);
+        const [result] = await conn.query('INSERT INTO Guilds (guild_name, guild_leader) VALUES (?, ?)', [guildName, guildLeader]);
         const guildId = result.insertId;
         await conn.query('INSERT INTO PlayerGuilds (player_id, guild_id) VALUES (?, ?)', [guildLeader, guildId]);
         await conn.query('UPDATE PlayerAttributes SET guild_id = ? WHERE player_id = ?', [guildId, guildLeader]);
