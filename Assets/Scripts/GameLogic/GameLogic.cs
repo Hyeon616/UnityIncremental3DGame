@@ -158,58 +158,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         }
     }
 
-    
-    //private async UniTask HandleCombat(PlayerModel player, MonsterModel monster)
-    //{
-    //    while (player.attributes.max_health > 0 && monster.health > 0)
-    //    {
-    //        // 플레이어가 몬스터를 공격
-    //        int playerDamage = CalculateDamage(player);
-    //        monster.health -= playerDamage;
-    //        OnMonsterHealthChanged?.Invoke(monster.health);
-
-    //        if (monster.health <= 0)
-    //        {
-    //            OnMonsterDefeated?.Invoke(monster);
-    //            AwardPlayer(player, monster.drop_table);
-    //            break;
-    //        }
-
-    //        // 몬스터가 플레이어를 공격
-    //        int monsterDamage = CalculateDamage(monster);
-    //        player.attributes.max_health -= monsterDamage;
-    //        OnPlayerHealthChanged?.Invoke(player.attributes.max_health);
-
-    //        if (player.attributes.max_health <= 0)
-    //        {
-    //            OnPlayerDefeated?.Invoke();
-    //            break;
-    //        }
-
-    //        await UniTask.Delay(1000); // 1초마다 전투 라운드 진행
-    //    }
-    //}
-
-    private int CalculateDamage(PlayerModel player)
-    {
-        // 플레이어의 공격력 계산 로직
-        return player.attributes.attack_power;
-    }
-
-    //private int CalculateDamage(MonsterModel monster)
-    //{
-    //    // 몬스터의 공격력 계산 로직
-    //    return monster.attack_power;
-    //}
-
-    //private void AwardPlayer(PlayerModel player, DropTable dropTable)
-    //{
-    //    // 플레이어에게 드롭 아이템 지급
-    //    player.attributes.money += dropTable.money;
-    //    player.attributes.star_dust += dropTable.star_dust;
-    //    player.attributes.element_stone += dropTable.element_stone;
-    //    OnPlayerRewardsUpdated?.Invoke(player.attributes.money, player.attributes.star_dust, player.attributes.element_stone);
-    //}
+   
 
     #region Callbacks
 
