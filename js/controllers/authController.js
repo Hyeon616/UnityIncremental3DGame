@@ -3,96 +3,116 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { getCachedWeapons } = require('../controllers/weaponController');
 
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_USER:', process.env.DB_USER);
+console.log('DB_NAME:', process.env.DB_DATABASE);
+
 exports.register = async (req, res) => {
+    console.log('Register function called');
+    console.log('Request body:', req.body);
+
     const { username, password, nickname } = req.body;
     if (!username || !password || !nickname) {
+        console.log('Invalid input detected');
         return res.status(400).json({ error: 'Invalid input' });
     }
 
     let conn;
     try {
         conn = await pool.getConnection();
-        await conn.beginTransaction();  // 트랜잭션 시작
+        await conn.beginTransaction();
 
-        let existingUserResult;
-        console.log('Query result:', existingUserResult);
-        try {
-            [existingUserResult] = await conn.query('SELECT * FROM Players WHERE player_username = ? OR player_nickname = ?', [username, nickname]);
-        } catch (queryError) {
-            console.error('Query error:', queryError);
-            throw new Error('Failed to execute SELECT query');
-        }
+        // Check if username or nickname already exists
+        const existingUsers = await conn.query(
+            'SELECT * FROM Players WHERE player_username = ? OR player_nickname = ?',
+            [username, nickname]
+        );
+        console.log('Existing user check result:', existingUsers);
 
-        // 쿼리 결과 로그
-        console.log('Query result:', existingUserResult);
-
-        if (!Array.isArray(existingUserResult)) {
-            throw new Error('Unexpected query result format');
-        }
-
-        if (existingUserResult.length > 0) {
+        if (Array.isArray(existingUsers) && existingUsers.length > 0) {
             return res.status(400).json({ error: 'Username or nickname already exists' });
         }
 
-        let insertResult;
-        try {
-            [insertResult] = await conn.query('INSERT INTO Players (player_username, player_password, player_nickname) VALUES (?, ?, ?)', [username, await bcrypt.hash(password, 10), nickname]);
-        } catch (queryError) {
-            console.error('Insert error:', queryError);
-            throw new Error('Failed to insert into Players');
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.log('Inserting new user with values:', { username, hashedPassword, nickname });
+        console.log('이거 null아님 ',username);
+        const insertResult = await conn.query(
+            'INSERT INTO Players (player_username, player_password, player_nickname) VALUES (?, ?, ?)',
+            [username, hashedPassword, nickname]
+        );
+        console.log('Insert result:', insertResult);;
+
+        let playerId;
+        if (Array.isArray(insertResult)) {
+            playerId = insertResult[0].insertId;
+        } else if (insertResult && insertResult.insertId) {
+            playerId = insertResult.insertId;
+        } else {
+            throw new Error('Failed to get new player ID');
         }
+        console.log('New player ID:', playerId);
 
-        console.log('Insert result:', insertResult);
+        console.log('Inserting into PlayerAttributes');
+        const attributeResult = await conn.query(
+            'INSERT INTO PlayerAttributes (player_id) VALUES (?)',
+            [playerId]
+        );
+        console.log('PlayerAttributes insert result:', attributeResult);
 
-        if (!insertResult || !insertResult.insertId) {
-            throw new Error('Failed to insert into Players');
-        }
+        console.log('Inserting into MissionProgress');
+        const missionResult = await conn.query(
+            'INSERT INTO MissionProgress (player_id) VALUES (?)',
+            [playerId]
+        );
+        console.log('MissionProgress insert result:', missionResult);
 
-        const playerId = insertResult.insertId;
-
-        try {
-            await conn.query('INSERT INTO PlayerAttributes (player_id) VALUES (?)', [playerId]);
-            await conn.query('INSERT INTO MissionProgress (player_id) VALUES (?)', [playerId]);
-        } catch (queryError) {
-            console.error('Insert attribute or mission error:', queryError);
-            throw new Error('Failed to insert into PlayerAttributes or MissionProgress');
-        }
-
+        // Get weapons and insert into PlayerWeaponInventory
         const weapons = await getCachedWeapons();
-        console.log('Fetched weapons:', weapons);
+        console.log(`Fetched ${weapons ? weapons.length : 0} weapons for new user`);
 
-        if (!Array.isArray(weapons)) {
-            throw new Error('Weapons data is not an array');
+        if (Array.isArray(weapons) && weapons.length > 0) {
+            const weaponInserts = weapons.map(weapon => [
+                playerId,
+                weapon.weapon_id,
+                0, // count
+                weapon.attack_power,
+                parseFloat(weapon.crit_rate),
+                parseFloat(weapon.crit_damage)
+            ]);
+
+            console.log(`Preparing to insert ${weaponInserts.length} weapons for new user`);
+
+            const result = await conn.batch(
+                'INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage) VALUES (?, ?, ?, ?, ?, ?)',
+                weaponInserts
+            );
+            console.log(`Inserted ${result.affectedRows} weapons for new user`);
+        } else {
+            console.log('No weapons available for new user');
         }
 
-        const weaponInserts = weapons.map(weapon => [
-            playerId, weapon.weapon_id, 0, weapon.attack_power, weapon.crit_rate, weapon.crit_damage
-        ]);
-
-        console.log('Weapon inserts:', weaponInserts);
-
-        if (weaponInserts.length > 0) {
-            try {
-                await conn.query('INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage) VALUES ?', [weaponInserts]);
-            } catch (queryError) {
-                console.error('Weapon insert error:', queryError);
-                throw new Error('Failed to insert into PlayerWeaponInventory');
-            }
-        }
-
-        await conn.commit();  // 모든 작업이 성공적으로 완료되면 커밋
-        res.status(201).json({ message: 'User registered successfully' });
+        await conn.commit();
+        res.status(201).json({ message: 'User registered successfully', playerId });
     } catch (err) {
-        if (conn) await conn.rollback();  // 오류 발생 시 롤백
+        if (conn) await conn.rollback();
         console.error('Registration error:', err);
-        res.status(500).json({ error: 'Database error' });
+        if (err.code === 'ER_BAD_NULL_ERROR') {
+            console.error('Null value detected. Request body:', req.body);
+            console.error('SQL query:', err.sql);
+        }
+        res.status(500).json({ error: 'Registration failed: ' + err.message });
     } finally {
         if (conn) conn.release();
     }
 };
+
 exports.login = async (req, res) => {
+    console.log('Login function called');
+    console.log('Request body:', req.body);
+
     const { username, password } = req.body;
     if (!username || !password) {
+        console.log('Invalid input detected');
         return res.status(400).json({ error: 'Invalid username or password' });
     }
 
@@ -106,11 +126,8 @@ exports.login = async (req, res) => {
         const result = await conn.query('SELECT * FROM Players WHERE player_username = ?', [username]);
         console.log('Query executed. Result:', result);
 
-        // 결과 구조 로깅
-        console.log('Result structure:', JSON.stringify(result, null, 2));
-
         let user;
-        if (Array.isArray(result)) {
+        if (Array.isArray(result) && result.length > 0) {
             user = result[0];
         } else if (result && typeof result === 'object') {
             user = result;
@@ -120,7 +137,7 @@ exports.login = async (req, res) => {
 
         if (!user || !user.player_password) {
             console.log('Invalid user data');
-            return res.status(400).json({ error: 'Invalid user data' });
+            return res.status(400).json({ error: 'Invalid username or password' });
         }
 
         console.log('Comparing passwords...');

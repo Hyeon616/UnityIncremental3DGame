@@ -8,29 +8,34 @@ async function cacheWeapons() {
         client = await connectRedis();
     }
 
-    const conn = await pool.getConnection();
+    let conn;
     try {
-        const [rows] = await conn.query('SELECT * FROM Weapon');
-        console.log('Weapons from DB:', rows);
+        conn = await pool.getConnection();
+        const result = await conn.query('SELECT * FROM Weapon');
+        console.log('Raw DB result:', result);
 
-        if (!Array.isArray(rows) || rows.length === 0) {
+        let rows = Array.isArray(result) ? result : [result];
+        console.log(`Fetched ${rows.length} weapons from DB`);
+        
+        if (rows.length > 0) {
+            console.log('First weapon:', JSON.stringify(rows[0], null, 2));
+        } else {
+            console.log('No weapons found in the database');
             throw new Error('No weapons found in the database');
         }
 
         await client.set('weapons', JSON.stringify(rows), {
             EX: 3600
         });
-        console.log('Weapons 데이터가 성공적으로 데이터베이스에서 로드되었습니다.');
+        console.log(`${rows.length} weapons successfully cached in Redis.`);
         return rows;
     } catch (err) {
-        console.error('Error fetching weapons from DB:', err);
+        console.error('Error in cacheWeapons:', err);
         throw err;
     } finally {
         if (conn) conn.release();
     }
 }
-
-
 
 
 // Redis에서 무기 데이터를 가져오는 함수
@@ -43,15 +48,16 @@ async function getCachedWeapons() {
     try {
         let weapons = await client.get('weapons');
         if (weapons) {
-            console.log('Weapons 데이터가 성공적으로 Redis에서 로드되었습니다.');
+            console.log('Weapons data successfully loaded from Redis.');
             return JSON.parse(weapons);
         } else {
             console.log('No weapons found in Redis, fetching from DB');
             return await cacheWeapons();
         }
     } catch (err) {
-        console.error('Error getting weapons from Redis:', err);
-        throw err;
+        console.error('Error in getCachedWeapons:', err);
+        // 에러가 발생해도 DB에서 직접 가져오기 시도
+        return await cacheWeapons();
     }
 }
 

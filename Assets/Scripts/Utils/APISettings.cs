@@ -41,8 +41,8 @@ public class APISettings : ScriptableObject
     {
         { Endpoint.Register, "auth/register" },
         { Endpoint.Login, "auth/login" },
-        { Endpoint.CheckUsername, "checks/check-username" }, // 수정된 부분
-        { Endpoint.CheckNickname, "checks/check-nickname" }, // 수정된 부분
+        { Endpoint.CheckUsername, "checks/check-username" },
+        { Endpoint.CheckNickname, "checks/check-nickname" }, 
         { Endpoint.Weapons, "weapons" },
         { Endpoint.DrawWeapon, "weapons/drawWeapon" },
         { Endpoint.SynthesizeWeapon, "weapons/synthesizeWeapon" },

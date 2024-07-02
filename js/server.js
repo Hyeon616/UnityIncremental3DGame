@@ -41,6 +41,7 @@ app.use('/checks', checkRoutes);
 app.use('/player', playerRoutes);
 app.use('/mails',mailRoutes);
 
+
 async function startServer() {
     try {
         await connectRedis();
@@ -78,3 +79,12 @@ process.on('SIGINT', async () => {
     }
     process.exit();
 });
+
+(async () => {
+    try {
+        const result = await pool.query('DESCRIBE Players');
+        console.log('Players table structure:', result);
+    } catch (err) {
+        console.error('Error fetching table structure:', err);
+    }
+})();
