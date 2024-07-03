@@ -18,7 +18,7 @@ public static class GameLogicExtensions
                 ResourceManager.Instance.LoadPlayerWeapons(playerId),
                 ResourceManager.Instance.LoadPlayerSkills(playerId),
                 ResourceManager.Instance.LoadMissionProgress(playerId),
-                ResourceManager.Instance.LoadRewards()
+                
             };
 
             await UniTask.WhenAll(tasks);

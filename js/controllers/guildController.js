@@ -10,7 +10,7 @@ async function cacheGuilds() {
     let conn;
     try {
         conn = await pool.getConnection();
-        const [guilds] = await conn.query('SELECT * FROM Guilds');
+        const guilds = await conn.query('SELECT * FROM Guilds');
         if (!guilds) {
             console.error('길드 목록을 가져오지 못했습니다.');
             return [];

@@ -5,7 +5,7 @@ exports.getUserMails = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const [mails] = await conn.query('SELECT * FROM mails WHERE user_id = ? ORDER BY created_at DESC', [userId]);
+        const mails = await conn.query('SELECT * FROM mails WHERE user_id = ? ORDER BY created_at DESC', [userId]);
         res.json(mails || []); 
     } catch (error) {
         console.error('Error fetching user mails:', error);
@@ -114,3 +114,5 @@ exports.sendAttendanceReward = async (req, res) => {
         if (conn) conn.release();
     }
 };
+
+

@@ -2,15 +2,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { getCachedWeapons } = require('../controllers/weaponController');
-
-console.log('DB_HOST:', process.env.DB_HOST);
-console.log('DB_USER:', process.env.DB_USER);
-console.log('DB_NAME:', process.env.DB_DATABASE);
+const { getCachedSkills } = require('../controllers/skillController');
 
 exports.register = async (req, res) => {
-    console.log('Register function called');
-    console.log('Request body:', req.body);
-
     const { username, password, nickname } = req.body;
     if (!username || !password || !nickname) {
         console.log('Invalid input detected');
@@ -22,25 +16,20 @@ exports.register = async (req, res) => {
         conn = await pool.getConnection();
         await conn.beginTransaction();
 
-        // Check if username or nickname already exists
         const existingUsers = await conn.query(
             'SELECT * FROM Players WHERE player_username = ? OR player_nickname = ?',
             [username, nickname]
         );
-        console.log('Existing user check result:', existingUsers);
 
         if (Array.isArray(existingUsers) && existingUsers.length > 0) {
             return res.status(400).json({ error: 'Username or nickname already exists' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log('Inserting new user with values:', { username, hashedPassword, nickname });
-        console.log('이거 null아님 ',username);
         const insertResult = await conn.query(
             'INSERT INTO Players (player_username, player_password, player_nickname) VALUES (?, ?, ?)',
             [username, hashedPassword, nickname]
         );
-        console.log('Insert result:', insertResult);;
 
         let playerId;
         if (Array.isArray(insertResult)) {
@@ -50,25 +39,18 @@ exports.register = async (req, res) => {
         } else {
             throw new Error('Failed to get new player ID');
         }
-        console.log('New player ID:', playerId);
-
-        console.log('Inserting into PlayerAttributes');
         const attributeResult = await conn.query(
             'INSERT INTO PlayerAttributes (player_id) VALUES (?)',
             [playerId]
         );
-        console.log('PlayerAttributes insert result:', attributeResult);
 
-        console.log('Inserting into MissionProgress');
         const missionResult = await conn.query(
-            'INSERT INTO MissionProgress (player_id) VALUES (?)',
+            'INSERT INTO MissionProgress (player_id, level_progress, combat_power_progress, awakening_progress, online_time_progress, weapon_level_sum_progress) VALUES (?, 0, 0, 0, 0, 0)',
             [playerId]
         );
-        console.log('MissionProgress insert result:', missionResult);
 
-        // Get weapons and insert into PlayerWeaponInventory
+
         const weapons = await getCachedWeapons();
-        console.log(`Fetched ${weapons ? weapons.length : 0} weapons for new user`);
 
         if (Array.isArray(weapons) && weapons.length > 0) {
             const weaponInserts = weapons.map(weapon => [
@@ -89,6 +71,25 @@ exports.register = async (req, res) => {
             console.log(`Inserted ${result.affectedRows} weapons for new user`);
         } else {
             console.log('No weapons available for new user');
+        }
+
+        const skills = await getCachedSkills();
+        if (skills && skills.length > 0) {
+            const skillInserts = skills.map(skill => [
+                playerId,
+                skill.id,
+                1  // 초기 레벨
+            ]);
+
+            console.log(`Preparing to insert ${skillInserts.length} skills for new user`);
+
+            const skillResult = await conn.batch(
+                'INSERT INTO PlayerSkills (player_id, skill_id, level) VALUES (?, ?, ?)',
+                skillInserts
+            );
+            console.log(`Inserted ${skillResult.affectedRows} skills for new user`);
+        } else {
+            console.log('No skills available for new user');
         }
 
         await conn.commit();

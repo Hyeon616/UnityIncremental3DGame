@@ -3,13 +3,12 @@ const pool = require('../config/db');
 
 exports.getPlayerData = async (req, res) => {
     const playerId = parseInt(req.params.id);
-    console.log(`Attempting to fetch data for player ID: ${playerId}`);
     
     let conn;
     try {
         conn = await pool.getConnection();
         
-        const [result] = await conn.query(
+        const result = await conn.query(
             'SELECT p.player_id, p.player_username, p.player_nickname, ' +
             'pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power, ' +
             'pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage, ' +

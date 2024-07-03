@@ -105,10 +105,13 @@ public class PlayerSkillModel
 public class MissionProgressModel
 {
     public int player_id;
-    public int last_level_check;
-    public int last_combat_power_check;
-    public int last_awakening_check;
-    public string last_online_time_check;
+    public int level_progress;
+    public int combat_power_progress;
+    public int awakening_progress;
+    public int online_time_progress;
+    public int weapon_level_sum_progress;
+    public DateTime last_online_time_check;
+    public int total_online_time;
 }
 
 [Serializable]

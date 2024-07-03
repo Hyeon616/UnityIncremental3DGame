@@ -1,12 +1,63 @@
-// 스테이지 정보
 const pool = require('../config/db');
-const { getAsync, setAsync } = require('../config/redis');
+const { getClient, connectRedis } = require('../config/redis');
 
-exports.getStages = (req, res) => {
+async function cacheStages() {
+    let client = getClient();
+    if (!client || !client.isOpen) {
+        client = await connectRedis();
+    }
+
+    let conn;
     try {
-        res.json(stageData);
+        conn = await pool.getConnection();
+        const rows = await conn.query('SELECT DISTINCT Stage FROM Monsters ORDER BY Stage');
+        
+        if (rows) {
+            const stagesArray = Array.isArray(rows) ? rows : [rows];
+            await client.set('stages', JSON.stringify(stagesArray), {
+                EX: 3600
+            });
+            console.log(`${stagesArray.length} stages successfully cached in Redis.`);
+            return stagesArray;
+        } else {
+            console.log('No stages found in the database');
+            return [];
+        }
     } catch (err) {
-        console.error('스테이지 데이터 가져오기 중 오류 발생:', err);
+        console.error('Error in cacheStages:', err);
+        throw err;
+    } finally {
+        if (conn) conn.release();
+    }
+}
+
+async function getCachedStages() {
+    let client = getClient();
+    if (!client || !client.isOpen) {
+        client = await connectRedis();
+    }
+
+    try {
+        let stages = await client.get('stages');
+        if (stages) {
+            console.log('Stages data successfully loaded from Redis.');
+            return JSON.parse(stages);
+        } else {
+            console.log('No stages found in Redis, fetching from DB');
+            return await cacheStages();
+        }
+    } catch (err) {
+        console.error('Error in getCachedStages:', err);
+        return await cacheStages();
+    }
+}
+
+exports.getStages = async (req, res) => {
+    try {
+        const stages = await getCachedStages();
+        res.json(stages);
+    } catch (err) {
+        console.error('Error retrieving stages:', err);
         res.status(500).json({ error: 'Server error' });
     }
 };
@@ -29,7 +80,7 @@ exports.updateStage = async (req, res) => {
             res.status(404).json({ error: 'User not found' });
         }
     } catch (err) {
-        console.error('스테이지 업데이트 중 오류 발생:', err);
+        console.error('Error updating stage:', err);
         res.status(500).json({ error: 'Database error' });
     } finally {
         if (conn) conn.release();
@@ -50,9 +101,17 @@ exports.getCurrentStage = async (req, res) => {
             res.status(404).json({ error: 'Stage not found' });
         }
     } catch (err) {
-        console.error('현재 스테이지 가져오기 중 오류 발생:', err);
+        console.error('Error retrieving current stage:', err);
         res.status(500).json({ error: 'Database error' });
     } finally {
         if (conn) conn.release();
     }
+};
+
+module.exports = {
+    getStages: exports.getStages,
+    updateStage: exports.updateStage,
+    getCurrentStage: exports.getCurrentStage,
+    cacheStages,
+    getCachedStages
 };

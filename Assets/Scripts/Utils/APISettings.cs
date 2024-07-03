@@ -34,7 +34,9 @@ public class APISettings : ScriptableObject
         EquipSkill,
         SendMail,
         MarkMailAsRead,
-        AttendanceReward
+        AttendanceReward,
+        UpdateMissionProgress,
+        UpdateOnlineTime,
     }
 
     private static readonly Dictionary<Endpoint, string> endpointPaths = new Dictionary<Endpoint, string>
@@ -42,7 +44,7 @@ public class APISettings : ScriptableObject
         { Endpoint.Register, "auth/register" },
         { Endpoint.Login, "auth/login" },
         { Endpoint.CheckUsername, "checks/check-username" },
-        { Endpoint.CheckNickname, "checks/check-nickname" }, 
+        { Endpoint.CheckNickname, "checks/check-nickname" },
         { Endpoint.Weapons, "weapons" },
         { Endpoint.DrawWeapon, "weapons/drawWeapon" },
         { Endpoint.SynthesizeWeapon, "weapons/synthesizeWeapon" },
@@ -53,10 +55,10 @@ public class APISettings : ScriptableObject
         { Endpoint.ClaimReward, "rewards/claimReward" },
         { Endpoint.Guilds, "guilds" },
         { Endpoint.Friends, "friends" },
-        { Endpoint.PlayerWeapons, "playerWeapons" },
-        { Endpoint.PlayerSkills, "playerSkills" },
+        { Endpoint.PlayerWeapons, "weapons/playerWeapons" },
+        { Endpoint.PlayerSkills, "skills/playerSkills" },
         { Endpoint.PlayerBlessings, "playerBlessings" },
-        { Endpoint.MissionProgress, "missionProgress" },
+        { Endpoint.MissionProgress, "mission/progress" },
         { Endpoint.Rewards, "rewards" },
         { Endpoint.Stages, "stages" },
         { Endpoint.Monsters, "monsters" },
@@ -65,7 +67,9 @@ public class APISettings : ScriptableObject
         { Endpoint.EquipSkill, "player/{0}/equip-skill" },
         {Endpoint.SendMail, "mails/send" },
         { Endpoint.MarkMailAsRead, "mails/{0}/read" },
-        { Endpoint.AttendanceReward, "mails/attendance-reward" }
+        { Endpoint.AttendanceReward, "mails/attendance-reward" },
+        { Endpoint.UpdateMissionProgress, "mission/progress" },
+        { Endpoint.UpdateOnlineTime, "mission/progress" }
     };
 
     public string GetUrl(Endpoint endpoint)

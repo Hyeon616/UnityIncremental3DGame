@@ -1,3 +1,10 @@
+INSERT INTO Rewards (ID, Type, Description, Requirement, Reward) VALUES
+(1, 'level', '캐릭터 레벨업 보상', 1, 1000),
+(2, 'combat_power', '전투력 보상', 500, 12),
+(3, 'awakening', '각성 보상', 1, 10000),
+(4, 'online_time', '접속시간 보상', 1, 500),
+(5, 'weapon_level_sum', '오브 레벨업 보상', 5, 25);
+
 INSERT INTO Skills (id, name, description, damage_percentage, image, cooldown) VALUES
 (1, '아이스 애로우', '얼음 화살로 1명의 적에게 X%의 데미지로 공격합니다.', 100, 'Skills_1', 6),
 (2, '아이시클 애로우', '강력한 얼음 화살로 직선 상의 3명의 적을 꿰뚫어 X%의 데미지로 공격합니다.', 150, 'Skills_2', 6),

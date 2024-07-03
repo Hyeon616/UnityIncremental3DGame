@@ -30,8 +30,7 @@ public class ResourceManager : Singleton<ResourceManager>
             await LoadPlayerWeapons(userId);
             await LoadPlayerSkills(userId);
             await LoadMissionProgress(userId);
-            await LoadRewards();
-           // await LoadStages();
+            //await LoadStages();
             await LoadCurrentStage(userId);
         }
         catch (Exception ex)
@@ -44,34 +43,7 @@ public class ResourceManager : Singleton<ResourceManager>
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerId);
         Debug.Log($"Attempting to load player data from URL: {url}");
-
-        try
-        {
-            using (UnityWebRequest www = UnityWebRequest.Get(url))
-            {
-                www.SetRequestHeader("Authorization", $"Bearer {GameManager.Instance.GetAuthToken()}");
-                await www.SendWebRequest();
-
-                if (www.result != UnityWebRequest.Result.Success)
-                {
-                    Debug.LogError($"Error: {www.error}");
-                    Debug.LogError($"Response Code: {www.responseCode}");
-                    Debug.LogError($"Response Body: {www.downloadHandler.text}");
-                }
-                else
-                {
-                    string jsonResult = www.downloadHandler.text;
-                    Debug.Log($"Player data received: {jsonResult}");
-                    PlayerModel playerData = JsonConvert.DeserializeObject<PlayerModel>(jsonResult);
-                    GameLogic.Instance.OnPlayerDataLoaded(playerData);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Exception in LoadPlayerData: {ex.Message}");
-            Debug.LogError($"Stack Trace: {ex.StackTrace}");
-        }
+        await LoadData<PlayerModel>(url, GameLogic.Instance.OnPlayerDataLoaded);
     }
 
 
@@ -102,7 +74,8 @@ public class ResourceManager : Singleton<ResourceManager>
 
     public async UniTask LoadPlayerSkills(int userId)
     {
-        string url = APISettings.GetUrl(APISettings.Endpoint.PlayerSkills, userId);
+        string url = APISettings.GetUrl(APISettings.Endpoint.PlayerSkills);
+        Debug.Log($"Loading player skills from URL: {url}");
         await LoadData<ObservableCollection<PlayerSkillModel>>(url, GameLogic.Instance.OnPlayerSkillsLoaded);
     }
 
@@ -110,20 +83,29 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadMissionProgress(int userId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.MissionProgress, userId);
-        await LoadData<MissionProgressModel>(url, GameLogic.Instance.OnMissionProgressLoaded);
+        try
+        {
+            await LoadData<MissionProgressModel>(url, GameLogic.Instance.OnMissionProgressLoaded);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogWarning($"Failed to load mission progress: {ex.Message}. Using default progress.");
+            // 기본 미션 진행 상황 생성
+            var defaultProgress = new MissionProgressModel
+            {
+                player_id = userId,
+                level_progress = 0,
+                combat_power_progress = 0,
+                awakening_progress = 0,
+                online_time_progress = 0,
+                weapon_level_sum_progress = 0,
+                last_online_time_check = DateTime.UtcNow,
+                total_online_time = 0
+            };
+            GameLogic.Instance.OnMissionProgressLoaded(defaultProgress);
+        }
     }
 
-    public async UniTask LoadRewards()
-    {
-        string url = APISettings.GetUrl(APISettings.Endpoint.Rewards);
-        await LoadData<ObservableCollection<RewardModel>>(url, GameLogic.Instance.OnRewardsLoaded);
-    }
-
-    //public async UniTask LoadStages()
-    //{
-    //    string url = APISettings.GetUrl(APISettings.Endpoint.Stages);
-    //    await LoadData<ObservableCollection<StageModel>>(url, GameLogic.Instance.OnStagesLoaded);
-    //}
 
     public async UniTask LoadCurrentStage(int playerId)
     {
@@ -221,5 +203,26 @@ public class ResourceManager : Singleton<ResourceManager>
     }
 
     #endregion Logic
+
+    public async UniTask UpdateOnlineTime()
+    {
+        string url = APISettings.GetUrl(APISettings.Endpoint.UpdateOnlineTime);
+        var requestData = new { type = "online_time", value = 0 };
+        await PostData(url, requestData, () => {
+            Debug.Log("Online time updated successfully");
+        });
+    }
+
+    public async UniTask CheckMissionCompletion()
+    {
+        string url = APISettings.GetUrl(APISettings.Endpoint.UpdateMissionProgress);
+        await PostData<object>(url, null, OnMissionCompletionChecked);
+    }
+
+    private void OnMissionCompletionChecked()
+    {
+        // 메일 목록을 새로고침합니다.
+        LoadMails(GameManager.Instance.GetUserId());
+    }
 
 }

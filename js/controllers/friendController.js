@@ -11,7 +11,7 @@ async function cacheFriends(playerId) {
 
     const conn = await pool.getConnection();
     try {
-        const [friends] = await conn.query('SELECT * FROM Friends WHERE player_id = ?', [playerId]);
+        const friends = await conn.query('SELECT * FROM Friends WHERE player_id = ?', [playerId]);
         const friendsData = friends ? friends : [];
         await client.set(`friends:${playerId}`, JSON.stringify(friendsData), 'EX', 3600);
         console.log(`플레이어 ${playerId}의 친구 목록이 성공적으로 캐싱되었습니다.`);

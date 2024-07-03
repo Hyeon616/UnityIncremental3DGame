@@ -12,18 +12,9 @@ async function cacheWeapons() {
     try {
         conn = await pool.getConnection();
         const result = await conn.query('SELECT * FROM Weapon');
-        console.log('Raw DB result:', result);
-
-        let rows = Array.isArray(result) ? result : [result];
-        console.log(`Fetched ${rows.length} weapons from DB`);
         
-        if (rows.length > 0) {
-            console.log('First weapon:', JSON.stringify(rows[0], null, 2));
-        } else {
-            console.log('No weapons found in the database');
-            throw new Error('No weapons found in the database');
-        }
-
+        let rows = Array.isArray(result) ? result : [result];
+       
         await client.set('weapons', JSON.stringify(rows), {
             EX: 3600
         });
@@ -58,6 +49,17 @@ async function getCachedWeapons() {
         console.error('Error in getCachedWeapons:', err);
         // 에러가 발생해도 DB에서 직접 가져오기 시도
         return await cacheWeapons();
+    }
+}
+
+async function getPlayerWeapons(req, res) {
+    try {
+        const weapons = await getCachedWeapons();
+        const playerWeapons = weapons.filter(weapon => weapon.player_id === req.user.userId);
+        res.json(playerWeapons);
+    } catch (err) {
+        console.error('Error getting player weapons:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 }
 
@@ -174,5 +176,6 @@ module.exports = {
     synthesizeWeapon,
     synthesizeAllWeapons,
     cacheWeapons,
-    getCachedWeapons
+    getCachedWeapons,
+    getPlayerWeapons
 };

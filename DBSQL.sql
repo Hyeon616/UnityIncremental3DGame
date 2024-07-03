@@ -33,10 +33,11 @@ CREATE TABLE Monsters (
 
 -- Rewards 테이블 생성
 CREATE TABLE Rewards (
-    id INT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT NOT NULL,
-    reward INT NOT NULL
+    ID INT PRIMARY KEY,
+    Type VARCHAR(50),
+    Description VARCHAR(255),
+    Requirement INT,
+    Reward INT
 );
 
 -- Skills 테이블 생성
@@ -149,10 +150,13 @@ CREATE TABLE PlayerSkills (
 -- 미션 진행 상태를 저장할 테이블 생성
 CREATE TABLE MissionProgress (
     player_id INT PRIMARY KEY,
-    last_level_check INT DEFAULT 0,
-    last_combat_power_check INT DEFAULT 0,
-    last_awakening_check INT DEFAULT 0,
-    last_online_time_check DATETIME DEFAULT CURRENT_TIMESTAMP
+    level_progress INT DEFAULT 0,
+    combat_power_progress INT DEFAULT 0,
+    awakening_progress INT DEFAULT 0,
+    online_time_progress INT DEFAULT 0,
+    weapon_level_sum_progress INT DEFAULT 0,
+    last_online_time_check DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_online_time INT DEFAULT 0
 );
 
 CREATE TABLE AttendanceCheck (

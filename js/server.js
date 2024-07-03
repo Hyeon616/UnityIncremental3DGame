@@ -19,8 +19,13 @@ const friendRoutes = require('./routes/friendRoutes');
 const checkRoutes = require('./routes/checkRoutes');
 const playerRoutes = require('./routes/playerRoutes');
 const mailRoutes = require('./routes/mailRoutes');
+const missionRoutes = require('./routes/missionRoutes');
 
-
+const { cacheSkills } = require('./controllers/skillController');
+const { cacheWeapons } = require('./controllers/weaponController');
+const { cacheStages } = require('./controllers/stageController');
+const { cacheMonsters } = require('./controllers/monsterController');
+const { cacheRewards } = require('./controllers/rewardController');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -40,13 +45,30 @@ app.use('/friends', friendRoutes);
 app.use('/checks', checkRoutes);
 app.use('/player', playerRoutes);
 app.use('/mails',mailRoutes);
-
+app.use('/mission',missionRoutes);
 
 async function startServer() {
     try {
         await connectRedis();
-        await testDbConnection();
         
+        console.log('Starting to cache data...');
+        const results = await Promise.allSettled([
+            cacheSkills(),
+            cacheWeapons(),
+            cacheMonsters(),
+            cacheStages(),
+            cacheRewards(),
+        ]);
+        
+        results.forEach((result, index) => {
+            if (result.status === 'fulfilled') {
+                console.log(`Successfully cached data for index ${index}`);
+            } else {
+                console.error(`Failed to cache data for index ${index}:`, result.reason);
+            }
+        });
+
+
         app.listen(port, () => {
             console.log(`Server running on port ${port}`);
         });
@@ -56,18 +78,7 @@ async function startServer() {
     }
 }
 
-async function testDbConnection() {
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        console.log("DB 연결 성공");
-    } catch (err) {
-        console.error("Error connecting to the database:", err);
-        throw err;
-    } finally {
-        if (conn) conn.release();
-    }
-}
+
 
 startServer();
 
@@ -79,12 +90,3 @@ process.on('SIGINT', async () => {
     }
     process.exit();
 });
-
-(async () => {
-    try {
-        const result = await pool.query('DESCRIBE Players');
-        console.log('Players table structure:', result);
-    } catch (err) {
-        console.error('Error fetching table structure:', err);
-    }
-})();
