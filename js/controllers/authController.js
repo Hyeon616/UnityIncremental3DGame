@@ -108,8 +108,7 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-    console.log('Login function called');
-    console.log('Request body:', req.body);
+    
 
     const { username, password } = req.body;
     if (!username || !password) {
@@ -119,13 +118,13 @@ exports.login = async (req, res) => {
 
     let conn;
     try {
-        console.log('Attempting to connect to database...');
+       // console.log('Attempting to connect to database...');
         conn = await pool.getConnection();
-        console.log('Database connection established.');
+        //console.log('Database connection established.');
 
-        console.log(`Executing query for username: ${username}`);
+       // console.log(`Executing query for username: ${username}`);
         const result = await conn.query('SELECT * FROM Players WHERE player_username = ?', [username]);
-        console.log('Query executed. Result:', result);
+       // console.log('Query executed. Result:', result);
 
         let user;
         if (Array.isArray(result) && result.length > 0) {
@@ -134,16 +133,16 @@ exports.login = async (req, res) => {
             user = result;
         }
 
-        console.log('Processed user data:', user);
+       // console.log('Processed user data:', user);
 
         if (!user || !user.player_password) {
             console.log('Invalid user data');
             return res.status(400).json({ error: 'Invalid username or password' });
         }
 
-        console.log('Comparing passwords...');
+     //   console.log('Comparing passwords...');
         const validPassword = await bcrypt.compare(password, user.player_password);
-        console.log('Password comparison result:', validPassword);
+    //    console.log('Password comparison result:', validPassword);
 
         if (!validPassword) {
             return res.status(400).json({ error: 'Invalid username or password' });
@@ -156,7 +155,7 @@ exports.login = async (req, res) => {
             current_stage: user.current_stage || '1-1'
         };
 
-        console.log('Sending response:', playerData);
+      //  console.log('Sending response:', playerData);
         res.json(playerData);
     } catch (err) {
         console.error('Login error:', err);

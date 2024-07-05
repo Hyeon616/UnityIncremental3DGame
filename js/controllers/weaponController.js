@@ -53,13 +53,23 @@ async function getCachedWeapons() {
 }
 
 async function getPlayerWeapons(req, res) {
+    let conn;
     try {
-        const weapons = await getCachedWeapons();
-        const playerWeapons = weapons.filter(weapon => weapon.player_id === req.user.userId);
-        res.json(playerWeapons);
+        conn = await pool.getConnection();
+        const rows = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE player_id = ?', [req.user.userId]);
+        
+        console.log('Player weapons query result:', rows);  // 로그 추가
+        
+        if (rows && rows.length > 0) {
+            res.json(rows);
+        } else {
+            res.status(404).json({ message: 'No weapons found for this player' });
+        }
     } catch (err) {
         console.error('Error getting player weapons:', err);
         res.status(500).json({ error: 'Internal server error' });
+    } finally {
+        if (conn) conn.release();
     }
 }
 

@@ -30,8 +30,9 @@ public class ResourceManager : Singleton<ResourceManager>
             await LoadPlayerWeapons(userId);
             await LoadPlayerSkills(userId);
             await LoadMissionProgress(userId);
-            //await LoadStages();
             await LoadCurrentStage(userId);
+
+            GameLogic.Instance.NotifyDataLoaded();
         }
         catch (Exception ex)
         {
@@ -43,7 +44,26 @@ public class ResourceManager : Singleton<ResourceManager>
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerId);
         Debug.Log($"Attempting to load player data from URL: {url}");
-        await LoadData<PlayerModel>(url, GameLogic.Instance.OnPlayerDataLoaded);
+        try
+        {
+            await LoadData<PlayerModel>(url, playerData =>
+            {
+                if (playerData != null)
+                {
+                    GameLogic.Instance.OnPlayerDataLoaded(playerData);
+                    Debug.Log("Player data loaded and assigned successfully");
+                }
+                else
+                {
+                    throw new Exception("Received null player data");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load player data: {ex.Message}");
+            throw;
+        }
     }
 
 
@@ -69,7 +89,15 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadPlayerWeapons(int userId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerWeapons, userId);
-        await LoadData<ObservableCollection<PlayerWeaponModel>>(url, GameLogic.Instance.OnPlayerWeaponsLoaded);
+        Debug.Log($"Loading player weapons from URL: {url}");
+        try
+        {
+            await LoadData<ObservableCollection<PlayerWeaponModel>>(url, GameLogic.Instance.OnPlayerWeaponsLoaded);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load player weapons: {ex.Message}");
+        }
     }
 
     public async UniTask LoadPlayerSkills(int userId)
@@ -89,20 +117,7 @@ public class ResourceManager : Singleton<ResourceManager>
         }
         catch (Exception ex)
         {
-            Debug.LogWarning($"Failed to load mission progress: {ex.Message}. Using default progress.");
-            // 기본 미션 진행 상황 생성
-            var defaultProgress = new MissionProgressModel
-            {
-                player_id = userId,
-                level_progress = 0,
-                combat_power_progress = 0,
-                awakening_progress = 0,
-                online_time_progress = 0,
-                weapon_level_sum_progress = 0,
-                last_online_time_check = DateTime.UtcNow,
-                total_online_time = 0
-            };
-            GameLogic.Instance.OnMissionProgressLoaded(defaultProgress);
+            Debug.LogError($"Failed to load mission progress: {ex.Message}. Mission progress may not exist for this user.");
         }
     }
 
@@ -110,7 +125,24 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadCurrentStage(int playerId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.CurrentStage, playerId);
-        await LoadData<Dictionary<string, string>>(url, GameLogic.Instance.OnCurrentStageLoaded);
+        try
+        {
+            await LoadData<Dictionary<string, string>>(url, data =>
+            {
+                if (data != null && data.ContainsKey("current_stage"))
+                {
+                    GameLogic.Instance.OnCurrentStageLoaded(data);
+                }
+                else
+                {
+                    Debug.LogError("Received invalid current stage data");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load current stage: {ex.Message}");
+        }
     }
 
     public async UniTask UpdateCurrentStage(string stage)
@@ -160,6 +192,7 @@ public class ResourceManager : Singleton<ResourceManager>
                 Debug.LogError($"URL: {url}");
                 Debug.LogError($"Response Code: {www.responseCode}");
                 Debug.LogError($"Response Body: {www.downloadHandler.text}");
+                throw new Exception($"Web request failed: {www.error}");
             }
             else
             {
@@ -167,8 +200,18 @@ public class ResourceManager : Singleton<ResourceManager>
                 Debug.Log($"Successful response from {url}: {jsonResult}");
                 if (!string.IsNullOrEmpty(jsonResult))
                 {
-                    T data = JsonConvert.DeserializeObject<T>(jsonResult);
-                    onSuccess?.Invoke(data);
+                    try
+                    {
+                        T data = JsonConvert.DeserializeObject<T>(jsonResult);
+                        Debug.Log($"Deserialized data: {JsonConvert.SerializeObject(data)}");
+                        onSuccess?.Invoke(data);
+                    }
+                    catch (JsonException ex)
+                    {
+                        Debug.LogError($"JSON Deserialization error: {ex.Message}");
+                        Debug.LogError($"JSON string: {jsonResult}");
+                        throw;
+                    }
                 }
                 else
                 {
@@ -208,9 +251,17 @@ public class ResourceManager : Singleton<ResourceManager>
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.UpdateOnlineTime);
         var requestData = new { type = "online_time", value = 0 };
-        await PostData(url, requestData, () => {
-            Debug.Log("Online time updated successfully");
-        });
+        try
+        {
+            await PostData(url, requestData, () => {
+                Debug.Log("Online time updated successfully");
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to update online time: {ex.Message}");
+            // 여기서 재시도 로직이나 사용자에게 알림을 추가할 수 있습니다.
+        }
     }
 
     public async UniTask CheckMissionCompletion()

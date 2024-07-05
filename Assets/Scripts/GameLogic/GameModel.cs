@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using UnityEngine;
 
 [Serializable]
 public class PlayerModel
@@ -7,36 +7,37 @@ public class PlayerModel
     public int player_id;
     public string player_username;
     public string player_nickname;
-    public PlayerAttributes attributes;
-}
+    public Attributes attributes;
 
-[Serializable]
-public class PlayerAttributes
-{
-    public int element_stone;
-    public int skill_summon_tickets;
-    public int money;
-    public int attack_power;
-    public int max_health;
-    public float critical_chance;
-    public float critical_damage;
-    public string current_stage;
-    public int level;
-    public int awakening;
-    public int? guild_id;
-    public int? equipped_skill1_id;
-    public int? equipped_skill2_id;
-    public int? equipped_skill3_id;
-    public int combat_power;
-    public int rank;
-
-    public void CalculateCombatPower()
+    public PlayerModel()
     {
-        double baseStats = attack_power + critical_chance + max_health + critical_damage;
-        double awakeningMultiplier = awakening == 0 ? 1 : awakening * 10;
-        double levelMultiplier = level * 0.1;
+        attributes = new Attributes();
+    }
 
-        combat_power = (int)(baseStats * awakeningMultiplier * levelMultiplier);
+    [Serializable]
+    public class Attributes
+    {
+        public int element_stone;
+        public int skill_summon_tickets;
+        public int money;
+        public int attack_power;
+        public int max_health;
+        public float critical_chance;
+        public float critical_damage;
+        public string current_stage;
+        public int level;
+        public int awakening;
+        public int? guild_id;
+        public int combat_power;
+        public int? rank;
+        public int? equipped_skill1_id;
+        public int? equipped_skill2_id;
+        public int? equipped_skill3_id;
+    }
+
+    public override string ToString()
+    {
+        return JsonUtility.ToJson(this, true);
     }
 }
 

@@ -138,6 +138,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
 
     public event PropertyChangedEventHandler PropertyChanged;
 
+    public event Action OnDataLoaded;
     public event Action<int> OnPlayerHealthChanged;
     public event Action<int> OnMonsterHealthChanged;
     public event Action<MonsterModel> OnMonsterDefeated;
@@ -158,13 +159,32 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         }
     }
 
-   
+    public void NotifyDataLoaded()
+    {
+        OnDataLoaded?.Invoke();
+    }
 
     #region Callbacks
 
     public void OnPlayerDataLoaded(PlayerModel playerData)
     {
-        CurrentPlayer = playerData;
+        if (playerData != null)
+        {
+            if (playerData.attributes == null)
+            {
+                Debug.LogWarning("Player attributes is null, initializing with default values");
+                playerData.attributes = new PlayerModel.Attributes();
+            }
+            CurrentPlayer = playerData;
+            Debug.Log($"Player data loaded. Player ID: {playerData.player_id}, Username: {playerData.player_username}");
+            Debug.Log($"Player attributes: {(playerData.attributes != null ? "loaded" : "null")}");
+            Debug.Log($"Current stage: {playerData.attributes.current_stage}");
+            Debug.Log($"Full player data: {playerData}");
+        }
+        else
+        {
+            Debug.LogError("Received null player data in OnPlayerDataLoaded");
+        }
     }
 
     public void OnMailsLoaded(ObservableCollection<MailModel> mails)
@@ -212,19 +232,33 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         UpdateCollection(Rewards, rewards);
     }
 
-    //public void OnStagesLoaded(ObservableCollection<StageModel> stages)
-    //{
-    //    UpdateCollection(Stages, stages);
-    //}
-
+    
     public void OnCurrentStageLoaded(Dictionary<string, string> data)
     {
-        if (data.TryGetValue("current_stage", out string currentStage))
+        Debug.Log($"OnCurrentStageLoaded called. CurrentPlayer is null: {CurrentPlayer == null}");
+        if (CurrentPlayer == null)
+        {
+            Debug.LogError("CurrentPlayer is null in OnCurrentStageLoaded");
+            return;
+        }
+
+        if (CurrentPlayer.attributes == null)
+        {
+            Debug.LogError("CurrentPlayer.attributes is null in OnCurrentStageLoaded");
+            return;
+        }
+
+        if (data != null && data.TryGetValue("current_stage", out string currentStage))
         {
             CurrentPlayer.attributes.current_stage = currentStage;
+            Debug.Log($"Current stage updated: {currentStage}");
+            OnPropertyChanged(nameof(CurrentPlayer));
+        }
+        else
+        {
+            Debug.LogError("Invalid current stage data received.");
         }
     }
-
     public void OnCurrentStageUpdated()
     {
         Debug.Log("Current stage updated successfully");

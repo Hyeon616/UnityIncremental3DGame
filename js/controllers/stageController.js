@@ -88,17 +88,21 @@ exports.updateStage = async (req, res) => {
 };
 
 exports.getCurrentStage = async (req, res) => {
-    const userId = req.user.player_id;
-
+    const userId = req.user.userId;
     let conn;
     try {
         conn = await pool.getConnection();
-        const [rows] = await conn.query('SELECT current_stage FROM Players WHERE player_id = ?', [userId]);
+        console.log(`Attempting to fetch current stage for user ID: ${userId}`);
+        const rows = await conn.query('SELECT current_stage FROM PlayerAttributes WHERE player_id = ?', [userId]);
+        
+        console.log('Query result:', JSON.stringify(rows));
         
         if (rows && rows.length > 0) {
+            console.log(`Current stage found: ${rows[0].current_stage}`);
             res.json({ current_stage: rows[0].current_stage });
         } else {
-            res.status(404).json({ error: 'Stage not found' });
+            console.log('No current stage found for this user');
+            res.status(404).json({ error: 'Player attributes not found' });
         }
     } catch (err) {
         console.error('Error retrieving current stage:', err);

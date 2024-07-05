@@ -9,20 +9,27 @@ exports.updateMissionProgress = async (req, res) => {
         conn = await pool.getConnection();
         await conn.beginTransaction();
         
-        if (type === 'online_time') {
-            const [currentProgress] = await conn.query(
-                'SELECT last_online_time_check, total_online_time, online_time_progress FROM MissionProgress WHERE player_id = ?',
-                [playerId]
-            );
+        // 먼저 MissionProgress 데이터가 있는지 확인
+        const [existingProgress] = await conn.query(
+            'SELECT * FROM MissionProgress WHERE player_id = ?',
+            [playerId]
+        );
 
-            const lastCheck = new Date(currentProgress[0].last_online_time_check);
+        if (!existingProgress || existingProgress.length === 0) {
+            await conn.rollback();
+            return res.status(404).json({ error: 'Mission progress not found for this user' });
+        }
+
+        if (type === 'online_time') {
+            const currentProgress = existingProgress[0];
+            const lastCheck = new Date(currentProgress.last_online_time_check);
             const now = new Date();
             const timeDiff = Math.floor((now - lastCheck) / (1000 * 60)); // 분 단위로 계산
 
             const maxAllowedTimeDiff = 10; // 최대 10분
             const validTimeDiff = Math.min(timeDiff, maxAllowedTimeDiff);
 
-            const newTotalTime = currentProgress[0].total_online_time + validTimeDiff;
+            const newTotalTime = currentProgress.total_online_time + validTimeDiff;
             const newHours = Math.floor(newTotalTime / 60);
             
             await conn.query(
@@ -88,11 +95,16 @@ exports.getMissionProgress = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const [rows] = await conn.query('SELECT * FROM MissionProgress WHERE player_id = ?', [playerId]);
+        console.log(`Attempting to fetch mission progress for user ID: ${playerId}`);
+        const rows = await conn.query('SELECT * FROM MissionProgress WHERE player_id = ?', [playerId]);
+        
+        console.log('Query result:', JSON.stringify(rows));
         
         if (rows && rows.length > 0) {
+            console.log('Mission progress found');
             res.json(rows[0]);
         } else {
+            console.log('No mission progress found for this user');
             res.status(404).json({ error: 'Mission progress not found' });
         }
     } catch (err) {
