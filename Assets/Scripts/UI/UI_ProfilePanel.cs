@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UI_ProfilePanel : MonoBehaviour
+public class UI_ProfilePanel : MonoBehaviour, IUpdatableUI
 {
     [SerializeField] private TextMeshProUGUI PlayerLevel;
     [SerializeField] private TextMeshProUGUI PlayerRank;
@@ -13,21 +13,32 @@ public class UI_ProfilePanel : MonoBehaviour
     [SerializeField] private Slider HPSlider;
     [SerializeField] private TextMeshProUGUI HPSliderText;
 
-    void OnEnable()
+    private void OnEnable()
     {
-        //UpdateProfile();
         if (GameLogic.Instance != null)
         {
             GameLogic.Instance.OnPlayerHealthChanged += UpdateHP;
         }
+        UIManager.Instance.RegisterUpdatableUI(this);
+        if (UIManager.Instance.IsDataLoaded)
+        {
+            UpdateUI();
+        }
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         if (GameLogic.Instance != null)
         {
             GameLogic.Instance.OnPlayerHealthChanged -= UpdateHP;
         }
+        UIManager.Instance.UnregisterUpdatableUI(this);
+    }
+
+    public void UpdateUI()
+    {
+        UpdateProfile();
+        UpdateHP(GameLogic.Instance.CurrentPlayer?.attributes?.max_health ?? 0);
     }
 
     private void UpdateProfile()
@@ -42,8 +53,8 @@ public class UI_ProfilePanel : MonoBehaviour
             return;
         }
 
-        PlayerLevel.text = player.attributes.level.ToString();
-        PlayerRank.text = player.attributes.combat_power.ToString();
+        PlayerLevel.text = $"Lv.{player.attributes.level.ToString()}";
+        PlayerRank.text = $"{player.attributes.combat_power.ToString()}위";
         PlayerNickName.text = player.player_nickname;
         UpdateHP(player.attributes.max_health);
     }

@@ -10,12 +10,47 @@ public class UIManager : UnitySingleton<UIManager>
     private Dictionary<string, GameObject> activeUIs = new Dictionary<string, GameObject>();
     private Dictionary<string, CancellationTokenSource> removeTimers = new Dictionary<string, CancellationTokenSource>();
     private Stack<GameObject> uiPool = new Stack<GameObject>();
+
+    private bool _isDataLoaded = false;
+    private List<IUpdatableUI> updatableUIs = new List<IUpdatableUI>();
+
     private const float UI_REMOVE_DELAY = 15f; // 3 minutes
+
 
     public void InitializeUI()
     {
         ShowUI("AuthenticationUI");
+        GameLogic.Instance.OnDataLoaded += OnDataaLoaded;
     }
+    
+    private void OnDataaLoaded()
+    {
+        _isDataLoaded = true;
+        UpdateAllUIs();
+    }
+
+    public void RegisterUpdatableUI(IUpdatableUI ui)
+    {
+        if (!updatableUIs.Contains(ui))
+        {
+            updatableUIs.Add(ui);
+        }
+    }
+
+    public void UnregisterUpdatableUI(IUpdatableUI ui)
+    {
+        updatableUIs.Remove(ui);
+    }
+
+    private void UpdateAllUIs()
+    {
+        foreach (var ui in updatableUIs)
+        {
+            ui.UpdateUI();
+        }
+    }
+
+    public bool IsDataLoaded => _isDataLoaded;
 
     public void ShowUI(string uiName)
     {
