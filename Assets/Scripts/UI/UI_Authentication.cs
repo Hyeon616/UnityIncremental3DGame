@@ -118,7 +118,7 @@ public class UI_Authentication : MonoBehaviour
         }
         else
         {
-            Debug.LogError("로그인 실패");
+            Debug.Log("로그인 실패");
             SetFeedbackText("로그인에 실패했습니다.");
         }
     }

@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const { getCachedWeapons } = require('../controllers/weaponController');
 const { getCachedSkills } = require('../controllers/skillController');
+const redis = require('../config/redis');
 
 exports.register = async (req, res) => {
     const { username, password, nickname } = req.body;
@@ -91,8 +92,20 @@ exports.register = async (req, res) => {
         } else {
             console.log('No skills available for new user');
         }
+        
+        // 새 플레이어의 순위 업데이트
+        await conn.query('CALL add_new_player_rank(?)', [playerId]);
 
         await conn.commit();
+
+        // Redis 순위 업데이트
+        const redisClient = redis.getClient();
+        const [playerData] = await conn.query(
+            'SELECT combat_power, rank FROM PlayerAttributes WHERE player_id = ?',
+            [playerId]
+        );
+        await redisClient.zAdd('player_ranks', { score: playerData.combat_power, value: playerId.toString() });
+
         res.status(201).json({ message: 'User registered successfully', playerId });
     } catch (err) {
         if (conn) await conn.rollback();

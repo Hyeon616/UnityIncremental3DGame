@@ -1884,7 +1884,7 @@ GameObject:
   - component: {fileID: 3457985179631910630}
   - component: {fileID: 3457985179631910629}
   m_Layer: 5
-  m_Name: PlayerNickName
+  m_Name: PlayerCombatPowerText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2922,7 +2922,7 @@ MonoBehaviour:
   PlayerLevel: {fileID: 3457985179515863354}
   PlayerRank: {fileID: 3457985180193870656}
   PlayerNickName: {fileID: 4225571371410153846}
-  PlayerCombatPower: {fileID: 3457985179631910629}
+  PlayerCombatPower: {fileID: 8739570804994645994}
   HPSlider: {fileID: 652039234368541418}
   HPSliderText: {fileID: 1645874119200587071}
 --- !u!114 &1550281545956347697

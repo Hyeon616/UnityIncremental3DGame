@@ -50,6 +50,9 @@ public class ResourceManager : Singleton<ResourceManager>
             {
                 if (playerData != null)
                 {
+                    Debug.Log($"Raw player data: {JsonConvert.SerializeObject(playerData)}");
+                    Debug.Log($"Player attributes: {JsonConvert.SerializeObject(playerData.attributes)}");
+
                     GameLogic.Instance.OnPlayerDataLoaded(playerData);
                     Debug.Log("Player data loaded and assigned successfully");
                 }

@@ -1,14 +1,20 @@
-// controllers/playerController.js
 const pool = require('../config/db');
+const redis = require('../config/redis');
 
 exports.getPlayerData = async (req, res) => {
     const playerId = parseInt(req.params.id);
     
-    let conn;
     try {
-        conn = await pool.getConnection();
+        const redisClient = redis.getClient();
+        const cachedData = await redisClient.get(`player:${playerId}`);
         
-        const result = await conn.query(
+        if (cachedData) {
+            return res.json(JSON.parse(cachedData));
+        }
+
+        const conn = await pool.getConnection();
+        
+        const [result] = await conn.query(
             'SELECT p.player_id, p.player_username, p.player_nickname, ' +
             'pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power, ' +
             'pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage, ' +
@@ -20,45 +26,69 @@ exports.getPlayerData = async (req, res) => {
             [playerId]
         );
         
-        let rows = Array.isArray(result) ? result : [result];
+        conn.release();
         
-        if (rows && rows.length > 0) {
-            res.json(rows[0]);
+        if (result) {
+            await redisClient.set(`player:${playerId}`, JSON.stringify(result), 'EX', 300); // 5분 캐시
+            res.json(result);
         } else {
-            console.log(`No player found with ID: ${playerId}`);
             res.status(404).json({ message: "Player not found" });
         }
     } catch (error) {
         console.error('Error fetching player data:', error);
         res.status(500).json({ message: 'Internal server error', error: error.message });
-    } finally {
-        if (conn) conn.release();
     }
 };
-
-
 
 exports.updatePlayerData = async (req, res) => {
     const playerId = parseInt(req.params.id);
     const updatedData = req.body;
 
-    let conn;
     try {
-        conn = await pool.getConnection();
+        const conn = await pool.getConnection();
         
         await conn.query(
             'UPDATE PlayerAttributes SET ? WHERE player_id = ?',
             [updatedData, playerId]
         );
 
+        conn.release();
+
+        // Redis 캐시 업데이트
+        const redisClient = redis.getClient();
+        await redisClient.del(`player:${playerId}`);
+
+        // 순위 재계산
+        await updatePlayerRank(playerId);
+
         res.json({ message: 'Player data updated successfully' });
     } catch (error) {
         console.error('Error updating player data:', error);
         res.status(500).json({ message: 'Internal server error' });
-    } finally {
-        if (conn) conn.release();
     }
 };
+
+async function updatePlayerRank(playerId) {
+    const redisClient = redis.getClient();
+    const conn = await pool.getConnection();
+
+    try {
+        const [playerData] = await conn.query(
+            'SELECT combat_power FROM PlayerAttributes WHERE player_id = ?',
+            [playerId]
+        );
+
+        if (playerData) {
+            const { combat_power } = playerData;
+            await redisClient.zAdd('player_ranks', { score: combat_power, value: playerId.toString() });
+            
+            const rank = await redisClient.zRevRank('player_ranks', playerId.toString());
+            await conn.query('UPDATE PlayerAttributes SET rank = ? WHERE player_id = ?', [rank + 1, playerId]);
+        }
+    } finally {
+        conn.release();
+    }
+}
 
 exports.equipSkill = async (req, res) => {
     const playerId = parseInt(req.params.id);
@@ -94,3 +124,24 @@ exports.equipSkill = async (req, res) => {
         if (conn) conn.release();
     }
 };
+
+// 주기적으로 Redis의 순위를 DB에 동기화하는 함수
+async function syncRanksToDB() {
+    const redisClient = redis.getClient();
+    const conn = await pool.getConnection();
+
+    try {
+        const players = await redisClient.zRevRangeWithScores('player_ranks', 0, -1);
+        
+        for (let i = 0; i < players.length; i++) {
+            const [playerId, score] = players[i];
+            await conn.query('UPDATE PlayerAttributes SET rank = ?, combat_power = ? WHERE player_id = ?', 
+                             [i + 1, score, playerId]);
+        }
+    } finally {
+        conn.release();
+    }
+}
+
+// 5분마다 순위 동기화
+setInterval(syncRanksToDB, 5 * 60 * 1000);

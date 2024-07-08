@@ -1,4 +1,5 @@
 using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -170,16 +171,9 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     {
         if (playerData != null)
         {
-            if (playerData.attributes == null)
-            {
-                Debug.LogWarning("Player attributes is null, initializing with default values");
-                playerData.attributes = new PlayerModel.Attributes();
-            }
             CurrentPlayer = playerData;
-            Debug.Log($"Player data loaded. Player ID: {playerData.player_id}, Username: {playerData.player_username}");
-            Debug.Log($"Player attributes: {(playerData.attributes != null ? "loaded" : "null")}");
-            Debug.Log($"Current stage: {playerData.attributes.current_stage}");
-            Debug.Log($"Full player data: {playerData}");
+            Debug.Log($"Player data loaded in GameLogic. Player ID: {playerData.player_id}, Username: {playerData.player_username}");
+            Debug.Log($"Player attributes in GameLogic: {JsonConvert.SerializeObject(playerData.attributes)}");
         }
         else
         {

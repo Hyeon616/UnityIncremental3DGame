@@ -37,6 +37,7 @@ public class APISettings : ScriptableObject
         AttendanceReward,
         UpdateMissionProgress,
         UpdateOnlineTime,
+        PlayerRank,
     }
 
     private static readonly Dictionary<Endpoint, string> endpointPaths = new Dictionary<Endpoint, string>
@@ -51,6 +52,7 @@ public class APISettings : ScriptableObject
         { Endpoint.SynthesizeAllWeapons, "weapons/synthesizeAllWeapons" },
         { Endpoint.GetWeaponsByRarity, "weapons/weaponsByRarity" },
         { Endpoint.PlayerData, "player/{0}" },
+        { Endpoint.PlayerRank, "player/{0}/rank" },
         { Endpoint.Mails, "mails/{0}" },
         { Endpoint.ClaimReward, "rewards/claimReward" },
         { Endpoint.Guilds, "guilds" },

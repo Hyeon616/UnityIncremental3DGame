@@ -1,5 +1,6 @@
+using Newtonsoft.Json;
 using System;
-using UnityEngine;
+using System.Runtime.Serialization;
 
 [Serializable]
 public class PlayerModel
@@ -7,14 +8,50 @@ public class PlayerModel
     public int player_id;
     public string player_username;
     public string player_nickname;
+    public int element_stone;
+    public int skill_summon_tickets;
+    public int money;
+    public int attack_power;
+    public int max_health;
+    public float critical_chance;
+    public float critical_damage;
+    public string current_stage;
+    public int level;
+    public int awakening;
+    public int? guild_id;
+    public int combat_power;
+    public int? rank;
+    public int? equipped_skill1_id;
+    public int? equipped_skill2_id;
+    public int? equipped_skill3_id;
+
+    [JsonIgnore]
     public Attributes attributes;
 
-    public PlayerModel()
+    [OnDeserialized]
+    internal void OnDeserialized(StreamingContext context)
     {
-        attributes = new Attributes();
+        attributes = new Attributes
+        {
+            element_stone = this.element_stone,
+            skill_summon_tickets = this.skill_summon_tickets,
+            money = this.money,
+            attack_power = this.attack_power,
+            max_health = this.max_health,
+            critical_chance = this.critical_chance,
+            critical_damage = this.critical_damage,
+            current_stage = this.current_stage,
+            level = this.level,
+            awakening = this.awakening,
+            guild_id = this.guild_id,
+            combat_power = this.combat_power,
+            rank = this.rank,
+            equipped_skill1_id = this.equipped_skill1_id,
+            equipped_skill2_id = this.equipped_skill2_id,
+            equipped_skill3_id = this.equipped_skill3_id
+        };
     }
 
-    [Serializable]
     public class Attributes
     {
         public int element_stone;
@@ -37,7 +74,7 @@ public class PlayerModel
 
     public override string ToString()
     {
-        return JsonUtility.ToJson(this, true);
+        return JsonConvert.SerializeObject(this);
     }
 }
 
@@ -154,7 +191,7 @@ public class WeaponModel
 [Serializable]
 public class SkillSlotModel
 {
-    public PlayerSkillModel playerSkill; 
+    public PlayerSkillModel playerSkill;
     public bool is_empty;
 
     public SkillSlotModel(PlayerSkillModel playerSkill)

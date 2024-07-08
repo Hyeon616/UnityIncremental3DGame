@@ -44,6 +44,7 @@ public class UI_ProfilePanel : MonoBehaviour, IUpdatableUI
     private void UpdateProfile()
     {
         var player = GameLogic.Instance?.CurrentPlayer;
+        Debug.Log("플레이어"+player);
         if (player == null)
         {
             PlayerLevel.text = "N/A";
@@ -52,10 +53,11 @@ public class UI_ProfilePanel : MonoBehaviour, IUpdatableUI
             UpdateHP(0);
             return;
         }
-
-        PlayerLevel.text = $"Lv.{player.attributes.level.ToString()}";
-        PlayerRank.text = $"{player.attributes.combat_power.ToString()}위";
+        
+        PlayerLevel.text = $"Lv.{player.attributes.level}";
+        PlayerRank.text = $"{player.attributes.rank}위";
         PlayerNickName.text = player.player_nickname;
+        PlayerCombatPower.text = $"{player.attributes.combat_power}";
         UpdateHP(player.attributes.max_health);
     }
 
