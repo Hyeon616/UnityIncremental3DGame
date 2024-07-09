@@ -69,7 +69,7 @@ exports.updatePlayerData = async (req, res) => {
 };
 
 async function updatePlayerRank(playerId) {
-    const redisClient = redis.getClient();
+    const redisClient = getClient();
     const conn = await pool.getConnection();
 
     try {
@@ -85,6 +85,8 @@ async function updatePlayerRank(playerId) {
             const rank = await redisClient.zRevRank('player_ranks', playerId.toString());
             await conn.query('UPDATE PlayerAttributes SET rank = ? WHERE player_id = ?', [rank + 1, playerId]);
         }
+    } catch (error) {
+        console.error('Error updating player rank:', error);
     } finally {
         conn.release();
     }
@@ -131,10 +133,11 @@ async function syncRanksToDB() {
     const conn = await pool.getConnection();
 
     try {
-        const players = await redisClient.zRevRangeWithScores('player_ranks', 0, -1);
+        // 'REV' 옵션을 사용하여 역순으로 정렬
+        const players = await redisClient.zRangeWithScores('player_ranks', 0, -1, { REV: true });
         
         for (let i = 0; i < players.length; i++) {
-            const [playerId, score] = players[i];
+            const { score, value: playerId } = players[i];
             await conn.query('UPDATE PlayerAttributes SET rank = ?, combat_power = ? WHERE player_id = ?', 
                              [i + 1, score, playerId]);
         }

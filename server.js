@@ -2,6 +2,10 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
+
+dotenv.config({ path: path.join(__dirname, 'config.env') });
+
 
 const { connectRedis } = require('./config/redis');
 const pool = require('./config/db');
@@ -28,6 +32,7 @@ const { cacheRewards } = require('./controllers/rewardController');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
 
 app.use(cors());
 app.use(express.json());
@@ -88,4 +93,8 @@ process.on('SIGINT', async () => {
         await redisClient.quit();
     }
     process.exit();
+});
+
+app.listen(port, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${port}`);
 });
