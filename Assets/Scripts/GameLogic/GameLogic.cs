@@ -17,8 +17,180 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     private ObservableCollection<PlayerSkillModel> _playerSkills = new ObservableCollection<PlayerSkillModel>();
     private MissionProgressModel _missionProgress;
     private ObservableCollection<RewardModel> _rewards = new ObservableCollection<RewardModel>();
-   // private ObservableCollection<StageModel> _stages = new ObservableCollection<StageModel>();
 
+
+    #region Monster
+    private int _monstersDefeatedInCurrentStage = 0;
+    private const int MonstersPerStage = 15;
+    private List<string> _allStages;
+    private string _currentStage;
+    private Dictionary<string, MonsterModel> _monsterDataByStage = new Dictionary<string, MonsterModel>();
+    private MonsterModel _currentMonster;
+
+
+    public int MonstersDefeatedInCurrentStage
+    {
+        get => _monstersDefeatedInCurrentStage;
+        private set
+        {
+            if (_monstersDefeatedInCurrentStage != value)
+            {
+                _monstersDefeatedInCurrentStage = value;
+                OnPropertyChanged();
+                OnStageProgressChanged?.Invoke();
+            }
+        }
+    }
+
+    public string CurrentStage
+    {
+        get => _currentStage;
+        private set
+        {
+            if (_currentStage != value)
+            {
+                _currentStage = value;
+                OnPropertyChanged();
+                OnStageChanged?.Invoke();
+            }
+        }
+    }
+
+    public MonsterModel CurrentMonster
+    {
+        get => _currentMonster;
+        private set
+        {
+            if (_currentMonster != value)
+            {
+                _currentMonster = value;
+                OnPropertyChanged();
+                OnMonsterChanged?.Invoke();
+            }
+        }
+    }
+
+    public int TotalMonstersPerStage => MonstersPerStage;
+
+    public event Action<string> OnStageCompleted;
+    public event Action<int> OnMonstersDefeatedCountChanged;
+
+    public event Action OnStageProgressChanged; // 몬스터 진행 상황 변경 이벤트
+    public event Action OnStageChanged; // 스테이지 변경 이벤트
+    public event Action OnMonsterChanged; // 현재 몬스터 변경 이벤트
+
+    public void OnAllStagesLoaded(List<string> stages)
+    {
+        stages.Sort(CompareStages);
+        _allStages = stages;
+        Debug.Log($"All stages loaded: {string.Join(", ", _allStages)}");
+    }
+
+    public void OnMonsterDataLoaded(List<MonsterModel> monsters)
+    {
+        _monsterDataByStage.Clear();
+        foreach (var monster in monsters)
+        {
+            monster.Initialize();
+            _monsterDataByStage[monster.Stage] = monster;
+        }
+        Debug.Log("Monster data loaded successfully.");
+    }
+
+    private int CompareStages(string stage1, string stage2)
+    {
+        var stage1Parts = stage1.Split('-');
+        var stage2Parts = stage2.Split('-');
+
+        if (stage1Parts.Length != 2 || stage2Parts.Length != 2)
+            return string.Compare(stage1, stage2, StringComparison.Ordinal);
+
+        if (int.TryParse(stage1Parts[0], out int chapter1) && int.TryParse(stage2Parts[0], out int chapter2))
+        {
+            if (chapter1 != chapter2)
+                return chapter1.CompareTo(chapter2);
+
+            if (int.TryParse(stage1Parts[1], out int stageNumber1) && int.TryParse(stage2Parts[1], out int stageNumber2))
+            {
+                return stageNumber1.CompareTo(stageNumber2);
+            }
+        }
+
+        return string.Compare(stage1, stage2, StringComparison.Ordinal);
+    }
+
+    public void OnCurrentStageLoaded(string currentStage)
+    {
+        _currentStage = currentStage;
+        CurrentPlayer.attributes.current_stage = currentStage;
+        Debug.Log($"Current stage loaded: {currentStage}");
+        OnPropertyChanged(nameof(CurrentPlayer));
+
+        // 현재 스테이지에 해당하는 몬스터 데이터 로드
+        if (_monsterDataByStage.TryGetValue(currentStage, out var monster))
+        {
+            CurrentMonster = monster;
+        }
+
+        // 스테이지가 로드되었음을 알리는 이벤트 호출
+        OnStageChanged?.Invoke();
+    }
+
+    public void DefeatMonster(MonsterModel monster)
+    {
+        if (monster.Type == "Boss")
+        {
+            // 보스 몬스터의 체력을 깎는다.
+            CurrentMonster.Health -= 10; // 데미지 값은 예시입니다.
+            if (CurrentMonster.Health <= 0)
+            {
+                CompleteCurrentStage();
+            }
+        }
+        else
+        {
+            _monstersDefeatedInCurrentStage++;
+            OnMonstersDefeatedCountChanged?.Invoke(_monstersDefeatedInCurrentStage);
+            OnMonsterDefeated?.Invoke(monster);
+
+            // 몬스터 진행 상황 변경 이벤트 호출
+            OnStageProgressChanged?.Invoke();
+
+            if (_monstersDefeatedInCurrentStage >= MonstersPerStage)
+            {
+                CompleteCurrentStage();
+            }
+        }
+    }
+
+    private async void CompleteCurrentStage()
+    {
+        _monstersDefeatedInCurrentStage = 0;
+        OnMonstersDefeatedCountChanged?.Invoke(_monstersDefeatedInCurrentStage);
+
+        int currentIndex = _allStages.IndexOf(_currentStage);
+        if (currentIndex < _allStages.Count - 1)
+        {
+            string newStage = _allStages[currentIndex + 1];
+            await ResourceManager.Instance.UpdateCurrentStage(newStage);
+
+            // 스테이지가 변경되었음을 알리는 이벤트 호출
+            _currentStage = newStage;
+            OnStageChanged?.Invoke();
+
+            // 새 스테이지에 해당하는 몬스터 데이터 로드
+            if (_monsterDataByStage.TryGetValue(newStage, out var monster))
+            {
+                CurrentMonster = monster;
+            }
+        }
+        else
+        {
+            Debug.Log("All stages completed!");
+        }
+    }
+
+    #endregion Monster
 
     public PlayerModel CurrentPlayer
     {
@@ -124,18 +296,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         }
     }
 
-    //public ObservableCollection<StageModel> Stages
-    //{
-    //    get => _stages;
-    //    private set
-    //    {
-    //        if (_stages != value)
-    //        {
-    //            _stages = value;
-    //            OnPropertyChanged();
-    //        }
-    //    }
-    //}
+    
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -226,7 +387,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         UpdateCollection(Rewards, rewards);
     }
 
-    
+
     public void OnCurrentStageLoaded(Dictionary<string, string> data)
     {
         Debug.Log($"OnCurrentStageLoaded called. CurrentPlayer is null: {CurrentPlayer == null}");
@@ -247,16 +408,36 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
             CurrentPlayer.attributes.current_stage = currentStage;
             Debug.Log($"Current stage updated: {currentStage}");
             OnPropertyChanged(nameof(CurrentPlayer));
+
+            // 현재 스테이지에 해당하는 몬스터 데이터 로드
+            if (_monsterDataByStage.TryGetValue(currentStage, out var monster))
+            {
+                CurrentMonster = monster;
+            }
         }
         else
         {
             Debug.LogError("Invalid current stage data received.");
         }
     }
-    public void OnCurrentStageUpdated()
+
+    public void OnCurrentStageUpdated(string newStage)
     {
-        Debug.Log("Current stage updated successfully");
+        _currentStage = newStage;
+        CurrentPlayer.attributes.current_stage = newStage;
+        Debug.Log($"Current stage updated to: {newStage}");
+        _monstersDefeatedInCurrentStage = 0;
+        OnMonstersDefeatedCountChanged?.Invoke(_monstersDefeatedInCurrentStage);
+        OnStageCompleted?.Invoke(newStage);
+        OnPropertyChanged(nameof(CurrentPlayer));
+
+        // 새 스테이지에 해당하는 몬스터 데이터 로드
+        if (_monsterDataByStage.TryGetValue(newStage, out var monster))
+        {
+            CurrentMonster = monster;
+        }
     }
+
 
     public void OnRewardClaimed()
     {
@@ -266,8 +447,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     public void OnAttendanceRewardClaimed(AttendanceRewardResponse response)
     {
         Debug.Log($"Attendance reward claimed: {response.message}, Day count: {response.dayCount}");
-        // 여기서 필요한 추가 로직을 구현합니다.
-        // 예: 플레이어 데이터 업데이트, UI 업데이트 등
+        
     }
 
     #endregion Callbacks

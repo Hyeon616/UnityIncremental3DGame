@@ -14,6 +14,7 @@ public class ResourceManager : Singleton<ResourceManager>
     private ResourceManager()
     {
         APISettings = Resources.Load<APISettings>("APISettings");
+        Debug.Log($"Loaded APISettings. Base URL: {APISettings.baseUrl}");
     }
 
 
@@ -31,6 +32,8 @@ public class ResourceManager : Singleton<ResourceManager>
             await LoadPlayerSkills(userId);
             await LoadMissionProgress(userId);
             await LoadCurrentStage(userId);
+            await LoadAllStages();
+            await LoadMonsterData();
 
             GameLogic.Instance.NotifyDataLoaded();
         }
@@ -124,6 +127,36 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
+    private async UniTask LoadAllStages()
+    {
+        string url = APISettings.GetUrl(APISettings.Endpoint.Stages);
+        await LoadData<List<Dictionary<string, string>>>(url, OnAllStagesLoaded);
+    }
+
+    private void OnAllStagesLoaded(List<Dictionary<string, string>> stages)
+    {
+        if (stages != null)
+        {
+            List<string> stageNames = new List<string>();
+            foreach (var stage in stages)
+            {
+                if (stage.ContainsKey("Stage"))
+                {
+                    stageNames.Add(stage["Stage"]);
+                }
+                else
+                {
+                    Debug.LogWarning("Stage dictionary does not contain key 'Stage'");
+                }
+            }
+            GameLogic.Instance.OnAllStagesLoaded(stageNames);
+        }
+        else
+        {
+            Debug.LogWarning("Received null stages data");
+            GameLogic.Instance.OnAllStagesLoaded(new List<string>());
+        }
+    }
 
     public async UniTask LoadCurrentStage(int playerId)
     {
@@ -134,7 +167,7 @@ public class ResourceManager : Singleton<ResourceManager>
             {
                 if (data != null && data.ContainsKey("current_stage"))
                 {
-                    GameLogic.Instance.OnCurrentStageLoaded(data);
+                    GameLogic.Instance.OnCurrentStageLoaded(data["current_stage"]);
                 }
                 else
                 {
@@ -148,12 +181,16 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
-    public async UniTask UpdateCurrentStage(string stage)
+    public async UniTask UpdateCurrentStage(string newStage)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.UpdateStage);
-        var requestData = new { userId = GameLogic.Instance.CurrentPlayer.player_id, stage = stage };
-        await PostData(url, requestData, GameLogic.Instance.OnCurrentStageUpdated);
+        var requestData = new { userId = GameManager.Instance.GetUserId(), stage = newStage };
+        await PostData(url, requestData, () => {
+            GameLogic.Instance.OnCurrentStageUpdated(newStage);
+        });
     }
+
+
 
     public async UniTask ClaimReward(int rewardId)
     {
@@ -178,6 +215,22 @@ public class ResourceManager : Singleton<ResourceManager>
         // 메일 목록을 새로고침합니다.
         await LoadMails(GameManager.Instance.GetUserId());
     }
+
+    public async UniTask LoadMonsterData()
+    {
+        string url = APISettings.GetUrl(APISettings.Endpoint.Monsters);
+        Debug.Log($"Loading monster data from URL: {url}");
+        try
+        {
+            await LoadData<List<MonsterModel>>(url, GameLogic.Instance.OnMonsterDataLoaded);
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to load monster data: {ex.Message}");
+            throw;
+        }
+    }
+
 
     #endregion LoadData
 

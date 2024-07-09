@@ -12,7 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d90f07c5f06557c498bc21a64329dad6, type: 3}
   m_Name: APISettings
   m_EditorClassIdentifier: 
-  baseUrl: http://localhost:3000
-  registerEndpoint: register
-  loginEndpoint: login
-  weaponsEndpoint: weapons
+  baseUrl: http://3.35.20.9:3000

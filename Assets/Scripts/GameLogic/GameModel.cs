@@ -173,6 +173,14 @@ public class MonsterModel
     public int DropMoney;
     public int DropElementStone;
     public float DropElementStoneChance;
+
+    [NonSerialized]
+    public int InitialHealth;
+
+    public void Initialize()
+    {
+        InitialHealth = Health;
+    }
 }
 
 

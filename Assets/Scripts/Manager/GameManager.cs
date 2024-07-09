@@ -25,8 +25,17 @@ public class GameManager : UnitySingleton<GameManager>
         {
             UpdateOnlineTime();
         }
-    }
 
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            DefeatMonster();
+        }
+    }
+    private void DefeatMonster()
+    {
+        // GameLogic에서 몬스터 처치 로직 호출
+        GameLogic.Instance.DefeatMonster(new MonsterModel());
+    }
     private async UniTask LoadAllUIPrefabs()
     {
         
