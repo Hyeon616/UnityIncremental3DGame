@@ -1,5 +1,0 @@
-Install:
-1. Install Visual effects graph 11.0+ from the package manager.
-2. Re-import Magio folder (Right-click->Re-import).
-
-More instructions @ Documentation->User_instructions
