@@ -70,8 +70,6 @@ async function getPlayerWeapons(req, res) {
         conn = await pool.getConnection();
         const rows = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE player_id = ?', [req.user.userId]);
         
-        console.log('Player weapons query result:', rows);  // 로그 추가
-        
         if (rows && rows.length > 0) {
             res.json(rows);
         } else {

@@ -72,7 +72,7 @@ exports.updateStage = async (req, res) => {
     let conn;
     try {
         conn = await pool.getConnection();
-        const result = await conn.query('UPDATE Players SET current_stage = ? WHERE player_id = ?', [stage, userId]);
+        const result = await conn.query('UPDATE PlayerAttributes SET current_stage = ? WHERE player_id = ?', [stage, userId]);
         
         if (result.affectedRows > 0) {
             res.status(200).json({ message: 'Stage updated successfully' });

@@ -80,33 +80,37 @@ CREATE TABLE PlayerGuilds (
 );
 
 CREATE TABLE PlayerAttributes (
-    player_id INT UNSIGNED PRIMARY KEY,
-    element_stone INT UNSIGNED DEFAULT 0,
-    skill_summon_tickets INT UNSIGNED DEFAULT 0,
-    money INT UNSIGNED DEFAULT 0,
-    attack_power INT UNSIGNED DEFAULT 10,
-    max_health INT UNSIGNED DEFAULT 50,
+    player_id INT PRIMARY KEY,
+    element_stone INT DEFAULT 0,
+    skill_summon_tickets INT DEFAULT 0,
+    money INT DEFAULT 0,
+    attack_power INT DEFAULT 10,
+    max_health INT DEFAULT 50,
     critical_chance FLOAT DEFAULT 0,
     critical_damage FLOAT DEFAULT 0,
     current_stage VARCHAR(10) DEFAULT '1-1',
-    level INT UNSIGNED DEFAULT 1,
-    awakening INT UNSIGNED DEFAULT 0,
-    guild_id INT UNSIGNED DEFAULT NULL,
-    equipped_skill1_id INT UNSIGNED DEFAULT NULL,
-    equipped_skill2_id INT UNSIGNED DEFAULT NULL,
-    equipped_skill3_id INT UNSIGNED DEFAULT NULL,
-    combat_power INT UNSIGNED GENERATED ALWAYS AS (
+    level INT DEFAULT 1,
+    awakening INT DEFAULT 0,
+    guild_id INT DEFAULT NULL,
+    equipped_skill1_id INT DEFAULT NULL,
+    equipped_skill2_id INT DEFAULT NULL,
+    equipped_skill3_id INT DEFAULT NULL,
+    combat_power INT GENERATED ALWAYS AS (
         CAST((attack_power + critical_chance + max_health + critical_damage) * 
         (IF(awakening = 0, 1, awakening * 10)) * 
-        (level * 0.1) AS UNSIGNED)
+        (level * 0.1) AS SIGNED)
     ) STORED,
-    rank INT UNSIGNED DEFAULT NULL,
+    rank INT DEFAULT NULL,
+    Ability1 VARCHAR(20) DEFAULT NULL,
+    Ability2 VARCHAR(20) DEFAULT NULL,
+    Ability3 VARCHAR(20) DEFAULT NULL,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE SET NULL,
     FOREIGN KEY (equipped_skill1_id) REFERENCES Skills(id),
     FOREIGN KEY (equipped_skill2_id) REFERENCES Skills(id),
     FOREIGN KEY (equipped_skill3_id) REFERENCES Skills(id)
 );
+
 
 CREATE INDEX idx_player_current_stage ON PlayerAttributes(current_stage);
 CREATE INDEX idx_player_combat_power ON PlayerAttributes(combat_power);

@@ -6,7 +6,6 @@ const { getCachedSkills } = require('../controllers/skillController');
 const redis = require('../config/redis');
 
 exports.register = async (req, res) => {
-	console.log('Register request received:', req.body);
     const { username, password, nickname } = req.body;
     if (!username || !password || !nickname) {
         console.log('Invalid input detected');
@@ -64,13 +63,13 @@ exports.register = async (req, res) => {
                 parseFloat(weapon.crit_damage)
             ]);
 
-            console.log(`Preparing to insert ${weaponInserts.length} weapons for new user`);
+            
 
             const result = await conn.batch(
                 'INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage) VALUES (?, ?, ?, ?, ?, ?)',
                 weaponInserts
             );
-            console.log(`Inserted ${result.affectedRows} weapons for new user`);
+            
         } else {
             console.log('No weapons available for new user');
         }
@@ -123,7 +122,6 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     
-
     const { username, password } = req.body;
     if (!username || !password) {
         console.log('Invalid input detected');

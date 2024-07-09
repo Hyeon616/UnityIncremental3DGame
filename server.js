@@ -7,7 +7,7 @@ const path = require('path');
 dotenv.config({ path: path.join(__dirname, 'config.env') });
 
 
-const { connectRedis } = require('./config/redis');
+const { connectRedis, getClient } = require('./config/redis');
 const pool = require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
@@ -72,9 +72,8 @@ async function startServer() {
             }
         });
 
-
-        app.listen(port, () => {
-            console.log(`Server running on port ${port}`);
+        app.listen(port, '0.0.0.0', () => {
+            console.log(`Server running on http://0.0.0.0:${port}`);
         });
     } catch (err) {
         console.error('Failed to start server:', err);
@@ -82,19 +81,32 @@ async function startServer() {
     }
 }
 
-
+async function checkRedisConnection() {
+    try {
+        const client = getClient();
+        await client.ping();
+        console.log('Redis connection is alive');
+    } catch (error) {
+        console.error('Redis connection error:', error);
+        // 연결 재시도 로직
+        await reconnectIfNeeded();
+    }
+}
 
 startServer();
+setInterval(checkRedisConnection, 60 * 1000);
 
 process.on('SIGINT', async () => {
-    const redisClient = require('./config/redis').getClient();
-    if (redisClient) {
-        console.log('Closing Redis client connection...');
-        await redisClient.quit();
+    try {
+        const redisClient = getClient();
+        if (redisClient) {
+            console.log('Closing Redis client connection...');
+            await redisClient.quit();
+            console.log('Redis connection closed');
+        }
+    } catch (error) {
+        console.error('Error closing Redis connection:', error);
+    } finally {
+        process.exit();
     }
-    process.exit();
-});
-
-app.listen(port, '0.0.0.0', () => {
-    console.log(`Server running on http://0.0.0.0:${port}`);
 });
