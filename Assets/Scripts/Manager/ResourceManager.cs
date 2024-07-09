@@ -9,7 +9,7 @@ using UnityEngine.Networking;
 public class ResourceManager : Singleton<ResourceManager>
 {
     public APISettings APISettings { get; private set; }
-    
+
 
     private ResourceManager()
     {
@@ -31,9 +31,9 @@ public class ResourceManager : Singleton<ResourceManager>
             await LoadPlayerWeapons(userId);
             await LoadPlayerSkills(userId);
             await LoadMissionProgress(userId);
-            await LoadCurrentStage(userId);
             await LoadAllStages();
             await LoadMonsterData();
+            await LoadCurrentStage(userId);
 
             GameLogic.Instance.NotifyDataLoaded();
         }
@@ -127,13 +127,13 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
-    private async UniTask LoadAllStages()
+    public async UniTask LoadAllStages()
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.Stages);
         await LoadData<List<Dictionary<string, string>>>(url, OnAllStagesLoaded);
     }
 
-    private void OnAllStagesLoaded(List<Dictionary<string, string>> stages)
+    public void OnAllStagesLoaded(List<Dictionary<string, string>> stages)
     {
         if (stages != null)
         {
@@ -149,12 +149,12 @@ public class ResourceManager : Singleton<ResourceManager>
                     Debug.LogWarning("Stage dictionary does not contain key 'Stage'");
                 }
             }
-            GameLogic.Instance.OnAllStagesLoaded(stageNames);
+            StageManager.Instance.LoadAllStages(stageNames);
         }
         else
         {
             Debug.LogWarning("Received null stages data");
-            GameLogic.Instance.OnAllStagesLoaded(new List<string>());
+            StageManager.Instance.LoadAllStages(new List<string>());
         }
     }
 
@@ -167,7 +167,8 @@ public class ResourceManager : Singleton<ResourceManager>
             {
                 if (data != null && data.ContainsKey("current_stage"))
                 {
-                    GameLogic.Instance.OnCurrentStageLoaded(data["current_stage"]);
+                    GameLogic.Instance.CurrentPlayer.attributes.current_stage = data["current_stage"];
+                    StageManager.Instance.SetCurrentStage(data["current_stage"]);
                 }
                 else
                 {
@@ -185,9 +186,7 @@ public class ResourceManager : Singleton<ResourceManager>
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.UpdateStage);
         var requestData = new { userId = GameManager.Instance.GetUserId(), stage = newStage };
-        await PostData(url, requestData, () => {
-            GameLogic.Instance.OnCurrentStageUpdated(newStage);
-        });
+        await PostData(url, requestData, null);
     }
 
 
@@ -222,12 +221,22 @@ public class ResourceManager : Singleton<ResourceManager>
         Debug.Log($"Loading monster data from URL: {url}");
         try
         {
-            await LoadData<List<MonsterModel>>(url, GameLogic.Instance.OnMonsterDataLoaded);
+            await LoadData<List<MonsterModel>>(url, monsters =>
+            {
+                if (monsters != null && MonsterManager.Instance != null)
+                {
+                    MonsterManager.Instance.LoadMonsters(monsters);
+                }
+                else
+                {
+                    Debug.LogError("Received null monster data or MonsterManager is null");
+                }
+            });
         }
         catch (Exception ex)
         {
             Debug.LogError($"Failed to load monster data: {ex.Message}");
-            throw;
+            Debug.LogError($"Stack trace: {ex.StackTrace}");
         }
     }
 
@@ -301,7 +310,81 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
+    private async UniTask<object> PutData<T>(string url, T requestData)
+    {
+        string jsonData = JsonConvert.SerializeObject(requestData);
+        using (UnityWebRequest www = UnityWebRequest.Put(url, jsonData))
+        {
+            www.SetRequestHeader("Content-Type", "application/json");
+            www.SetRequestHeader("Authorization", $"Bearer {GameManager.Instance.GetAuthToken()}");
+
+            await www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"Error: {www.error}");
+                Debug.LogError($"Response: {www.downloadHandler.text}");
+                throw new Exception(www.error);
+            }
+            else
+            {
+                return JsonConvert.DeserializeObject(www.downloadHandler.text);
+            }
+        }
+    }
+
     #endregion Logic
+
+    public async UniTask UpdatePlayerAttributes(PlayerModel playerData)
+    {
+        string url = APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerData.player_id);
+        var requestData = new
+        {
+            money = playerData.attributes.money,
+            element_stone = playerData.attributes.element_stone,
+            attack_power = playerData.attributes.attack_power,
+            max_health = playerData.attributes.max_health,
+            critical_chance = playerData.attributes.critical_chance,
+            critical_damage = playerData.attributes.critical_damage,
+            level = playerData.attributes.level,
+            equipped_skill1_id = playerData.attributes.equipped_skill1_id,
+            equipped_skill2_id = playerData.attributes.equipped_skill2_id,
+            equipped_skill3_id = playerData.attributes.equipped_skill3_id
+        };
+
+        try
+        {
+            var result = await PutData<object>(url, requestData);
+            if (result != null)
+            {
+                // 서버에서 반환된 업데이트된 데이터로 CurrentPlayer 업데이트
+                GameLogic.Instance.OnPlayerDataLoaded(JsonConvert.DeserializeObject<PlayerModel>(result.ToString()));
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to update player attributes: {ex.Message}");
+        }
+    }
+
+    public async UniTask ResetAbilities()
+    {
+        string url = APISettings.GetUrl(APISettings.Endpoint.ResetAbilities, GameLogic.Instance.CurrentPlayer.player_id);
+        try
+        {
+            var requestData = new { };
+            await PostData(url, requestData, () =>
+            {
+                
+                Debug.Log("Abilities have been reset successfully.");
+                
+            });
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to reset abilities: {ex.Message}");
+        }
+    }
 
     public async UniTask UpdateOnlineTime()
     {
@@ -309,7 +392,8 @@ public class ResourceManager : Singleton<ResourceManager>
         var requestData = new { type = "online_time", value = 0 };
         try
         {
-            await PostData(url, requestData, () => {
+            await PostData(url, requestData, () =>
+            {
                 Debug.Log("Online time updated successfully");
             });
         }

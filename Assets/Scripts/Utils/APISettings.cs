@@ -38,6 +38,7 @@ public class APISettings : ScriptableObject
         UpdateMissionProgress,
         UpdateOnlineTime,
         PlayerRank,
+        ResetAbilities,
     }
 
     private static readonly Dictionary<Endpoint, string> endpointPaths = new Dictionary<Endpoint, string>
@@ -71,7 +72,8 @@ public class APISettings : ScriptableObject
         { Endpoint.MarkMailAsRead, "mails/{0}/read" },
         { Endpoint.AttendanceReward, "mails/attendance-reward" },
         { Endpoint.UpdateMissionProgress, "mission/progress" },
-        { Endpoint.UpdateOnlineTime, "mission/progress" }
+        { Endpoint.UpdateOnlineTime, "mission/progress" },
+        { Endpoint.ResetAbilities, "player/{0}/reset-abilities" },
     };
 
     public string GetUrl(Endpoint endpoint)

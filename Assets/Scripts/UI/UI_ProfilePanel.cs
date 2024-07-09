@@ -18,6 +18,7 @@ public class UI_ProfilePanel : MonoBehaviour, IUpdatableUI
         if (GameLogic.Instance != null)
         {
             GameLogic.Instance.OnPlayerHealthChanged += UpdateHP;
+            GameLogic.Instance.OnPlayerDataUpdated += UpdateUI;
         }
         UIManager.Instance.RegisterUpdatableUI(this);
         if (UIManager.Instance.IsDataLoaded)
@@ -31,6 +32,7 @@ public class UI_ProfilePanel : MonoBehaviour, IUpdatableUI
         if (GameLogic.Instance != null)
         {
             GameLogic.Instance.OnPlayerHealthChanged -= UpdateHP;
+            GameLogic.Instance.OnPlayerDataUpdated -= UpdateUI;
         }
         UIManager.Instance.UnregisterUpdatableUI(this);
     }

@@ -12,85 +12,100 @@ public class UI_Stage : MonoBehaviour, IUpdatableUI
 
     private void OnEnable()
     {
+        if (StageManager.Instance != null)
+        {
+            StageManager.Instance.OnStageProgressChanged += UpdateUI;
+            StageManager.Instance.OnStageChanged += UpdateUI;
+        }
+        if (MonsterManager.Instance != null)
+        {
+            MonsterManager.Instance.OnMonsterHealthChanged += OnMonsterHealthChanged;
+        }
         UIManager.Instance.RegisterUpdatableUI(this);
         if (UIManager.Instance.IsDataLoaded)
         {
             UpdateUI();
         }
-
-        GameLogic.Instance.OnStageProgressChanged += OnStageProgressChanged;
-        GameLogic.Instance.OnStageChanged += OnStageChanged;
-        GameLogic.Instance.OnMonsterHealthChanged += OnMonsterHealthChanged;
     }
 
     private void OnDisable()
     {
+        if (StageManager.Instance != null)
+        {
+            StageManager.Instance.OnStageProgressChanged -= UpdateUI;
+            StageManager.Instance.OnStageChanged -= UpdateUI;
+        }
+        if (MonsterManager.Instance != null)
+        {
+            MonsterManager.Instance.OnMonsterHealthChanged -= OnMonsterHealthChanged;
+        }
         UIManager.Instance.UnregisterUpdatableUI(this);
-        GameLogic.Instance.OnStageProgressChanged -= OnStageProgressChanged;
-        GameLogic.Instance.OnStageChanged -= OnStageChanged;
-        GameLogic.Instance.OnMonsterHealthChanged -= OnMonsterHealthChanged;
     }
+
+    private void OnMonsterHealthChanged(float healthPercentage)
+    {
+        UpdateUI();
+    }
+
 
     public void UpdateUI()
     {
-        UpdateStageInfo();
-        UpdateMonsterProgress();
+       
+        UpdateProgress();
     }
 
-    private void UpdateStageInfo()
+    private void UpdateProgress()
     {
-        string currentStage = GameLogic.Instance.CurrentPlayer.attributes.current_stage;
-        StageText.text = $"Stage: {currentStage}";
-    }
-
-    private void UpdateMonsterProgress()
-    {
-        var currentMonster = GameLogic.Instance.CurrentMonster;
-        if (currentMonster.Type == "Boss")
+        if (StageManager.Instance == null || MonsterManager.Instance == null)
         {
-            // 보스 몬스터의 체력을 슬라이더에 표시
-            float progressPercentage = (float)currentMonster.Health / currentMonster.InitialHealth;
-            StageSlider.value = progressPercentage;
-            StageSliderValueText.text = $"{currentMonster.Health}/{currentMonster.InitialHealth} ({(int)(progressPercentage * 100)}%)";
+            SetDefaultValues();
+            return;
+        }
+
+        if (StageManager.Instance.IsBossStage())
+        {
+            UpdateBossProgress();
         }
         else
         {
-            // 일반 몬스터의 진행 상황을 슬라이더에 표시
-            int remainingMonsters = GameLogic.Instance.MonstersDefeatedInCurrentStage;
-            int totalMonsters = GameLogic.Instance.TotalMonstersPerStage;
-            float progressPercentage = (float)remainingMonsters / totalMonsters;
-
-            StageSlider.value = progressPercentage;
-            StageSliderValueText.text = $"{remainingMonsters}/{totalMonsters} ({(int)(progressPercentage * 100)}%)";
+            UpdateNormalStageProgress();
         }
     }
 
-    private bool IsBossStage()
+    private void UpdateBossProgress()
     {
-        var stageParts = GameLogic.Instance.CurrentStage.Split('-');
-        if (stageParts.Length == 2 && int.TryParse(stageParts[1], out int stageNumber))
+        var currentMonster = MonsterManager.Instance.CurrentMonster;
+        Debug.Log(currentMonster);
+        Debug.Log(currentMonster.Name);
+        if (currentMonster != null)
         {
-            return stageNumber == 15;
+            StageText.text = $"Boss : {currentMonster.Name}";
+            int currentHP = currentMonster.CurrentHealth;
+            int maxHP = currentMonster.Health;
+            float healthPercentage = (float)currentHP / maxHP;
+            StageSlider.value = healthPercentage;
+            StageSliderValueText.text = $"{currentHP}/{maxHP} ({(int)(healthPercentage * 100)}%)";
         }
-        return false;
-    }
-
-    private void OnStageProgressChanged()
-    {
-        UpdateMonsterProgress();
-    }
-
-    private void OnStageChanged()
-    {
-        UpdateStageInfo();
-        UpdateMonsterProgress();
-    }
-
-    private void OnMonsterHealthChanged(int currentHealth)
-    {
-        if (IsBossStage())
+        else
         {
-            UpdateMonsterProgress();
+            SetDefaultValues();
         }
+    }
+
+    private void UpdateNormalStageProgress()
+    {
+        var stage = StageManager.Instance?.CurrentStage;
+        StageText.text = $"Stage : {stage}";
+        int defeatedMonsters = StageManager.Instance.MonstersDefeatedInCurrentStage;
+        int totalMonsters = StageManager.TotalMonstersPerStage;
+        float progressPercentage = (float)defeatedMonsters / totalMonsters;
+        StageSlider.value = progressPercentage;
+        StageSliderValueText.text = $"{defeatedMonsters}/{totalMonsters} ({(int)(progressPercentage * 100)}%)";
+    }
+
+    private void SetDefaultValues()
+    {
+        StageSlider.value = 0;
+        StageSliderValueText.text = "N/A";
     }
 }

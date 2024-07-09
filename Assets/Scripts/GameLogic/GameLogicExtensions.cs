@@ -18,8 +18,10 @@ public static class GameLogicExtensions
                 ResourceManager.Instance.LoadPlayerWeapons(playerId),
                 ResourceManager.Instance.LoadPlayerSkills(playerId),
                 ResourceManager.Instance.LoadMissionProgress(playerId),
-                
-            };
+                ResourceManager.Instance.LoadAllStages(),
+                ResourceManager.Instance.LoadMonsterData(),
+                ResourceManager.Instance.LoadCurrentStage(playerId)
+        };
 
             await UniTask.WhenAll(tasks);
 

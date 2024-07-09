@@ -24,6 +24,10 @@ public class PlayerModel
     public int? equipped_skill1_id;
     public int? equipped_skill2_id;
     public int? equipped_skill3_id;
+    public string Ability1;
+    public string Ability2;
+    public string Ability3;
+
 
     [JsonIgnore]
     public Attributes attributes;
@@ -48,7 +52,11 @@ public class PlayerModel
             rank = this.rank,
             equipped_skill1_id = this.equipped_skill1_id,
             equipped_skill2_id = this.equipped_skill2_id,
-            equipped_skill3_id = this.equipped_skill3_id
+            equipped_skill3_id = this.equipped_skill3_id,
+            Ability1 = this.Ability1,
+            Ability2 = this.Ability2,
+            Ability3 = this.Ability3
+
         };
     }
 
@@ -70,6 +78,9 @@ public class PlayerModel
         public int? equipped_skill1_id;
         public int? equipped_skill2_id;
         public int? equipped_skill3_id;
+        public string Ability1;
+        public string Ability2;
+        public string Ability3;
     }
 
     public override string ToString()
@@ -173,16 +184,19 @@ public class MonsterModel
     public int DropMoney;
     public int DropElementStone;
     public float DropElementStoneChance;
-
     [NonSerialized]
-    public int InitialHealth;
+    public int CurrentHealth;
 
     public void Initialize()
     {
-        InitialHealth = Health;
+        CurrentHealth = Health;
+    }
+
+    public float GetHealthPercentage()
+    {
+        return (float)CurrentHealth / Health * 100f;
     }
 }
-
 
 [Serializable]
 public class WeaponModel

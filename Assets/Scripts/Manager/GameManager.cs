@@ -28,14 +28,10 @@ public class GameManager : UnitySingleton<GameManager>
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            DefeatMonster();
+            StageManager.Instance.DefeatMonster();
         }
     }
-    private void DefeatMonster()
-    {
-        // GameLogic에서 몬스터 처치 로직 호출
-        GameLogic.Instance.DefeatMonster(new MonsterModel());
-    }
+    
     private async UniTask LoadAllUIPrefabs()
     {
         
@@ -52,9 +48,12 @@ public class GameManager : UnitySingleton<GameManager>
         
         try
         {
-            Debug.Log($"Initializing game for user ID: {userId}");
+            
             await ResourceManager.Instance.LoadAllData(userId);
-            UIManager.Instance.HideUI("LoadingUI");
+            StageManager.Instance.Initialize(GameLogic.Instance.CurrentPlayer.attributes.current_stage);
+            MonsterManager.Instance.SetCurrentMonster(GameLogic.Instance.CurrentPlayer.attributes.current_stage);
+
+            UIManager.Instance.HideUI(UIPrefab.LoadingUI);
         }
         catch (Exception ex)
         {
@@ -116,6 +115,9 @@ public class GameManager : UnitySingleton<GameManager>
     {
         authToken = null;
         userId = 0;
+        GameLogic.Instance.CurrentPlayer = null;
+        StageManager.Instance.Reset();
+        MonsterManager.Instance.Reset();
         Debug.Log("Auth data cleared");
     }
 

@@ -111,10 +111,10 @@ public class UI_Authentication : MonoBehaviour
         if (success)
         {
             Debug.Log("로그인 성공, UI 전환");
-            UIManager.Instance.HideUI("AuthenticationUI");
-            UIManager.Instance.ShowUI("LoadingUI");
+            UIManager.Instance.HideUI(UIPrefab.AuthenticationUI);
+            UIManager.Instance.ShowUI(UIPrefab.LoadingUI);
             await GameManager.Instance.InitializeGame();
-            UIManager.Instance.HideUI("LoadingUI");
+            UIManager.Instance.HideUI(UIPrefab.LoadingUI);
         }
         else
         {

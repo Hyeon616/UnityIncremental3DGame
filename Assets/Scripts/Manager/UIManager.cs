@@ -19,14 +19,14 @@ public class UIManager : UnitySingleton<UIManager>
 
     public void InitializeUI()
     {
-        ShowUI("AuthenticationUI");
+        ShowUI(UIPrefab.AuthenticationUI);
         GameLogic.Instance.OnDataLoaded += OnDataaLoaded;
     }
     
     private void OnDataaLoaded()
     {
-        _isDataLoaded = true;
         UpdateAllUIs();
+        _isDataLoaded = true;
     }
 
     public void RegisterUpdatableUI(IUpdatableUI ui)
@@ -52,8 +52,9 @@ public class UIManager : UnitySingleton<UIManager>
 
     public bool IsDataLoaded => _isDataLoaded;
 
-    public void ShowUI(string uiName)
+    public void ShowUI(UIPrefab uiPrefab)
     {
+        string uiName = uiPrefab.GetPrefabName();
         if (!GameManager.Instance.UIPrefabs.TryGetValue(uiName, out var prefab))
         {
             Debug.LogError($"UI Prefab '{uiName}' not found!");
@@ -101,16 +102,17 @@ public class UIManager : UnitySingleton<UIManager>
         else
         {
             uiInstance = Instantiate(prefab, canvas.transform);
+            uiInstance.name = instanceName;
         }
 
-        uiInstance.name = instanceName;
 
         return uiInstance;
     }
 
 
-    public void HideUI(string uiName)
+    public void HideUI(UIPrefab uiPrefab)
     {
+        string uiName = uiPrefab.GetPrefabName();
         string instanceName = $"@UI_{uiName}";
 
         if (activeUIs.TryGetValue(instanceName, out var uiInstance))

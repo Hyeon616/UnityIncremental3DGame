@@ -2698,6 +2698,7 @@ GameObject:
   - component: {fileID: 4707621154942235747}
   - component: {fileID: 9055825749827579396}
   - component: {fileID: 4710256818264986874}
+  - component: {fileID: 2422373743513793258}
   m_Layer: 5
   m_Name: AbilityPanel
   m_TagString: Untagged
@@ -2766,6 +2767,26 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2422373743513793258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2287513146965924146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b8f7f232a1df38439e10c92fe751676, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AbilityItemsMaxText1: {fileID: 3224668721585494814}
+  AbilityItemsRatio1: {fileID: 8183132869467155961}
+  AbilityItemsMaxText2: {fileID: 1840934296628872728}
+  AbilityItemsRatio2: {fileID: 2566387641590230308}
+  AbilityItemsMaxText3: {fileID: 7744246760735175423}
+  AbilityItemsRatio3: {fileID: 2773081096739321273}
+  ResetCostText: {fileID: 4414505025185638257}
+  ResetBtn: {fileID: 7191660631369724833}
 --- !u!1 &2303799509888663364
 GameObject:
   m_ObjectHideFlags: 0
@@ -3304,7 +3325,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uCD94\uAC00 \uACE8\uB4DC"
+  m_text: "\uCE58\uBA85\uD0C0 \uD53C\uD574"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ae88c0ef6b6c303429a9dd0a50794801, type: 2}
   m_sharedMaterial: {fileID: 4790852045015264871, guid: ae88c0ef6b6c303429a9dd0a50794801,
@@ -3765,7 +3786,7 @@ GameObject:
   - component: {fileID: 1902998699669348677}
   - component: {fileID: 2566387641590230308}
   m_Layer: 5
-  m_Name: AbilityItemsRatio
+  m_Name: AbilityItemsRatio2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3901,6 +3922,7 @@ GameObject:
   - component: {fileID: 792699935175342645}
   - component: {fileID: 4658714688552310278}
   - component: {fileID: 8983670370716024119}
+  - component: {fileID: 3612066790380581161}
   m_Layer: 5
   m_Name: BackBtn
   m_TagString: Untagged
@@ -4010,6 +4032,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3612066790380581161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3584035255555954545}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8200309775b1741408115eccc6ee5d18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3634644965225937621
 GameObject:
   m_ObjectHideFlags: 0
@@ -4234,7 +4268,7 @@ GameObject:
   - component: {fileID: 5578449370906015082}
   - component: {fileID: 1840934296628872728}
   m_Layer: 5
-  m_Name: AbilityItemsMaxText
+  m_Name: AbilityItemsMaxText2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4939,7 +4973,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uCD94\uAC00 \uACBD\uD5D8\uCE58"
+  m_text: "\uCE58\uBA85\uD0C0 \uD655\uB960"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ae88c0ef6b6c303429a9dd0a50794801, type: 2}
   m_sharedMaterial: {fileID: 4790852045015264871, guid: ae88c0ef6b6c303429a9dd0a50794801,
@@ -5205,6 +5239,7 @@ GameObject:
   - component: {fileID: 5205502176166190062}
   - component: {fileID: 6006776552136935437}
   - component: {fileID: 9009514103927036216}
+  - component: {fileID: 7620925289707089896}
   m_Layer: 5
   m_Name: StatusPanel
   m_TagString: Untagged
@@ -5272,6 +5307,29 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7620925289707089896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4716060550458741349}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7710bd86aa1d54141896cb778d36b59e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  CharacterLevel: {fileID: 1209133610763887893}
+  CurrentAttackText: {fileID: 5777180655533712369}
+  UpgradeAttackText: {fileID: 1540480431495182483}
+  CurrentHpText: {fileID: 7839697465184234798}
+  UpgradeHpText: {fileID: 545228502588305850}
+  CurrentCriticalChanceText: {fileID: 4319231259951719400}
+  UpgradeCriticalChanceText: {fileID: 781135327849346220}
+  CurrentCriticalDamageText: {fileID: 6054376188998526880}
+  UpgradeCriticalDamageText: {fileID: 5084253558759690020}
+  UpgradeCostText: {fileID: 7267968631828199495}
+  UpgradeBtn: {fileID: 1786594778360847400}
 --- !u!1 &4880576382764287817
 GameObject:
   m_ObjectHideFlags: 0
@@ -6219,7 +6277,7 @@ GameObject:
   - component: {fileID: 8106228824743320317}
   - component: {fileID: 4414505025185638257}
   m_Layer: 5
-  m_Name: MoneyText
+  m_Name: ResetCostText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17504,7 +17562,7 @@ GameObject:
   - component: {fileID: 767492393956600271}
   - component: {fileID: 2773081096739321273}
   m_Layer: 5
-  m_Name: AbilityItemsRatio
+  m_Name: AbilityItemsRatio3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -17640,7 +17698,7 @@ GameObject:
   - component: {fileID: 4736411736360665539}
   - component: {fileID: 7744246760735175423}
   m_Layer: 5
-  m_Name: AbilityItemsMaxText
+  m_Name: AbilityItemsMaxText3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18048,7 +18106,7 @@ GameObject:
   - component: {fileID: 4434302912197697001}
   - component: {fileID: 8183132869467155961}
   m_Layer: 5
-  m_Name: AbilityItemsRatio
+  m_Name: AbilityItemsRatio1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -18581,7 +18639,7 @@ GameObject:
   - component: {fileID: 6609009824798083671}
   - component: {fileID: 3224668721585494814}
   m_Layer: 5
-  m_Name: AbilityItemsMaxText
+  m_Name: AbilityItemsMaxText1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -19081,7 +19139,7 @@ GameObject:
   - component: {fileID: 566032910458227949}
   - component: {fileID: 8377310513186254540}
   m_Layer: 5
-  m_Name: UpgradeCostText
+  m_Name: ResetCost
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
