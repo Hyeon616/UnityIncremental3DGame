@@ -1,6 +1,12 @@
 const pool = require('../config/db');
 const { getClient, connectRedis } = require('../config/redis');
 
+function serializeBigInt(obj) {
+    return JSON.stringify(obj, (key, value) =>
+        typeof value === 'bigint' ? value.toString() : value
+    );
+}
+
 // 무기 데이터를 Redis에 캐싱하는 함수
 async function cacheWeapons() {
     let client = getClient();
@@ -15,11 +21,17 @@ async function cacheWeapons() {
         
         let rows = Array.isArray(result) ? result : [result];
        
-        await client.set('weapons', JSON.stringify(rows), {
+        // BigInt 값을 문자열로 변환
+        const serializedRows = rows.map(row => ({
+            ...row,
+            weapon_exp: row.weapon_exp ? row.weapon_exp.toString() : null
+        }));
+
+        await client.set('weapons', serializeBigInt(serializedRows), {
             EX: 3600
         });
         console.log(`${rows.length} weapons successfully cached in Redis.`);
-        return rows;
+        return serializedRows;
     } catch (err) {
         console.error('Error in cacheWeapons:', err);
         throw err;
