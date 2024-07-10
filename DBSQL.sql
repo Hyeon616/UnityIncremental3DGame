@@ -1,79 +1,93 @@
 USE wjhdb;
 
+-- 외래 키 체크 비활성화
 SET FOREIGN_KEY_CHECKS = 0;
 
+-- 기존 테이블 삭제 (있다면)
 DROP TABLE IF EXISTS Players, Monsters, Rewards, Skills, Weapon, Guilds, PlayerGuilds, 
                      PlayerAttributes, mails, Friends, FriendRequests, 
                      PlayerWeaponInventory, PlayerSkills, MissionProgress, AttendanceCheck;
 
+-- Players 테이블 생성
 CREATE TABLE Players (
-    player_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    player_id INT AUTO_INCREMENT PRIMARY KEY,
     player_username VARCHAR(255) UNIQUE NOT NULL,
     player_password VARCHAR(255) NOT NULL,
     player_nickname VARCHAR(255) UNIQUE NOT NULL
 );
 
+-- 인덱스 추가
 CREATE INDEX idx_player_username ON Players(player_username);
 CREATE INDEX idx_player_nickname ON Players(player_nickname);
 
+-- Monsters 테이블 생성
 CREATE TABLE Monsters (
-    id INT UNSIGNED PRIMARY KEY,
+    id INT PRIMARY KEY,
     Stage VARCHAR(10),
     Type VARCHAR(20),
     Name VARCHAR(50),
-    Health INT UNSIGNED,
-    Attack INT UNSIGNED,
-    DropMoney INT UNSIGNED,
-    DropElementStone INT UNSIGNED,
+    Health INT,
+    Attack INT,
+    DropMoney INT,
+    DropElementStone INT,
     DropElementStoneChance DECIMAL(5, 2)
 );
 
+-- 인덱스 추가
 CREATE INDEX idx_monster_stage ON Monsters(Stage);
 CREATE INDEX idx_monster_type ON Monsters(Type);
 
+-- Rewards 테이블 생성
 CREATE TABLE Rewards (
-    ID INT UNSIGNED PRIMARY KEY,
+    ID INT PRIMARY KEY,
     Type VARCHAR(50),
     Description VARCHAR(255),
-    Requirement INT UNSIGNED,
-    Reward INT UNSIGNED
+    Requirement INT,
+    Reward INT
 );
 
+-- Skills 테이블 생성
 CREATE TABLE Skills (
-    id INT UNSIGNED PRIMARY KEY,
+    id INT PRIMARY KEY,
     name VARCHAR(255),
     description TEXT,
-    damage_percentage INT UNSIGNED,
+    damage_percentage INT,
     image VARCHAR(255),
-    cooldown INT UNSIGNED
+    cooldown INT
 );
 
+-- 인덱스 추가
 CREATE INDEX idx_skill_name ON Skills(name);
 
+-- Weapon 테이블 생성
 CREATE TABLE Weapon (
-    weapon_id INT UNSIGNED PRIMARY KEY,
-    weapon_grade INT UNSIGNED,
-    attack_power INT UNSIGNED,
+    weapon_id INT PRIMARY KEY,
+    weapon_grade INT,
+    attack_power INT,
     crit_rate DECIMAL(5, 2),
     crit_damage DECIMAL(5, 2),
-    weapon_exp DECIMAL(65, 0),
+    weapon_exp BIGINT,
     prefab_name VARCHAR(255)
 );
 
+-- 인덱스 추가
 CREATE INDEX idx_weapon_grade ON Weapon(weapon_grade);
 
+-- Guilds 테이블 생성
 CREATE TABLE Guilds (
-    guild_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    guild_id INT AUTO_INCREMENT PRIMARY KEY,
     guild_name VARCHAR(255) UNIQUE NOT NULL,
-    guild_leader INT UNSIGNED NOT NULL,
+    guild_leader INT NOT NULL,
     FOREIGN KEY (guild_leader) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
+-- 인덱스 추가
 CREATE INDEX idx_guild_name ON Guilds(guild_name);
 
+-- PlayerGuilds 연결 테이블 생성
 CREATE TABLE PlayerGuilds (
-    player_id INT UNSIGNED NOT NULL,
-    guild_id INT UNSIGNED NOT NULL,
+    player_id INT NOT NULL,
+    guild_id INT NOT NULL,
     PRIMARY KEY (player_id, guild_id),
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE CASCADE
@@ -95,15 +109,36 @@ CREATE TABLE PlayerAttributes (
     equipped_skill1_id INT DEFAULT NULL,
     equipped_skill2_id INT DEFAULT NULL,
     equipped_skill3_id INT DEFAULT NULL,
+    Ability1 VARCHAR(20) DEFAULT NULL,
+    Ability2 VARCHAR(20) DEFAULT NULL,
+    Ability3 VARCHAR(20) DEFAULT NULL,
     combat_power INT GENERATED ALWAYS AS (
-        CAST((attack_power + critical_chance + max_health + critical_damage) * 
+        CAST((
+            attack_power * (1 + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0)
+            ) +
+            critical_chance * (1 + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0)
+            ) +
+            max_health * (1 + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0)
+            ) +
+            critical_damage * (1 + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
+                IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0)
+            )
+        ) * 
         (IF(awakening = 0, 1, awakening * 10)) * 
         (level * 0.1) AS SIGNED)
     ) STORED,
     rank INT DEFAULT NULL,
-    Ability1 VARCHAR(20) DEFAULT NULL,
-    Ability2 VARCHAR(20) DEFAULT NULL,
-    Ability3 VARCHAR(20) DEFAULT NULL,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE SET NULL,
     FOREIGN KEY (equipped_skill1_id) REFERENCES Skills(id),
@@ -111,14 +146,14 @@ CREATE TABLE PlayerAttributes (
     FOREIGN KEY (equipped_skill3_id) REFERENCES Skills(id)
 );
 
-
 CREATE INDEX idx_player_current_stage ON PlayerAttributes(current_stage);
 CREATE INDEX idx_player_combat_power ON PlayerAttributes(combat_power);
 CREATE INDEX idx_player_rank ON PlayerAttributes(rank);
 
+-- mails 테이블 생성
 CREATE TABLE mails (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNSIGNED,
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT,
     type ENUM('attendance', 'event', 'offline_reward', 'mission'),
     reward JSON,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -127,74 +162,82 @@ CREATE TABLE mails (
     FOREIGN KEY (user_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
+-- 인덱스 추가
 CREATE INDEX idx_mail_user_id ON mails(user_id);
 CREATE INDEX idx_mail_type ON mails(type);
 
+-- Friends 테이블 생성
 CREATE TABLE Friends (
-    player_id INT UNSIGNED NOT NULL,
-    friend_id INT UNSIGNED NOT NULL,
+    player_id INT NOT NULL,
+    friend_id INT NOT NULL,
     PRIMARY KEY (player_id, friend_id),
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (friend_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
+-- FriendRequests 테이블 생성
 CREATE TABLE FriendRequests (
-    request_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    sender_id INT UNSIGNED NOT NULL,
-    receiver_id INT UNSIGNED NOT NULL,
+    request_id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT NOT NULL,
+    receiver_id INT NOT NULL,
     status ENUM('pending', 'accepted', 'rejected', 'cancelled') DEFAULT 'pending',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
+-- PlayerWeaponInventory 테이블 생성
 CREATE TABLE PlayerWeaponInventory (
-    player_weapon_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    player_id INT UNSIGNED NOT NULL,
-    weapon_id INT UNSIGNED NOT NULL,
-    level INT UNSIGNED DEFAULT 0,
-    count INT UNSIGNED DEFAULT 0,
-    attack_power INT UNSIGNED,
+    player_weapon_id INT AUTO_INCREMENT PRIMARY KEY,
+    player_id INT NOT NULL,
+    weapon_id INT NOT NULL,
+    level INT DEFAULT 0,
+    count INT DEFAULT 0,
+    attack_power INT,
     critical_chance FLOAT,
     critical_damage FLOAT,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (weapon_id) REFERENCES Weapon(weapon_id)
 );
 
+-- PlayerSkills 테이블 생성
 CREATE TABLE PlayerSkills (
-    player_skill_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    player_id INT UNSIGNED NOT NULL,
-    skill_id INT UNSIGNED NOT NULL,
-    level INT UNSIGNED DEFAULT 0,
+    player_skill_id INT AUTO_INCREMENT PRIMARY KEY,
+    player_id INT NOT NULL,
+    skill_id INT NOT NULL,
+    level INT DEFAULT 0,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (skill_id) REFERENCES Skills(id)
 );
 
+-- 미션 진행 상태를 저장할 테이블 생성
 CREATE TABLE MissionProgress (
-    player_id INT UNSIGNED PRIMARY KEY,
-    level_progress INT UNSIGNED DEFAULT 0,
-    combat_power_progress INT UNSIGNED DEFAULT 0,
-    awakening_progress INT UNSIGNED DEFAULT 0,
-    online_time_progress INT UNSIGNED DEFAULT 0,
-    weapon_level_sum_progress INT UNSIGNED DEFAULT 0,
+    player_id INT PRIMARY KEY,
+    level_progress INT DEFAULT 0,
+    combat_power_progress INT DEFAULT 0,
+    awakening_progress INT DEFAULT 0,
+    online_time_progress INT DEFAULT 0,
+    weapon_level_sum_progress INT DEFAULT 0,
     last_online_time_check DATETIME DEFAULT CURRENT_TIMESTAMP,
-    total_online_time INT UNSIGNED DEFAULT 0,
+    total_online_time INT DEFAULT 0,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE
 );
 
+-- AttendanceCheck 테이블 생성
 CREATE TABLE AttendanceCheck (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    player_id INT UNSIGNED NOT NULL,
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    player_id INT NOT NULL,
     check_date DATE NOT NULL,
-    day_count INT UNSIGNED NOT NULL,
+    day_count INT NOT NULL,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     UNIQUE KEY (player_id, check_date)
 );
 
+-- 외래 키 체크 활성화
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- 순위 업데이트를 위한 저장 프로시저
 DELIMITER //
-
 CREATE PROCEDURE update_player_ranks()
 BEGIN
     SET @rank = 0;
@@ -203,7 +246,7 @@ BEGIN
     ORDER BY combat_power DESC, player_id ASC;
 END //
 
-CREATE PROCEDURE add_new_player_rank(IN new_player_id INT UNSIGNED)
+CREATE PROCEDURE add_new_player_rank(IN new_player_id INT)
 BEGIN
     SET @new_player_combat_power = (SELECT combat_power FROM PlayerAttributes WHERE player_id = new_player_id);
     
