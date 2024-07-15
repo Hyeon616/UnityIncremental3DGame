@@ -46,7 +46,6 @@ public class UI_ProfilePanel : MonoBehaviour, IUpdatableUI
     private void UpdateProfile()
     {
         var player = GameLogic.Instance?.CurrentPlayer;
-        Debug.Log("플레이어"+player);
         if (player == null)
         {
             PlayerLevel.text = "N/A";

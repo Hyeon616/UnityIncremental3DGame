@@ -287,7 +287,7 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
-    private async UniTask PostData<T>(string url, T requestData, Action onSuccess)
+    private async UniTask<string> PostData<T>(string url, T requestData, Action onSuccess)
     {
         string jsonData = JsonConvert.SerializeObject(requestData);
         using (UnityWebRequest www = new UnityWebRequest(url, "POST"))
@@ -302,10 +302,12 @@ public class ResourceManager : Singleton<ResourceManager>
             if (www.result != UnityWebRequest.Result.Success)
             {
                 Debug.LogError(www.error);
+                return null;
             }
             else
             {
                 onSuccess?.Invoke();
+                return www.downloadHandler.text;
             }
         }
     }
@@ -313,10 +315,12 @@ public class ResourceManager : Singleton<ResourceManager>
     private async UniTask<object> PutData<T>(string url, T requestData)
     {
         string jsonData = JsonConvert.SerializeObject(requestData);
+        Debug.Log($"PUT request to {url} with data: {jsonData}");
         using (UnityWebRequest www = UnityWebRequest.Put(url, jsonData))
         {
             www.SetRequestHeader("Content-Type", "application/json");
             www.SetRequestHeader("Authorization", $"Bearer {GameManager.Instance.GetAuthToken()}");
+            Debug.Log($"Authorization header: Bearer {GameManager.Instance.GetAuthToken()}");
 
             await www.SendWebRequest();
 
@@ -333,6 +337,30 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
+    private async UniTask<TResponse> PutData<TRequest, TResponse>(string url, TRequest requestData)
+    {
+        string jsonData = JsonConvert.SerializeObject(requestData);
+        Debug.Log($"PUT request to {url} with data: {jsonData}");
+        using (UnityWebRequest www = UnityWebRequest.Put(url, jsonData))
+        {
+            www.SetRequestHeader("Content-Type", "application/json");
+            www.SetRequestHeader("Authorization", $"Bearer {GameManager.Instance.GetAuthToken()}");
+            Debug.Log($"Authorization header: Bearer {GameManager.Instance.GetAuthToken()}");
+
+            await www.SendWebRequest();
+
+            if (www.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"Error: {www.error}");
+                Debug.LogError($"Response: {www.downloadHandler.text}");
+                throw new Exception(www.error);
+            }
+            else
+            {
+                return JsonConvert.DeserializeObject<TResponse>(www.downloadHandler.text);
+            }
+        }
+    }
     #endregion Logic
 
     public async UniTask UpdatePlayerAttributes(PlayerModel playerData)
@@ -367,24 +395,41 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
-    public async UniTask ResetAbilities()
+    public async UniTask<PlayerModel> ResetAbilities()
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.ResetAbilities, GameLogic.Instance.CurrentPlayer.player_id);
+        Debug.Log($"Reset abilities URL: {url}");
         try
         {
-            var requestData = new { };
-            await PostData(url, requestData, () =>
+            var requestData = new { playerId = GameLogic.Instance.CurrentPlayer.player_id };
+            var result = await PutData<object, PlayerModel>(url, requestData);
+            if (result != null)
             {
-                
-                Debug.Log("Abilities have been reset successfully.");
-                
-            });
+                GameLogic.Instance.OnPlayerDataLoaded(result);
+                return result;
+            }
+            else
+            {
+                Debug.LogError("Received null response when resetting abilities.");
+                return null;
+            }
+        }
+        catch (UnityWebRequestException ex)
+        {
+            Debug.LogError($"Failed to reset abilities: {ex.Message}");
+            Debug.LogError($"Response: {ex.Text}");
+            Debug.LogError($"Response Code: {ex.ResponseCode}");
+            Debug.LogError($"Result: {ex.Result}");
+            return null;
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to reset abilities: {ex.Message}");
+            Debug.LogError($"Unexpected error when resetting abilities: {ex.Message}");
+            return null;
         }
     }
+
+
 
     public async UniTask UpdateOnlineTime()
     {

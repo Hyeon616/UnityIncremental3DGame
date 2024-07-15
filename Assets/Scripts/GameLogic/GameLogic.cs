@@ -198,6 +198,14 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         return upgradeCost;
     }
 
+    public void UpdatePlayerData(PlayerModel updatedPlayerData)
+    {
+        CurrentPlayer = updatedPlayerData;
+        OnPlayerDataUpdated?.Invoke();
+        UIManager.Instance.UpdateAllUIs();  // 모든 UI 업데이트
+    }
+
+
     public async void UpgradePlayer()
     {
         CurrentPlayer.attributes.level++;
@@ -230,6 +238,27 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         //}
     }
 
+    public static string FormatKoreanCurrency(long amount)
+    {
+        string[] units = new string[] { "", "만", "억", "조", "경", "해", "자", "양", "구", "간", "정" };
+        int unitIndex = 0;
+        long currentAmount = amount;
+        string result = "";
+
+        while (currentAmount > 0 && unitIndex < units.Length)
+        {
+            long currentUnitValue = currentAmount % 10000;
+            if (currentUnitValue > 0)
+            {
+                result = currentUnitValue + units[unitIndex] + (result.Length > 0 ? " " + result : "");
+            }
+            currentAmount /= 10000;
+            unitIndex++;
+        }
+
+        return string.IsNullOrEmpty(result) ? "0" : result;
+    }
+
     #endregion
 
     #region Callbacks
@@ -238,8 +267,8 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         if (playerData != null)
         {
             CurrentPlayer = playerData;
-            Debug.Log($"Player data loaded in GameLogic. Player ID: {playerData.player_id}, Username: {playerData.player_username}");
-            Debug.Log($"Player attributes in GameLogic: {JsonConvert.SerializeObject(playerData.attributes)}");
+            OnPlayerDataUpdated?.Invoke();
+            UIManager.Instance.UpdateAllUIs();
         }
         else
         {

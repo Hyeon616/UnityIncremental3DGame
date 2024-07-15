@@ -24,9 +24,9 @@ public class PlayerModel
     public int? equipped_skill1_id;
     public int? equipped_skill2_id;
     public int? equipped_skill3_id;
-    public string Ability1;
-    public string Ability2;
-    public string Ability3;
+    public string Ability1 { get; set; }
+    public string Ability2 { get; set; }
+    public string Ability3 { get; set; }
 
 
     [JsonIgnore]

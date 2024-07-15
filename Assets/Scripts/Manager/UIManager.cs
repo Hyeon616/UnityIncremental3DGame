@@ -42,7 +42,7 @@ public class UIManager : UnitySingleton<UIManager>
         updatableUIs.Remove(ui);
     }
 
-    private void UpdateAllUIs()
+    public void UpdateAllUIs()
     {
         foreach (var ui in updatableUIs)
         {

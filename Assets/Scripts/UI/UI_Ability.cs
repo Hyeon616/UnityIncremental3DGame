@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -51,6 +52,8 @@ public class UI_Ability : MonoBehaviour, IUpdatableUI
 
         // Reset 비용 업데이트 (예: 100 골드)
         ResetCostText.text = "100";
+
+        
     }
 
     private void UpdateAbilitySlot(TextMeshProUGUI maxText, TextMeshProUGUI ratioText, string ability)
@@ -63,14 +66,52 @@ public class UI_Ability : MonoBehaviour, IUpdatableUI
         else
         {
             var parts = ability.Split(':');
-            maxText.text = parts[0].Replace("_", " ");
+            maxText.text = TranslateAbilityName(parts[0]);
             ratioText.text = $"{parts[1]}%";
+        }
+    }
+
+    private string TranslateAbilityName(string abilityName)
+    {
+        switch (abilityName)
+        {
+            case "max_health":
+                return "최대체력";
+            case "attack_power":
+                return "공격력";
+            case "critical_damage":
+                return "치명타 피해";
+            case "critical_chance":
+                return "치명타 확률";
+            default:
+                return abilityName;
         }
     }
 
     private async void OnResetButtonClicked()
     {
-        await ResourceManager.Instance.ResetAbilities();
-        UpdateUI();
+        ResetBtn.interactable = false; // 버튼 비활성화
+        try
+        {
+            var updatedPlayer = await ResourceManager.Instance.ResetAbilities();
+            if (updatedPlayer != null)
+            {
+                GameLogic.Instance.OnPlayerDataLoaded(updatedPlayer);
+                UpdateUI();
+            }
+            else
+            {
+                Debug.LogError("Failed to reset abilities: Received null player data");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to reset abilities: {ex.Message}");
+            // 여기에 사용자에게 오류를 알리는 UI 로직을 추가할 수 있습니다.
+        }
+        finally
+        {
+            ResetBtn.interactable = true; // 버튼 다시 활성화
+        }
     }
 }
