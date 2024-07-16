@@ -113,4 +113,4 @@ process.on("SIGINT", async () => {
   }
 });
 
-console.log("jenkins build test!");
+console.log("jenkins build");
