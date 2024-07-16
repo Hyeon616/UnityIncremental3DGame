@@ -113,3 +113,5 @@ process.on("SIGINT", async () => {
     process.exit();
   }
 });
+
+console.log("jenkins build");
