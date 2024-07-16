@@ -112,4 +112,4 @@ process.on("SIGINT", async () => {
   }
 });
 
-console.log("수정했어요");
+console.log("jenkins test");
