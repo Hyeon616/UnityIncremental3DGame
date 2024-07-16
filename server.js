@@ -97,7 +97,7 @@ async function checkRedisConnection() {
 startServer();
 setInterval(checkRedisConnection, 60 * 1000);
 
-setInterval(console.log("jenkinstest"), 10 * 1000);
+setInterval(console.log("jenkins interval"), 10 * 1000);
 
 process.on("SIGINT", async () => {
   try {
