@@ -87,6 +87,7 @@ async function checkRedisConnection() {
     const client = getClient();
     await client.ping();
     console.log("Redis connection is alive");
+    console.log("jenkins interval");
   } catch (error) {
     console.error("Redis connection error:", error);
     // 연결 재시도 로직
@@ -95,9 +96,8 @@ async function checkRedisConnection() {
 }
 
 startServer();
-setInterval(checkRedisConnection, 60 * 1000);
+setInterval(checkRedisConnection, 10 * 1000);
 
-setInterval(console.log("jenkins interval"), 10 * 1000);
 
 process.on("SIGINT", async () => {
   try {
@@ -113,5 +113,3 @@ process.on("SIGINT", async () => {
     process.exit();
   }
 });
-
-console.log("jenkins test");
