@@ -97,7 +97,6 @@ async function checkRedisConnection() {
 startServer();
 setInterval(checkRedisConnection, 60 * 1000);
 
-
 process.on("SIGINT", async () => {
   try {
     const redisClient = getClient();
@@ -112,5 +111,3 @@ process.on("SIGINT", async () => {
     process.exit();
   }
 });
-
-console.log("jenkins build");
