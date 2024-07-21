@@ -52,7 +52,7 @@ public class GameManager : UnitySingleton<GameManager>
             await ResourceManager.Instance.LoadAllData(userId);
             StageManager.Instance.Initialize(GameLogic.Instance.CurrentPlayer.attributes.current_stage);
             MonsterManager.Instance.SetCurrentMonster(GameLogic.Instance.CurrentPlayer.attributes.current_stage);
-
+            SpawnPlayer();
             UIManager.Instance.HideUI(UIPrefab.LoadingUI);
         }
         catch (Exception ex)
@@ -60,6 +60,19 @@ public class GameManager : UnitySingleton<GameManager>
             UIManager.Instance.ShowError("An error occurred during game initialization.");
             Debug.LogError($"Exception during game initialization: {ex.Message}");
             Debug.LogError($"Stack trace: {ex.StackTrace}");
+        }
+    }
+
+    private void SpawnPlayer()
+    {
+        GameObject playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+        if (playerPrefab != null)
+        {
+            Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+        }
+        else
+        {
+            Debug.LogError("Failed to load player prefab");
         }
     }
 

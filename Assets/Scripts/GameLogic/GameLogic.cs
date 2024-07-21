@@ -1,4 +1,3 @@
-using Newtonsoft.Json;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -150,6 +149,9 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     public event Action OnPlayerDefeated;
     public event Action<int, int, int> OnPlayerRewardsUpdated;
     public event Action OnPlayerDataUpdated;
+    public event Action OnPlayerSkillsUpdated;
+
+
     #endregion
 
     #region Methods
@@ -197,6 +199,8 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     {
         return upgradeCost;
     }
+
+
 
     public void UpdatePlayerData(PlayerModel updatedPlayerData)
     {
@@ -274,6 +278,12 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         {
             Debug.LogError("Received null player data in OnPlayerDataLoaded");
         }
+    }
+
+    public void UpdatePlayerSkills(ObservableCollection<PlayerSkillModel> skills)
+    {
+        UpdateCollection(PlayerSkills, skills);
+        OnPlayerSkillsUpdated?.Invoke();
     }
 
     public void OnMailsLoaded(ObservableCollection<MailModel> mails)

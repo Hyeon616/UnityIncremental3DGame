@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System;
+using UnityEngine;
 
 public class MonsterManager : Singleton<MonsterManager>
 {
     private List<MonsterModel> monsters;
     public MonsterModel CurrentMonster { get; private set; }
-
     public event Action<MonsterModel> OnMonsterDefeated;
     public event Action<float> OnMonsterHealthChanged;
 
@@ -23,6 +23,8 @@ public class MonsterManager : Singleton<MonsterManager>
         }
         
     }
+
+
 
     public void DamageCurrentMonster(int damage)
     {

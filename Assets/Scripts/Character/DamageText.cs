@@ -35,9 +35,9 @@ public class DamageText : MonoBehaviour
             Text_DamageText.color = _originalColor;
         }
 
-        Sequence sequence = DOTween.Sequence();
-        sequence.Append(transform.DOMoveY(transform.position.y + _moveDistance, _disappearSpeed).SetEase(Ease.OutCubic));
-        sequence.Join(Text_DamageText.DOFade(0, _fadeSpeed).SetEase(Ease.InCubic));
-        sequence.OnComplete(() => Destroy(gameObject));
+        //Sequence sequence = DOTween.Sequence();
+        //sequence.Append(transform.DOMoveY(transform.position.y + _moveDistance, _disappearSpeed).SetEase(Ease.OutCubic));
+        //sequence.Join(Text_DamageText.DOFade(0, _fadeSpeed).SetEase(Ease.InCubic));
+        //sequence.OnComplete(() => Destroy(gameObject));
     }
 }

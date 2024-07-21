@@ -445,7 +445,6 @@ public class ResourceManager : Singleton<ResourceManager>
         catch (Exception ex)
         {
             Debug.LogError($"Failed to update online time: {ex.Message}");
-            // 여기서 재시도 로직이나 사용자에게 알림을 추가할 수 있습니다.
         }
     }
 

@@ -184,6 +184,7 @@ public class MonsterModel
     public int DropMoney;
     public int DropElementStone;
     public float DropElementStoneChance;
+    public string PrefabName;
     [NonSerialized]
     public int CurrentHealth;
 
