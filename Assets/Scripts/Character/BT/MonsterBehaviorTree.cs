@@ -1,6 +1,7 @@
 using BehaviorDesigner.Runtime.Tasks;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 
 public class MonsterBehaviorTree
@@ -20,61 +21,81 @@ public class MonsterBehaviorTree
         {
             new SequenceNode(new List<Node>
             {
-                new IsPlayerInRange(monsterController),
+                new FindPlayer(monsterController),
+                new MoveTowardsPlayer(monsterController),
                 new AttackPlayer(monsterController)
             }),
-            new ChasePlayer(monsterController)
+            new Idle(monsterController)
         });
     }
 
-    public void Update()
+    public NodeState Update(float deltaTime)
     {
-        root.Evaluate();
+        return root.Evaluate();
     }
 
-    private class IsPlayerInRange : Node
+
+    private class FindPlayer : Node
     {
         private MonsterController controller;
-
-        public IsPlayerInRange(MonsterController controller)
+        public FindPlayer(MonsterController controller)
         {
             this.controller = controller;
         }
-
         public override NodeState Evaluate()
         {
-            return controller.IsPlayerInRange() ? NodeState.Success : NodeState.Failure;
+            GameObject player = controller.FindPlayer();
+            return player != null ? NodeState.Success : NodeState.Failure;
         }
     }
+
+    private class MoveTowardsPlayer : Node
+    {
+        private MonsterController controller;
+        public MoveTowardsPlayer(MonsterController controller)
+        {
+            this.controller = controller;
+        }
+        public override NodeState Evaluate()
+        {
+            if (controller.GetPlayerTransform() != null)
+            {
+                controller.MoveTowardsPlayer();
+                return NodeState.Running;
+            }
+            return NodeState.Failure;
+        }
+    }
+
 
     private class AttackPlayer : Node
     {
         private MonsterController controller;
-
         public AttackPlayer(MonsterController controller)
         {
             this.controller = controller;
         }
-
         public override NodeState Evaluate()
         {
-            controller.AttackPlayer();
-            return NodeState.Success;
+            if (controller.GetPlayerTransform() != null)
+            {
+                return controller.AttackPlayerIfInRange() ? NodeState.Success : NodeState.Running;
+            }
+            return NodeState.Failure;
         }
     }
 
-    private class ChasePlayer : Node
+
+    private class Idle : Node
     {
         private MonsterController controller;
-
-        public ChasePlayer(MonsterController controller)
+        public Idle(MonsterController controller)
         {
             this.controller = controller;
         }
-
         public override NodeState Evaluate()
         {
-            controller.ChasePlayer();
+            controller.Idle();
             return NodeState.Running;
         }
     }

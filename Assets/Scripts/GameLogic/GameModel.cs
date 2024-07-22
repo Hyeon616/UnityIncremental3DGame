@@ -27,7 +27,7 @@ public class PlayerModel
     public string Ability1 { get; set; }
     public string Ability2 { get; set; }
     public string Ability3 { get; set; }
-
+    
 
     [JsonIgnore]
     public Attributes attributes;
@@ -35,6 +35,7 @@ public class PlayerModel
     [OnDeserialized]
     internal void OnDeserialized(StreamingContext context)
     {
+        
         attributes = new Attributes
         {
             element_stone = this.element_stone,
@@ -58,6 +59,7 @@ public class PlayerModel
             Ability3 = this.Ability3
 
         };
+
     }
 
     public class Attributes

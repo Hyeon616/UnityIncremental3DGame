@@ -6,67 +6,150 @@ public class MonsterController : MonoBehaviour
     public MonsterModel Model { get; private set; }
     private NavMeshAgent agent;
     private MonsterBehaviorTree behaviorTree;
-    public float attackRange = 2f;
-    public float attackCooldown = 2f;
+    public float attackRange = 5f;
+    public float attackCooldown = 3f;
     private float lastAttackTime;
-
+    private Transform playerTransform;
+    private float updatePlayerPositionInterval = 0.5f; 
+    private float lastUpdateTime;
     public void Initialize(MonsterModel model)
     {
         this.Model = model;
         agent = GetComponent<NavMeshAgent>();
+        if (agent == null)
+        {
+            agent = gameObject.AddComponent<NavMeshAgent>();
+        }
+        agent.speed = 3.5f;
+        agent.angularSpeed = 120f;
+        agent.acceleration = 8f;
+        agent.stoppingDistance = 2f;
         behaviorTree = new MonsterBehaviorTree(this);
+    }
+
+    private void OnDisable()
+    {
+        behaviorTree = null;
     }
 
     private void Update()
     {
-        if (PlayerController.Instance != null)
+        if (behaviorTree == null)
+            return;
+        if (!agent.isOnNavMesh)
         {
-            behaviorTree.Update();
+            PlaceOnNavMesh();
+        }
+
+        if (Time.time - lastUpdateTime > updatePlayerPositionInterval)
+        {
+            UpdatePlayerPosition();
+            lastUpdateTime = Time.time;
+        }
+
+        behaviorTree.Update(Time.deltaTime);
+    }
+
+    private void UpdatePlayerPosition()
+    {
+        GameObject player = FindPlayer();
+        if (player != null)
+        {
+            playerTransform = player.transform;
+        }
+        else
+        {
+            playerTransform = null;
         }
     }
 
-    public bool IsPlayerInRange()
+    public Transform GetPlayerTransform()
     {
-        if (PlayerController.Instance == null) return false;
-
-        float distanceToPlayer = Vector3.Distance(transform.position, PlayerController.Instance.transform.position);
-        return distanceToPlayer <= attackRange;
+        return playerTransform;
     }
 
-    public void AttackPlayer()
-    {
-        if (PlayerController.Instance == null) return;
 
-        if (Time.time - lastAttackTime >= attackCooldown)
+    private void PlaceOnNavMesh()
+    {
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(transform.position, out hit, 5f, NavMesh.AllAreas))
         {
-            lastAttackTime = Time.time;
-            int damage = Model.Attack;
-            PlayerController.Instance.TakeDamage(damage);
-            Debug.Log($"Monster {Model.Name} attacks player for {damage} damage!");
+            agent.Warp(hit.position);
         }
     }
 
-    public void ChasePlayer()
+    public GameObject FindPlayer()
     {
-        if (PlayerController.Instance == null) return;
+        if (PlayerController.IsQuitting)
+        {
+            return null;
+        }
 
-        agent.SetDestination(PlayerController.Instance.transform.position);
+        if (PlayerController.Instance == null || PlayerController.Instance.gameObject == null)
+        {
+            Debug.LogWarning("PlayerController is null or has been destroyed.");
+            return null;
+        }
+        return PlayerController.Instance.gameObject;
+    }
+
+    public void MoveTowardsPlayer()
+    {
+        if (playerTransform != null && agent != null && agent.isActiveAndEnabled)
+        {
+            agent.SetDestination(playerTransform.position);
+        }
+        else
+        {
+            Idle();
+        }
+    }
+
+    public bool AttackPlayerIfInRange()
+    {
+        if (playerTransform == null || !playerTransform.gameObject.activeInHierarchy)
+        {
+            return false;
+        }
+        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        if (distanceToPlayer <= attackRange)
+        {
+            if (Time.time - lastAttackTime >= attackCooldown)
+            {
+                lastAttackTime = Time.time;
+                int damage = Model.Attack;
+                PlayerController playerController = playerTransform.GetComponent<PlayerController>();
+                if (playerController != null)
+                {
+                    playerController.TakeDamage(damage);
+                    Debug.Log($"Monster {Model.Name} attacks player for {damage} damage!");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void Idle()
+    {
+        if (agent != null)
+        {
+            agent.ResetPath();
+        }
     }
 
     public void TakeDamage(int damage)
     {
-        Model.CurrentHealth -= damage;
-        if (Model.CurrentHealth <= 0)
-        {
-            Die();
-        }
+        MonsterManager.Instance.DamageMonster(Model, damage);
     }
 
     private void Die()
     {
-        MonsterManager.Instance.DefeatCurrentMonster();
-        Destroy(gameObject);
-        // 추가적인 몬스터 사망 처리 로직
+        MonsterManager.Instance.DefeatMonster(Model);
     }
 
+    public float GetHealthPercentage()
+    {
+        return Model.GetHealthPercentage();
+    }
 }

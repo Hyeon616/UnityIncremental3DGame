@@ -21,7 +21,6 @@ public class StageManager : Singleton<StageManager>
         {
             SetCurrentStage(initialStage ?? allStages[0]);
             IsInitialized = true;
-            MonsterSpawner.Instance.SpawnMonstersForCurrentStage();
         }
         else
         {
@@ -64,7 +63,6 @@ public class StageManager : Singleton<StageManager>
         {
             CurrentStage = stage;
             MonstersDefeatedInCurrentStage = 0;
-            MonsterManager.Instance.SetCurrentMonster(stage);
             OnStageChanged?.Invoke();
             GameLogic.Instance.OnCurrentStageUpdated(stage); 
         }
@@ -88,38 +86,21 @@ public class StageManager : Singleton<StageManager>
         return stageParts.Length == 2 && int.TryParse(stageParts[1], out int stageNumber) && stageNumber == 15;
     }
 
-    public void DefeatMonster()
+    public void IncrementMonstersDefeated()
     {
-        if (IsBossStage())
-        {
-            var currentMonster = MonsterManager.Instance.CurrentMonster;
-
-            if (currentMonster != null)
-            {
-                currentMonster.CurrentHealth -= currentMonster.Health / 10;
-
-                if (currentMonster.CurrentHealth <= 0)
-                {
-                    MonsterManager.Instance.DefeatCurrentMonster(); 
-                    string nextStage = GetNextStage();
-                    SetCurrentStage(nextStage);
-                }
-                
-                OnStageProgressChanged?.Invoke();
-            }
-        }
-        else
-        {
-            MonstersDefeatedInCurrentStage++;
-            if (MonstersDefeatedInCurrentStage >= TotalMonstersPerStage)
-            {
-                string nextStage = GetNextStage();
-                SetCurrentStage(nextStage);
-            }
-            OnStageProgressChanged?.Invoke();
-        }
+        MonstersDefeatedInCurrentStage++;
+        OnStageProgressChanged?.Invoke();
     }
 
+    public void OnAllMonstersDefeated()
+    {
+        if (IsBossStage() || MonstersDefeatedInCurrentStage >= TotalMonstersPerStage)
+        {
+            string nextStage = GetNextStage();
+            SetCurrentStage(nextStage);
+        }
+        OnStageProgressChanged?.Invoke();
+    }
 
     public string GetNextStage()
     {
@@ -128,7 +109,7 @@ public class StageManager : Singleton<StageManager>
         {
             return allStages[currentIndex + 1];
         }
-        return CurrentStage; // 마지막 스테이지인 경우 현재 스테이지를 유지
+        return CurrentStage; 
     }
 
     public bool IsLastStage()

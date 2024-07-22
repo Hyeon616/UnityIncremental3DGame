@@ -1,55 +1,112 @@
 using System.Collections.Generic;
 using System;
-using UnityEngine;
 
 public class MonsterManager : Singleton<MonsterManager>
 {
-    private List<MonsterModel> monsters;
-    public MonsterModel CurrentMonster { get; private set; }
+    private List<MonsterModel> monsterTemplates;
+    public List<MonsterModel> ActiveMonsters { get; private set; } = new List<MonsterModel>();
     public event Action<MonsterModel> OnMonsterDefeated;
-    public event Action<float> OnMonsterHealthChanged;
+    public event Action<float, MonsterModel> OnMonsterHealthChanged;
 
     public void LoadMonsters(List<MonsterModel> loadedMonsters)
     {
-        monsters = loadedMonsters;
+        monsterTemplates = loadedMonsters;
     }
 
-    public void SetCurrentMonster(string stage)
+    public void SpawnMonstersForStage(string stage)
     {
-        CurrentMonster = monsters.Find(m => m.Stage == stage);
-        if (CurrentMonster != null)
+        ClearActiveMonsters();
+        MonsterModel template = monsterTemplates.Find(m => m.Stage == stage);
+        if (template == null)
         {
-            CurrentMonster.Initialize();
-        }
-        
-    }
-
-
-
-    public void DamageCurrentMonster(int damage)
-    {
-        if (CurrentMonster == null) return;
-
-        CurrentMonster.CurrentHealth -= damage;
-
-        if (CurrentMonster.CurrentHealth <= 0)
-        {
-            DefeatCurrentMonster();
+            // 로그 출력 (Unity의 Debug.LogError 대신 다른 로깅 메커니즘 사용)
+            Console.WriteLine($"No monster template found for stage: {stage}");
+            return;
         }
 
-        OnMonsterHealthChanged?.Invoke(CurrentMonster.GetHealthPercentage());
-    }
+        int monstersToSpawn = StageManager.Instance.IsBossStage() ? 1 : StageManager.TotalMonstersPerStage;
 
-    public void DefeatCurrentMonster()
-    {
-        if (CurrentMonster != null)
+        for (int i = 0; i < monstersToSpawn; i++)
         {
-            CurrentMonster.CurrentHealth = 0;
-            OnMonsterDefeated?.Invoke(CurrentMonster);
+            SpawnMonster(template);
         }
     }
+
+    private void SpawnMonster(MonsterModel template)
+    {
+        MonsterModel newMonster = new MonsterModel();
+        CopyMonsterProperties(template, newMonster);
+        ActiveMonsters.Add(newMonster);
+    }
+
+    private void CopyMonsterProperties(MonsterModel source, MonsterModel destination)
+    {
+        // 속성 복사 로직
+        destination.id = source.id;
+        destination.Stage = source.Stage;
+        destination.Type = source.Type;
+        destination.Name = source.Name;
+        destination.Health = source.Health;
+        destination.Attack = source.Attack;
+        destination.DropMoney = source.DropMoney;
+        destination.DropElementStone = source.DropElementStone;
+        destination.DropElementStoneChance = source.DropElementStoneChance;
+        destination.CurrentHealth = source.Health;
+        destination.PrefabName = source.PrefabName;
+    }
+
+    public void DamageMonster(MonsterModel monster, int damage)
+    {
+        monster.CurrentHealth -= damage;
+        if (monster.CurrentHealth <= 0)
+        {
+            DefeatMonster(monster);
+        }
+        else
+        {
+            OnMonsterHealthChanged?.Invoke(monster.GetHealthPercentage(), monster);
+        }
+    }
+
+    public void DefeatMonster(MonsterModel monster)
+    {
+        ActiveMonsters.Remove(monster);
+        OnMonsterDefeated?.Invoke(monster);
+        StageManager.Instance.IncrementMonstersDefeated();
+        if (ActiveMonsters.Count == 0)
+        {
+            StageManager.Instance.OnAllMonstersDefeated();
+        }
+    }
+    public List<MonsterModel> GetMonstersForStage(string stage)
+    {
+        MonsterModel template = monsterTemplates.Find(m => m.Stage == stage);
+        if (template == null)
+        {
+            Console.WriteLine($"No monster template found for stage: {stage}");
+            return new List<MonsterModel>();
+        }
+
+        int monstersToSpawn = StageManager.Instance.IsBossStage() ? 1 : StageManager.TotalMonstersPerStage;
+        List<MonsterModel> monsters = new List<MonsterModel>();
+
+        for (int i = 0; i < monstersToSpawn; i++)
+        {
+            MonsterModel newMonster = new MonsterModel();
+            CopyMonsterProperties(template, newMonster);
+            monsters.Add(newMonster);
+        }
+
+        ActiveMonsters = monsters;
+        return monsters;
+    }
+    public void ClearActiveMonsters()
+    {
+        ActiveMonsters.Clear();
+    }
+
     public void Reset()
     {
-        CurrentMonster = null;
+        ClearActiveMonsters();
     }
 }

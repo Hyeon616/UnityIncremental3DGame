@@ -26,10 +26,6 @@ public class GameManager : UnitySingleton<GameManager>
             UpdateOnlineTime();
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            StageManager.Instance.DefeatMonster();
-        }
     }
     
     private async UniTask LoadAllUIPrefabs()
@@ -138,6 +134,12 @@ public class GameManager : UnitySingleton<GameManager>
     // 게임 세션이 끝날 때 호출되는 메서드
     public void OnApplicationQuit()
     {
+        MonsterController[] monsters = FindObjectsOfType<MonsterController>();
+        foreach (var monster in monsters)
+        {
+            monster.enabled = false;
+        }
+
         ClearAuthData();
     }
 }

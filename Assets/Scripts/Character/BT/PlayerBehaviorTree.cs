@@ -68,8 +68,15 @@ public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
         {
             if (controller.NearestMonster != null)
             {
-                controller.MoveTowardsMonster(controller.NearestMonster);
-                return NodeState.Running;
+                try
+                {
+                    controller.MoveTowardsMonster(controller.NearestMonster);
+                    return NodeState.Running;
+                }
+                catch
+                {
+                    return NodeState.Failure;
+                }
             }
             return NodeState.Failure;
         }

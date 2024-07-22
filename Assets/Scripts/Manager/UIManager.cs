@@ -14,7 +14,7 @@ public class UIManager : UnitySingleton<UIManager>
     private bool _isDataLoaded = false;
     private List<IUpdatableUI> updatableUIs = new List<IUpdatableUI>();
 
-    private const float UI_REMOVE_DELAY = 15f; // 3 minutes
+    private const float UI_REMOVE_DELAY = 15f;
 
 
     public void InitializeUI()

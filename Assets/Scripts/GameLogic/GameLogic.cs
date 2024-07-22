@@ -133,6 +133,21 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         }
     }
 
+    private int _currentPlayerHealth;
+    public int CurrentPlayerHealth
+    {
+        get => _currentPlayerHealth;
+        set
+        {
+            if (_currentPlayerHealth != value)
+            {
+                _currentPlayerHealth = value;
+                OnPropertyChanged(nameof(CurrentPlayerHealth));
+                OnPlayerHealthChanged?.Invoke(_currentPlayerHealth);
+            }
+        }
+    }
+
     public int MonstersDefeatedInCurrentStage => StageManager.Instance.MonstersDefeatedInCurrentStage;
     public int TotalMonstersPerStage => StageManager.TotalMonstersPerStage;
 
@@ -200,7 +215,17 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         return upgradeCost;
     }
 
-
+    public void InitializePlayerHealth()
+    {
+        if (CurrentPlayer != null)
+        {
+            CurrentPlayerHealth = CurrentPlayer.attributes.max_health;
+        }
+    }
+    public void UpdatePlayerHealth(int newHealth)
+    {
+        CurrentPlayerHealth = Mathf.Clamp(newHealth, 0, CurrentPlayer.attributes.max_health);
+    }
 
     public void UpdatePlayerData(PlayerModel updatedPlayerData)
     {

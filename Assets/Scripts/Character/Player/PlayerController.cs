@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -11,11 +12,19 @@ public class PlayerController : UnitySingleton<PlayerController>
     public float attackCooldown = 1f;
     private float lastAttackTime;
 
+    public event Action<int> OnHealthChanged;
+
+    public static bool IsQuitting { get; private set; }
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
+        if (agent == null)
+        {
+            agent = gameObject.AddComponent<NavMeshAgent>();
+        }
         behaviorTree = new PlayerBehaviorTree(this);
         IsInitialized = true;
+        GameLogic.Instance.InitializePlayerHealth();
     }
 
     void Update()
@@ -47,7 +56,7 @@ public class PlayerController : UnitySingleton<PlayerController>
     }
     public void MoveTowardsMonster(GameObject monster)
     {
-        if (monster != null)
+        if (monster != null && agent != null && agent.isActiveAndEnabled)
         {
             agent.SetDestination(monster.transform.position);
         }
@@ -55,12 +64,11 @@ public class PlayerController : UnitySingleton<PlayerController>
 
     public bool AttackMonsterIfInRange(GameObject monster)
     {
-        if (monster == null || !monster.activeInHierarchy)  // 추가된 체크
+        if (monster == null || !monster.activeInHierarchy)
         {
-            NearestMonster = null;  // NearestMonster 초기화
+            NearestMonster = null;
             return false;
         }
-
         float distanceToMonster = Vector3.Distance(transform.position, monster.transform.position);
         if (distanceToMonster <= attackRange)
         {
@@ -82,17 +90,20 @@ public class PlayerController : UnitySingleton<PlayerController>
 
     public void Idle()
     {
-        // 대기 상태 로직
-        agent.ResetPath();
+        if(agent != null)
+        {
+            agent.ResetPath();
+
+        }
     }
 
    
 
     public void TakeDamage(int damage)
     {
-        // 플레이어가 데미지를 받는 로직
-        GameLogic.Instance.CurrentPlayer.attributes.max_health -= damage;
-        if (GameLogic.Instance.CurrentPlayer.attributes.max_health <= 0)
+        int newHealth = GameLogic.Instance.CurrentPlayerHealth - damage;
+        GameLogic.Instance.UpdatePlayerHealth(newHealth);
+        if (newHealth <= 0)
         {
             Die();
         }
@@ -103,5 +114,11 @@ public class PlayerController : UnitySingleton<PlayerController>
         // 플레이어 사망 처리 로직
         Debug.Log("플레이어 사망");
     }
+
+    private void OnApplicationQuit()
+    {
+        IsQuitting = true;
+    }
+
 
 }

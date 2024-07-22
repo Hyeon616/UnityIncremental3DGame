@@ -20,6 +20,7 @@ public class UI_Stage : MonoBehaviour, IUpdatableUI
         if (MonsterManager.Instance != null)
         {
             MonsterManager.Instance.OnMonsterHealthChanged += OnMonsterHealthChanged;
+            MonsterManager.Instance.OnMonsterDefeated += OnMonsterDefeated;
         }
         UIManager.Instance.RegisterUpdatableUI(this);
         if (UIManager.Instance.IsDataLoaded)
@@ -38,15 +39,20 @@ public class UI_Stage : MonoBehaviour, IUpdatableUI
         if (MonsterManager.Instance != null)
         {
             MonsterManager.Instance.OnMonsterHealthChanged -= OnMonsterHealthChanged;
+            MonsterManager.Instance.OnMonsterDefeated -= OnMonsterDefeated;
         }
         UIManager.Instance.UnregisterUpdatableUI(this);
     }
 
-    private void OnMonsterHealthChanged(float healthPercentage)
+    private void OnMonsterDefeated(MonsterModel monster) // 추가된 메서드
     {
         UpdateUI();
     }
 
+    private void OnMonsterHealthChanged(float healthPercentage, MonsterModel monster)
+    {
+        UpdateUI();
+    }
 
     public void UpdateUI()
     {
@@ -74,14 +80,13 @@ public class UI_Stage : MonoBehaviour, IUpdatableUI
 
     private void UpdateBossProgress()
     {
-        var currentMonster = MonsterManager.Instance.CurrentMonster;
-        Debug.Log(currentMonster);
-        Debug.Log(currentMonster.Name);
-        if (currentMonster != null)
+        var activeMonsters = MonsterManager.Instance.ActiveMonsters;
+        if (activeMonsters.Count > 0)
         {
-            StageText.text = $"Boss : {currentMonster.Name}";
-            int currentHP = currentMonster.CurrentHealth;
-            int maxHP = currentMonster.Health;
+            var bossMonster = activeMonsters[0]; // 보스는 하나만 있다고 가정
+            StageText.text = $"Boss : {bossMonster.Name}";
+            int currentHP = bossMonster.CurrentHealth;
+            int maxHP = bossMonster.Health;
             float healthPercentage = (float)currentHP / maxHP;
             StageSlider.value = healthPercentage;
             StageSliderValueText.text = $"{currentHP}/{maxHP} ({(int)(healthPercentage * 100)}%)";
@@ -100,7 +105,7 @@ public class UI_Stage : MonoBehaviour, IUpdatableUI
         int totalMonsters = StageManager.TotalMonstersPerStage;
         float progressPercentage = (float)defeatedMonsters / totalMonsters;
         StageSlider.value = progressPercentage;
-        StageSliderValueText.text = $"{defeatedMonsters}/{totalMonsters} ({(int)(progressPercentage * 100)}%)";
+        StageSliderValueText.text = $"{defeatedMonsters}/{totalMonsters} ({Mathf.RoundToInt(progressPercentage * 100)}%)";
     }
 
     private void SetDefaultValues()

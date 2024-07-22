@@ -6,8 +6,7 @@ using UnityEngine.AI;
 public class MonsterSpawner : UnitySingleton<MonsterSpawner>
 {
     public List<GameObject> CurrentMonsterObjects { get; private set; } = new List<GameObject>();
-    private int monstersToSpawn;
-    private int monstersDefeated;
+    
 
     private void Start()
     {
@@ -24,42 +23,31 @@ public class MonsterSpawner : UnitySingleton<MonsterSpawner>
     public void SpawnMonstersForCurrentStage()
     {
         ClearCurrentMonsters();
-        monstersDefeated = 0;
-
         string currentStage = StageManager.Instance.CurrentStage;
-        bool isBossStage = StageManager.Instance.IsBossStage();
-        monstersToSpawn = isBossStage ? 1 : StageManager.TotalMonstersPerStage;
+        List<MonsterModel> monstersToSpawn = MonsterManager.Instance.GetMonstersForStage(currentStage);
 
-        for (int i = 0; i < monstersToSpawn; i++)
+        foreach (var monsterModel in monstersToSpawn)
         {
-            SpawnMonster(currentStage);
+            SpawnMonsterObject(monsterModel);
         }
 
-        Debug.Log($"Spawning monsters for stage {currentStage}. Total to spawn: {monstersToSpawn}");
-
+        Debug.Log($"Spawning monsters for stage {currentStage}. Total spawned: {CurrentMonsterObjects.Count}");
     }
 
-
-    private void SpawnMonster(string stage)
+    private void SpawnMonsterObject(MonsterModel monsterModel)
     {
-        MonsterManager.Instance.SetCurrentMonster(stage);
-        var currentMonster = MonsterManager.Instance.CurrentMonster;
-
-        if (currentMonster != null)
+        GameObject prefab = Resources.Load<GameObject>($"Prefabs/Monsters/{monsterModel.PrefabName}");
+        if (prefab != null)
         {
-            GameObject prefab = Resources.Load<GameObject>($"Prefabs/Monsters/{currentMonster.PrefabName}");
-            if (prefab != null)
-            {
-                GameObject monsterObject = Instantiate(prefab, GetRandomSpawnPosition(), Quaternion.identity);
-                MonsterController controller = monsterObject.AddComponent<MonsterController>();
-                controller.Initialize(currentMonster);
-                monsterObject.tag = "Monster";
-                CurrentMonsterObjects.Add(monsterObject);
-            }
-            else
-            {
-                Debug.LogError($"Failed to load monster prefab: {currentMonster.PrefabName}");
-            }
+            GameObject monsterObject = Instantiate(prefab, GetRandomSpawnPosition(), Quaternion.identity);
+            MonsterController controller = monsterObject.AddComponent<MonsterController>();
+            controller.Initialize(monsterModel);
+            monsterObject.tag = "Monster";
+            CurrentMonsterObjects.Add(monsterObject);
+        }
+        else
+        {
+            Debug.LogError($"Failed to load monster prefab: {monsterModel.PrefabName}");
         }
     }
 
@@ -76,15 +64,6 @@ public class MonsterSpawner : UnitySingleton<MonsterSpawner>
             CurrentMonsterObjects.Remove(defeatedMonster);
             Destroy(defeatedMonster);
         }
-
-        monstersDefeated++;
-        Debug.Log($"Monster defeated. {monstersDefeated}/{monstersToSpawn} defeated.");
-
-        if (monstersDefeated >= monstersToSpawn)
-        {
-            Debug.Log("All monsters defeated. Progressing to next stage.");
-            StageManager.Instance.ProgressToNextStage();
-        }
     }
 
     private void ClearCurrentMonsters()
@@ -94,5 +73,6 @@ public class MonsterSpawner : UnitySingleton<MonsterSpawner>
             Destroy(monster);
         }
         CurrentMonsterObjects.Clear();
+        MonsterManager.Instance.ClearActiveMonsters();
     }
 }
