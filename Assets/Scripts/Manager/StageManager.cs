@@ -21,6 +21,7 @@ public class StageManager : Singleton<StageManager>
         {
             SetCurrentStage(initialStage ?? allStages[0]);
             IsInitialized = true;
+            MonsterSpawner.Instance.SpawnMonstersForCurrentStage();
         }
         else
         {
@@ -71,6 +72,11 @@ public class StageManager : Singleton<StageManager>
         {
             throw new ArgumentException($"Invalid stage: {stage}");
         }
+    }
+    public void ProgressToNextStage()
+    {
+        string nextStage = GetNextStage();
+        SetCurrentStage(nextStage);
     }
 
     public bool IsBossStage()

@@ -45,14 +45,11 @@ public class GameManager : UnitySingleton<GameManager>
 
     public async UniTask InitializeGame()
     {
-        
         try
         {
-            
             await ResourceManager.Instance.LoadAllData(userId);
+            await SpawnPlayer();
             StageManager.Instance.Initialize(GameLogic.Instance.CurrentPlayer.attributes.current_stage);
-            MonsterManager.Instance.SetCurrentMonster(GameLogic.Instance.CurrentPlayer.attributes.current_stage);
-            SpawnPlayer();
             UIManager.Instance.HideUI(UIPrefab.LoadingUI);
         }
         catch (Exception ex)
@@ -63,12 +60,16 @@ public class GameManager : UnitySingleton<GameManager>
         }
     }
 
-    private void SpawnPlayer()
+
+
+    private async UniTask SpawnPlayer()
     {
-        GameObject playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
+        GameObject playerPrefab = Resources.Load<GameObject>("Prefabs/Player/Player");
         if (playerPrefab != null)
         {
-            Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+            GameObject playerObject = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
+            PlayerController playerController = playerObject.GetComponent<PlayerController>();
+            await UniTask.WaitUntil(() => playerController.IsInitialized);
         }
         else
         {

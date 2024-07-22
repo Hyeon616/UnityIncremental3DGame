@@ -3,24 +3,14 @@ using System.Collections.Generic;
 public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
 {
     private Node root;
-    private Dictionary<int, float> skillCooldowns = new Dictionary<int, float>();
-
-    public PlayerBehaviorTree()
+    private PlayerController playerController;
+    public PlayerBehaviorTree(PlayerController controller)
     {
-        InitializeSkillCooldowns();
+        this.playerController = controller;
         ConstructBehaviorTree();
     }
 
-    private void InitializeSkillCooldowns()
-    {
-        var playerSkills = GameLogic.Instance.PlayerSkills;
-
-        foreach (var skill in playerSkills)
-        {
-            skillCooldowns[skill.skill_id] = 0f;
-        }
-
-    }
+   
 
     private void ConstructBehaviorTree()
     {
@@ -28,16 +18,11 @@ public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
         {
             new SequenceNode(new List<Node>
             {
-                new CheckForTarget(),
-                new SelectorNode(new List<Node>
-                {
-                    //new UseSkill(0),
-                    //new UseSkill(1),
-                    //new UseSkill(2),
-                    new BasicAttack(),
-                })
+                 new FindNearestMonster(playerController),
+                new MoveTowardsMonster(playerController),
+                new AttackMonster(playerController)
             }),
-            new Idle()
+            new Idle(playerController)
         });
 
     }
@@ -46,42 +31,81 @@ public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
 
     public NodeState Update(float deltaTime)
     {
-        var playerSkills = GameLogic.Instance.PlayerSkills;
-        foreach (var skill in playerSkills)
-        {
-            if (skillCooldowns[skill.skill_id] > 0)
-            {
-                skillCooldowns[skill.skill_id] -= deltaTime;
-            }
-        }
         return root.Evaluate();
 
     }
 
-    private class CheckForTarget : Node
+    private class FindNearestMonster : Node
     {
+
+        private PlayerController controller;
+
+        public FindNearestMonster(PlayerController controller)
+        {
+            this.controller = controller;
+        }
 
         public override NodeState Evaluate()
         {
-            return NodeState.Success;
+            controller.NearestMonster = controller.FindNearestMonster();
+            return controller.NearestMonster != null ? NodeState.Success : NodeState.Failure;
         }
 
     }
 
     
 
-    private class BasicAttack : Node
+    private class MoveTowardsMonster : Node
     {
+        private PlayerController controller;
+
+        public MoveTowardsMonster(PlayerController controller)
+        {
+            this.controller = controller;
+        }
+
         public override NodeState Evaluate()
         {
-            return NodeState.Success;
+            if (controller.NearestMonster != null)
+            {
+                controller.MoveTowardsMonster(controller.NearestMonster);
+                return NodeState.Running;
+            }
+            return NodeState.Failure;
+        }
+    }
+
+    private class AttackMonster : Node
+    {
+        private PlayerController controller;
+
+        public AttackMonster(PlayerController controller)
+        {
+            this.controller = controller;
+        }
+
+        public override NodeState Evaluate()
+        {
+            if (controller.NearestMonster != null && controller.NearestMonster.activeInHierarchy)
+            {
+                return controller.AttackMonsterIfInRange(controller.NearestMonster) ? NodeState.Success : NodeState.Running;
+            }
+            return NodeState.Failure;
         }
     }
 
     private class Idle : Node
     {
+        private PlayerController controller;
+
+        public Idle(PlayerController controller)
+        {
+            this.controller = controller;
+        }
+
         public override NodeState Evaluate()
         {
+            controller.Idle();
             return NodeState.Running;
         }
     }

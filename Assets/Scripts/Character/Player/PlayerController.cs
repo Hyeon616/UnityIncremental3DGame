@@ -3,9 +3,10 @@ using UnityEngine.AI;
 
 public class PlayerController : UnitySingleton<PlayerController>
 {
-    private PlayerBehaviorTree behaviorTree;
+    public GameObject NearestMonster { get; set; }
+    public bool IsInitialized { get; private set; }
     private NavMeshAgent agent;
-    public Transform target;
+    private PlayerBehaviorTree behaviorTree;
     public float attackRange = 2f;
     public float attackCooldown = 1f;
     private float lastAttackTime;
@@ -13,97 +14,70 @@ public class PlayerController : UnitySingleton<PlayerController>
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
-        behaviorTree = new PlayerBehaviorTree();
-
-        GameLogic.Instance.OnPlayerDataUpdated += OnPlayerDataUpdated;
-        GameLogic.Instance.OnPlayerSkillsUpdated += OnPlayerSkillsUpdated;
+        behaviorTree = new PlayerBehaviorTree(this);
+        IsInitialized = true;
     }
-
-    private void OnDestroy()
-    {
-        GameLogic.Instance.OnPlayerDataUpdated -= OnPlayerDataUpdated;
-        GameLogic.Instance.OnPlayerSkillsUpdated -= OnPlayerSkillsUpdated;
-    }
-
 
     void Update()
     {
         behaviorTree.Update(Time.deltaTime);
 
-        // 공격
-        // AttackCurrentMonster();
     }
 
-    // Update에서 부를 공격함수
-    private void AttackCurrentMonster()
+    public GameObject FindNearestMonster()
     {
-        if (MonsterSpawner.Instance.CurrentMonsterObject != null)
+        GameObject[] monsters = GameObject.FindGameObjectsWithTag("Monster");
+        GameObject nearest = null;
+        float minDistance = float.MaxValue;
+
+        foreach (GameObject monster in monsters)
         {
-            float distanceToMonster = Vector3.Distance(transform.position, MonsterSpawner.Instance.CurrentMonsterObject.transform.position);
-            if (distanceToMonster <= attackRange)
+            if (monster != null)  // null 체크 추가
             {
-                if (Time.time - lastAttackTime >= attackCooldown)
+                float distance = Vector3.Distance(transform.position, monster.transform.position);
+                if (distance < minDistance)
                 {
-                    lastAttackTime = Time.time;
-                    int damage = GameLogic.Instance.CurrentPlayer.attributes.attack_power;
-                    MonsterManager.Instance.DamageCurrentMonster(damage);
-                    Debug.Log($"Player attacks monster for {damage} damage!");
+                    minDistance = distance;
+                    nearest = monster;
                 }
             }
-            else
-            {
-                Debug.Log("Monster is too far to attack!");
-            }
         }
-        else
+
+        return nearest;
+    }
+    public void MoveTowardsMonster(GameObject monster)
+    {
+        if (monster != null)
         {
-            Debug.Log("No monster to attack!");
+            agent.SetDestination(monster.transform.position);
         }
     }
 
-    public bool HasTarget()
+    public bool AttackMonsterIfInRange(GameObject monster)
     {
-        return target != null;
-    }
-
-    public void ChaseTarget()
-    {
-        if (target != null)
+        if (monster == null || !monster.activeInHierarchy)  // 추가된 체크
         {
-            agent.SetDestination(target.position);
+            NearestMonster = null;  // NearestMonster 초기화
+            return false;
         }
-    }
 
-    public void ApplyBasicAttack()
-    {
-        var player = GameLogic.Instance.CurrentPlayer;
-        // 공격
-    }
-
-    public void ApplySkill(int skillIndex)
-    {
-        var player = GameLogic.Instance.CurrentPlayer;
-        var playerSkills = GameLogic.Instance.PlayerSkills;
-        if (skillIndex < playerSkills.Count)
-        {
-            var skill = playerSkills[skillIndex];
-            // 스킬 데미지 
-
-
-        }
-    }
-
-    public void UseBasicAttack()
-    {
-        if (target != null && Vector3.Distance(transform.position, target.position) <= attackRange)
+        float distanceToMonster = Vector3.Distance(transform.position, monster.transform.position);
+        if (distanceToMonster <= attackRange)
         {
             if (Time.time - lastAttackTime >= attackCooldown)
             {
-                // 기본 공격 로직
-                Debug.Log("Using basic attack");
                 lastAttackTime = Time.time;
+                int damage = GameLogic.Instance.CurrentPlayer.attributes.attack_power;
+                MonsterController monsterController = monster.GetComponent<MonsterController>();
+                if (monsterController != null)
+                {
+                    monsterController.TakeDamage(damage);
+                    Debug.Log($"Player attacks monster for {damage} damage!");
+                    return true;
+                }
             }
         }
+        return false;
     }
 
     public void Idle()
@@ -112,21 +86,22 @@ public class PlayerController : UnitySingleton<PlayerController>
         agent.ResetPath();
     }
 
-    public void SetTarget(Transform newTarget)
+   
+
+    public void TakeDamage(int damage)
     {
-        target = newTarget;
+        // 플레이어가 데미지를 받는 로직
+        GameLogic.Instance.CurrentPlayer.attributes.max_health -= damage;
+        if (GameLogic.Instance.CurrentPlayer.attributes.max_health <= 0)
+        {
+            Die();
+        }
     }
 
-    private void OnPlayerDataUpdated()
+    private void Die()
     {
-        // 업데이트 되어야할 속성
-
+        // 플레이어 사망 처리 로직
+        Debug.Log("플레이어 사망");
     }
-
-    private void OnPlayerSkillsUpdated()
-    {
-        behaviorTree = new PlayerBehaviorTree(); // 스킬이 업데이트되면 BehaviorTree를 새로 생성합니다.
-    }
-
 
 }
