@@ -47,6 +47,7 @@ public class GameManager : UnitySingleton<GameManager>
             await SpawnPlayer();
             StageManager.Instance.Initialize(GameLogic.Instance.CurrentPlayer.attributes.current_stage);
             UIManager.Instance.HideUI(UIPrefab.LoadingUI);
+
         }
         catch (Exception ex)
         {
@@ -66,6 +67,8 @@ public class GameManager : UnitySingleton<GameManager>
             GameObject playerObject = Instantiate(playerPrefab, Vector3.zero, Quaternion.identity);
             PlayerController playerController = playerObject.GetComponent<PlayerController>();
             await UniTask.WaitUntil(() => playerController.IsInitialized);
+
+            CameraManager.Instance.SetPlayerTarget(playerObject.transform);
         }
         else
         {

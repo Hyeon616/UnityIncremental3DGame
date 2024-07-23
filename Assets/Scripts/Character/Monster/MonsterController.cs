@@ -9,9 +9,23 @@ public class MonsterController : MonoBehaviour
     public float attackRange = 5f;
     public float attackCooldown = 3f;
     private float lastAttackTime;
-    private Transform playerTransform;
+    private Transform _playerTransform;
     private float updatePlayerPositionInterval = 0.5f; 
     private float lastUpdateTime;
+
+
+    private Transform PlayerTransform
+    {
+        get
+        {
+            if (_playerTransform == null)
+            {
+                UpdatePlayerPosition();
+            }
+            return _playerTransform;
+        }
+    }
+
     public void Initialize(MonsterModel model)
     {
         this.Model = model;
@@ -24,6 +38,13 @@ public class MonsterController : MonoBehaviour
         agent.angularSpeed = 120f;
         agent.acceleration = 8f;
         agent.stoppingDistance = 2f;
+
+        if (GetComponent<Collider>() == null)
+        {
+            CapsuleCollider capsuleCollider = gameObject.AddComponent<CapsuleCollider>();
+            capsuleCollider.center = new Vector3(0, 1, 0);
+        }
+
         behaviorTree = new MonsterBehaviorTree(this);
     }
 
@@ -52,20 +73,20 @@ public class MonsterController : MonoBehaviour
 
     private void UpdatePlayerPosition()
     {
-        GameObject player = FindPlayer();
+        var player = FindPlayer();
         if (player != null)
         {
-            playerTransform = player.transform;
+            _playerTransform = player.transform;
         }
         else
         {
-            playerTransform = null;
+            _playerTransform = null;
         }
     }
 
     public Transform GetPlayerTransform()
     {
-        return playerTransform;
+        return PlayerTransform;
     }
 
 
@@ -95,9 +116,9 @@ public class MonsterController : MonoBehaviour
 
     public void MoveTowardsPlayer()
     {
-        if (playerTransform != null && agent != null && agent.isActiveAndEnabled)
+        if (PlayerTransform != null && agent != null && agent.isActiveAndEnabled)
         {
-            agent.SetDestination(playerTransform.position);
+            agent.SetDestination(PlayerTransform.position);
         }
         else
         {
@@ -105,24 +126,23 @@ public class MonsterController : MonoBehaviour
         }
     }
 
-    public bool AttackPlayerIfInRange()
+    public bool AttackPlayer()
     {
-        if (playerTransform == null || !playerTransform.gameObject.activeInHierarchy)
+        if (PlayerTransform == null || !PlayerTransform.gameObject.activeInHierarchy)
         {
             return false;
         }
-        float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
+        float distanceToPlayer = Vector3.Distance(transform.position, PlayerTransform.position);
         if (distanceToPlayer <= attackRange)
         {
             if (Time.time - lastAttackTime >= attackCooldown)
             {
                 lastAttackTime = Time.time;
                 int damage = Model.Attack;
-                PlayerController playerController = playerTransform.GetComponent<PlayerController>();
+                PlayerController playerController = PlayerTransform.GetComponent<PlayerController>();
                 if (playerController != null)
                 {
                     playerController.TakeDamage(damage);
-                    Debug.Log($"Monster {Model.Name} attacks player for {damage} damage!");
                     return true;
                 }
             }
@@ -143,10 +163,6 @@ public class MonsterController : MonoBehaviour
         MonsterManager.Instance.DamageMonster(Model, damage);
     }
 
-    private void Die()
-    {
-        MonsterManager.Instance.DefeatMonster(Model);
-    }
 
     public float GetHealthPercentage()
     {

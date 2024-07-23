@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Monster
   - effect
+  - Missile
   layers:
   - Default
   - TransparentFX
@@ -16,7 +17,7 @@ TagManager:
   - 
   - Player
   - Monster
-  - 
+  - Projectile
   - 
   - 
   - PortraitLayer

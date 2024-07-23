@@ -386,7 +386,7 @@ GameObject:
   - component: {fileID: 4034730222873570}
   - component: {fileID: 95173931522079554}
   - component: {fileID: -5740367741879144801}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: BossStage1
   m_TagString: Untagged
   m_Icon: {fileID: 0}

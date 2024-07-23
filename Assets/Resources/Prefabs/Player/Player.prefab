@@ -17391,7 +17391,7 @@ GameObject:
   - component: {fileID: 1796767149371788933}
   - component: {fileID: 2034417339446519480}
   - component: {fileID: 5838209250586285672}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -17458,7 +17458,7 @@ Animator:
   m_GameObject: {fileID: 1854754830137857255}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: c3542ebf59b802a4faa38173e820e85c, type: 3}
-  m_Controller: {fileID: 9100000, guid: 55aa89b19964b884688224d841415b6d, type: 2}
+  m_Controller: {fileID: 9100000, guid: d4e8aed2c1902894a9d27494b1bf7348, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -17481,7 +17481,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fb5e8ec90c70fb41808a99fcf954253, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  attackRange: 2
+  Projectile: {fileID: 684406435861036022, guid: 811d040583d2dfd46a5ac7779e1ee1c1,
+    type: 3}
+  ProjectileSpawnPoint: {fileID: 1851210121821879805}
+  initialPoolSize: 10
+  attackRange: 5
   attackCooldown: 1
 --- !u!195 &5838209250586285672
 NavMeshAgent:
@@ -17497,7 +17501,7 @@ NavMeshAgent:
   m_Acceleration: 8
   avoidancePriority: 50
   m_AngularSpeed: 120
-  m_StoppingDistance: 2
+  m_StoppingDistance: 5
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1

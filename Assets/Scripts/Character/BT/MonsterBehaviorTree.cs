@@ -1,7 +1,4 @@
-using BehaviorDesigner.Runtime.Tasks;
-using System.Collections;
 using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 
 public class MonsterBehaviorTree
@@ -79,7 +76,7 @@ public class MonsterBehaviorTree
         {
             if (controller.GetPlayerTransform() != null)
             {
-                return controller.AttackPlayerIfInRange() ? NodeState.Success : NodeState.Running;
+                return controller.AttackPlayer() ? NodeState.Success : NodeState.Running;
             }
             return NodeState.Failure;
         }

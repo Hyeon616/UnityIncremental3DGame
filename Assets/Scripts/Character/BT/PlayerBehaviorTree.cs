@@ -1,3 +1,4 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 
 public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
@@ -10,7 +11,7 @@ public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
         ConstructBehaviorTree();
     }
 
-   
+
 
     private void ConstructBehaviorTree()
     {
@@ -29,10 +30,9 @@ public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
 
 
 
-    public NodeState Update(float deltaTime)
+    public  NodeState Update()
     {
         return root.Evaluate();
-
     }
 
     private class FindNearestMonster : Node
@@ -53,7 +53,7 @@ public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
 
     }
 
-    
+
 
     private class MoveTowardsMonster : Node
     {
@@ -95,7 +95,8 @@ public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
         {
             if (controller.NearestMonster != null && controller.NearestMonster.activeInHierarchy)
             {
-                return controller.AttackMonsterIfInRange(controller.NearestMonster) ? NodeState.Success : NodeState.Running;
+                bool attackResult = controller.AttackMonster(controller.NearestMonster);
+                return attackResult ? NodeState.Success : NodeState.Running;
             }
             return NodeState.Failure;
         }
