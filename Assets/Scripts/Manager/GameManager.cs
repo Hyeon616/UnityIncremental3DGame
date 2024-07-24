@@ -17,6 +17,7 @@ public class GameManager : UnitySingleton<GameManager>
     {
         await LoadAllUIPrefabs();
         UIManager.Instance.InitializeUI();
+        UI_DamageText.Initialize();
     }
 
     private void Update()

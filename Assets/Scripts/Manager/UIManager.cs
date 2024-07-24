@@ -132,6 +132,18 @@ public class UIManager : UnitySingleton<UIManager>
         ExpiredUI(instanceName, UI_REMOVE_DELAY, cts.Token).Forget();
     }
 
+    public GameObject GetActiveUI(UIPrefab uiPrefab)
+    {
+        string uiName = uiPrefab.GetPrefabName();
+        string instanceName = $"@UI_{uiName}";
+
+        if (activeUIs.TryGetValue(instanceName, out var uiInstance))
+        {
+            return uiInstance;
+        }
+
+        return null;
+    }
 
     private async UniTask ExpiredUI(string instanceName, float delay, CancellationToken token)
     {

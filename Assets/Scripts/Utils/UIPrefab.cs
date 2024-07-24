@@ -8,7 +8,7 @@ public enum UIPrefab
     DungeonUI,
     ShopUI,
     SummonUI,
-
+    DamageTextUI,
 }
 
 public static class UIPrefabExtensions

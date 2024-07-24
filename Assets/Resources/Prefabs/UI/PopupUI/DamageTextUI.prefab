@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 569608724984682076}
   - component: {fileID: 3433826771127061097}
   m_Layer: 5
-  m_Name: DamageText_Text
+  m_Name: DamageTextUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -93,7 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 269cc00d51848174cb03a51b4afc6b77, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Text_DamageText: {fileID: 569608724984682076}
+  DamageText: {fileID: 569608724984682076}
   _disappearSpeed: 2
   _moveDistance: 2
   _fadeSpeed: 2

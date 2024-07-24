@@ -148,7 +148,7 @@ public class PlayerController : UnitySingleton<PlayerController>
             projectile.transform.position = ProjectileSpawnPoint.position;
             projectile.transform.rotation = Quaternion.LookRotation(NearestMonster.transform.position - ProjectileSpawnPoint.position);
             projectile.gameObject.SetActive(true);
-            projectile.Initialize(damage, ReturnProjectileToPool);
+            projectile.Initialize(damage, ReturnProjectileToPool, GameLogic.Instance.CurrentPlayer);
         }
     }
 
