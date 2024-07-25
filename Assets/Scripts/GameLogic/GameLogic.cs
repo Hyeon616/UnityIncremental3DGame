@@ -288,6 +288,13 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
         return string.IsNullOrEmpty(result) ? "0" : result;
     }
 
+    public void RestorePlayerHealth()
+    {
+        CurrentPlayerHealth = CurrentPlayer.attributes.max_health;
+        OnPlayerHealthChanged?.Invoke(CurrentPlayerHealth);
+    }
+
+
     #endregion
 
     #region Callbacks

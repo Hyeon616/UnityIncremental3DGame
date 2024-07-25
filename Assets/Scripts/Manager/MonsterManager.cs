@@ -19,8 +19,6 @@ public class MonsterManager : Singleton<MonsterManager>
         MonsterModel template = monsterTemplates.Find(m => m.Stage == stage);
         if (template == null)
         {
-            // 로그 출력 (Unity의 Debug.LogError 대신 다른 로깅 메커니즘 사용)
-            Console.WriteLine($"No monster template found for stage: {stage}");
             return;
         }
 
@@ -78,12 +76,12 @@ public class MonsterManager : Singleton<MonsterManager>
             StageManager.Instance.OnAllMonstersDefeated();
         }
     }
+
     public List<MonsterModel> GetMonstersForStage(string stage)
     {
-        MonsterModel template = monsterTemplates.Find(m => m.Stage == stage);
-        if (template == null)
+        MonsterModel monsterModel = monsterTemplates.Find(m => m.Stage == stage);
+        if (monsterModel == null)
         {
-            Console.WriteLine($"No monster template found for stage: {stage}");
             return new List<MonsterModel>();
         }
 
@@ -93,17 +91,27 @@ public class MonsterManager : Singleton<MonsterManager>
         for (int i = 0; i < monstersToSpawn; i++)
         {
             MonsterModel newMonster = new MonsterModel();
-            CopyMonsterProperties(template, newMonster);
+            CopyMonsterProperties(monsterModel, newMonster);
             monsters.Add(newMonster);
         }
 
         ActiveMonsters = monsters;
         return monsters;
     }
+
+
     public void ClearActiveMonsters()
     {
+        var monsterControllers = UnityEngine.Object.FindObjectsOfType<MonsterController>();
+        foreach (var controller in monsterControllers)
+        {
+            UnityEngine.Object.Destroy(controller.gameObject);
+        }
         ActiveMonsters.Clear();
     }
+
+
+
 
     public void Reset()
     {

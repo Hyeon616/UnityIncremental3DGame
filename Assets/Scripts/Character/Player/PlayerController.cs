@@ -9,19 +9,20 @@ public class PlayerController : UnitySingleton<PlayerController>
     [SerializeField] private Projectile Projectile;
     [SerializeField] private Transform ProjectileSpawnPoint;
     private int projectilePoolSize = 15;
-    private ObjectPool<Projectile> projectilePool;
+    private ObjectPool<Projectile> _projectilePool;
 
     public GameObject NearestMonster { get; set; }
     public bool IsInitialized { get; private set; }
-    private NavMeshAgent agent;
-    private PlayerBehaviorTree behaviorTree;
-    private Animator animator;
-    public float attackRange = 10f;
-    public float attackCooldown = 1f;
+    private NavMeshAgent _agent;
+    private PlayerBehaviorTree _behaviorTree;
+    private Animator _animator;
+    private float _attackRange = 10f;
+    private float _attackCooldown = 1f;
     private float lastAttackTime;
 
-
     public event Action<int> OnHealthChanged;
+    private Vector3 _startPos;
+
 
     private static readonly int IsMoving = Animator.StringToHash("IsMoving");
     private static readonly int Attack = Animator.StringToHash("Attack");
@@ -34,36 +35,36 @@ public class PlayerController : UnitySingleton<PlayerController>
 
     void Start()
     {
-        agent = GetComponent<NavMeshAgent>();
-        if (agent == null)
+        _agent = GetComponent<NavMeshAgent>();
+        if (_agent == null)
         {
-            agent = gameObject.AddComponent<NavMeshAgent>();
+            _agent = gameObject.AddComponent<NavMeshAgent>();
         }
-        behaviorTree = new PlayerBehaviorTree(this);
+        _behaviorTree = new PlayerBehaviorTree(this);
         IsInitialized = true;
 
-        animator = GetComponent<Animator>();
+        _animator = GetComponent<Animator>();
 
         GameLogic.Instance.InitializePlayerHealth();
 
-        projectilePool = new ObjectPool<Projectile>(Projectile, projectilePoolSize, transform);
+        _projectilePool = new ObjectPool<Projectile>(Projectile, projectilePoolSize, transform);
 
-
+        _startPos = transform.position;
     }
 
     void Update()
     {
-        behaviorTree.Update();
+        _behaviorTree.Update();
         UpdateAnimation();
     }
 
     private void UpdateAnimation()
     {
-        if (animator != null)
+        if (_animator != null)
         {
-            bool isMoving = agent.velocity.magnitude > 0.1f;
-            animator.SetBool(IsMoving, isMoving);
-            animator.SetBool(IsIdle, !isMoving && !isAttacking);
+            bool isMoving = _agent.velocity.magnitude > 0.1f;
+            _animator.SetBool(IsMoving, isMoving);
+            _animator.SetBool(IsIdle, !isMoving && !isAttacking);
         }
     }
 
@@ -94,10 +95,10 @@ public class PlayerController : UnitySingleton<PlayerController>
 
     public void MoveTowardsMonster(GameObject monster)
     {
-        if (!isAttacking && monster != null && agent != null && agent.isActiveAndEnabled)
+        if (!isAttacking && monster != null && _agent != null && _agent.isActiveAndEnabled)
         {
-            agent.isStopped = false;
-            agent.SetDestination(monster.transform.position);
+            _agent.isStopped = false;
+            _agent.SetDestination(monster.transform.position);
         }
     }
 
@@ -109,12 +110,12 @@ public class PlayerController : UnitySingleton<PlayerController>
             return false;
         }
         float distanceToMonster = Vector3.Distance(transform.position, monster.transform.position);
-        if (distanceToMonster <= attackRange)
+        if (distanceToMonster <= _attackRange)
         {
-            if (Time.time - lastAttackTime >= attackCooldown)
+            if (Time.time - lastAttackTime >= _attackCooldown)
             {
                 lastAttackTime = Time.time;
-                if (animator != null)
+                if (_animator != null)
                 {
                     
                     Vector3 directionToMonster = (monster.transform.position - transform.position).normalized;
@@ -122,8 +123,8 @@ public class PlayerController : UnitySingleton<PlayerController>
                     transform.forward = directionToMonster;
 
                     isAttacking = true;
-                    agent.isStopped = true;
-                    animator.SetTrigger(Attack);
+                    _agent.isStopped = true;
+                    _animator.SetTrigger(Attack);
                     ResetAttackState().Forget();
                 }
                 return true;
@@ -134,9 +135,9 @@ public class PlayerController : UnitySingleton<PlayerController>
 
     private async UniTaskVoid ResetAttackState()
     {
-        await UniTask.Delay(TimeSpan.FromSeconds(attackCooldown));
+        await UniTask.Delay(TimeSpan.FromSeconds(_attackCooldown));
         isAttacking = false;
-        agent.isStopped = false;
+        _agent.isStopped = false;
     }
 
     // AnimationEvent
@@ -145,7 +146,7 @@ public class PlayerController : UnitySingleton<PlayerController>
         if (ProjectileSpawnPoint != null && NearestMonster != null)
         {
             int damage = GameLogic.Instance.CurrentPlayer.attributes.attack_power;
-            Projectile projectile = projectilePool.GetObject();
+            Projectile projectile = _projectilePool.GetObject();
             projectile.transform.position = ProjectileSpawnPoint.position;
             projectile.transform.rotation = Quaternion.LookRotation(NearestMonster.transform.position - ProjectileSpawnPoint.position);
             projectile.gameObject.SetActive(true);
@@ -159,17 +160,17 @@ public class PlayerController : UnitySingleton<PlayerController>
     }
     public void Idle()
     {
-        if(agent != null)
+        if(_agent != null)
         {
-            agent.isStopped = true;
-            agent.ResetPath();
+            _agent.isStopped = true;
+            _agent.ResetPath();
 
         }
 
-        if (animator != null)
+        if (_animator != null)
         {
-            animator.SetBool(IsIdle, true);
-            animator.SetBool(IsMoving, false);
+            _animator.SetBool(IsIdle, true);
+            _animator.SetBool(IsMoving, false);
         }
     }
 
@@ -189,6 +190,22 @@ public class PlayerController : UnitySingleton<PlayerController>
     {
         // 플레이어 사망 처리 로직
         Debug.Log("플레이어 사망");
+        RestartCurrentStage();
+    }
+
+    private void RestartCurrentStage()
+    {
+        transform.position = _startPos;
+        _agent.ResetPath();
+
+        GameLogic.Instance.RestorePlayerHealth();
+
+        StageManager.Instance.RestartCurrentStage();
+        MonsterSpawner.Instance.SpawnMonstersForCurrentStage();
+
+        isAttacking = false;
+        _animator.SetBool(IsMoving, false);
+        _animator.SetBool(IsIdle, true);
     }
 
     private void OnApplicationQuit()

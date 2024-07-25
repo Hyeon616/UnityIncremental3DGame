@@ -50,8 +50,21 @@ public class CombatManager : UnitySingleton<CombatManager>
         }
 
         UI_DamageText damageText = damageTextPool.GetObject();
-        damageText.gameObject.SetActive(true);
-        damageText.Setup(damage, isCritical, worldPosition, () => damageText.gameObject.SetActive(false));
+        if (damageText != null)
+        {
+            damageText.gameObject.SetActive(true);
+            damageText.Setup(damage, isCritical, worldPosition, () =>
+            {
+                if (damageText != null && damageText.gameObject != null)
+                {
+                    damageText.gameObject.SetActive(false);
+                }
+            });
+        }
+        else
+        {
+            Debug.LogError("Failed to get UI_DamageText from pool");
+        }
     }
 
     public int CalculateDamage(int baseDamage, float criticalChance, float criticalDamage)

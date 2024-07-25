@@ -12,9 +12,7 @@ public class MonsterController : MonoBehaviour
     public float attackCooldown = 3f;
     private float lastAttackTime;
     private Transform _playerTransform;
-    private float updatePlayerPositionInterval = 0.5f; 
-    private float lastUpdateTime;
-
+    
     private Animator animator;
     private static readonly int IsMoving = Animator.StringToHash("Move");
     private static readonly int Attack = Animator.StringToHash("Attack");
@@ -93,28 +91,17 @@ public class MonsterController : MonoBehaviour
     }
 
 
-    private void PlaceOnNavMesh()
-    {
-        NavMeshHit hit;
-        if (NavMesh.SamplePosition(transform.position, out hit, 5f, NavMesh.AllAreas))
-        {
-            agent.Warp(hit.position);
-        }
-    }
-
     public GameObject FindPlayer()
     {
-        if (PlayerController.IsQuitting)
+        int playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+        Collider[] playersInRange = Physics.OverlapSphere(transform.position, 100f, playerLayerMask);
+
+        if (playersInRange.Length > 0)
         {
-            return null;
+            return playersInRange[0].gameObject;
         }
 
-        if (PlayerController.Instance == null || PlayerController.Instance.gameObject == null)
-        {
-            Debug.LogWarning("PlayerController is null or has been destroyed.");
-            return null;
-        }
-        return PlayerController.Instance.gameObject;
+        return null;
     }
 
     public void MoveTowardsPlayer()

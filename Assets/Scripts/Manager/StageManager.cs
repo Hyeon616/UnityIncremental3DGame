@@ -117,6 +117,12 @@ public class StageManager : Singleton<StageManager>
         return CurrentStage == allStages.Last();
     }
 
+    public void RestartCurrentStage()
+    {
+        MonstersDefeatedInCurrentStage = 0;
+        OnStageProgressChanged?.Invoke();
+    }
+
     public void Reset()
     {
         CurrentStage = null;
