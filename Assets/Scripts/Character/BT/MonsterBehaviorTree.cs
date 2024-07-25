@@ -26,7 +26,7 @@ public class MonsterBehaviorTree
         });
     }
 
-    public NodeState Update(float deltaTime)
+    public NodeState Update()
     {
         return root.Evaluate();
     }

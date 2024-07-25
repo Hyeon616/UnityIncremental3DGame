@@ -30,7 +30,7 @@ public class PlayerBehaviorTree : Singleton<PlayerBehaviorTree>
 
 
 
-    public  NodeState Update()
+    public NodeState Update()
     {
         return root.Evaluate();
     }

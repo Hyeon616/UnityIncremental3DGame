@@ -1,3 +1,5 @@
+using Cysharp.Threading.Tasks;
+using System;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -13,6 +15,10 @@ public class MonsterController : MonoBehaviour
     private float updatePlayerPositionInterval = 0.5f; 
     private float lastUpdateTime;
 
+    private Animator animator;
+    private static readonly int IsMoving = Animator.StringToHash("Move");
+    private static readonly int Attack = Animator.StringToHash("Attack");
+    private bool isAttacking = false;
 
     private Transform PlayerTransform
     {
@@ -44,7 +50,7 @@ public class MonsterController : MonoBehaviour
             CapsuleCollider capsuleCollider = gameObject.AddComponent<CapsuleCollider>();
             capsuleCollider.center = new Vector3(0, 1, 0);
         }
-
+        animator = GetComponent<Animator>();
         behaviorTree = new MonsterBehaviorTree(this);
     }
 
@@ -55,20 +61,17 @@ public class MonsterController : MonoBehaviour
 
     private void Update()
     {
-        if (behaviorTree == null)
-            return;
-        if (!agent.isOnNavMesh)
-        {
-            PlaceOnNavMesh();
-        }
+        behaviorTree.Update();
+        UpdateAnimation();
+    }
 
-        if (Time.time - lastUpdateTime > updatePlayerPositionInterval)
+    private void UpdateAnimation()
+    {
+        if (animator != null)
         {
-            UpdatePlayerPosition();
-            lastUpdateTime = Time.time;
+            bool isMoving = agent.velocity.magnitude > 0.1f;
+            animator.SetBool(IsMoving, isMoving && !isAttacking);
         }
-
-        behaviorTree.Update(Time.deltaTime);
     }
 
     private void UpdatePlayerPosition()
@@ -118,6 +121,7 @@ public class MonsterController : MonoBehaviour
     {
         if (PlayerTransform != null && agent != null && agent.isActiveAndEnabled)
         {
+            agent.isStopped = false;
             agent.SetDestination(PlayerTransform.position);
         }
         else
@@ -139,6 +143,19 @@ public class MonsterController : MonoBehaviour
             {
                 lastAttackTime = Time.time;
                 int damage = Model.Attack;
+
+                Vector3 directionToPlayer = (PlayerTransform.position - transform.position).normalized;
+                directionToPlayer.y = 0;
+                transform.forward = directionToPlayer;
+
+                if (animator != null)
+                {
+                    isAttacking = true;
+                    agent.isStopped = true;
+                    animator.SetTrigger(Attack);
+                    ResetAttackState().Forget();
+                }
+
                 PlayerController playerController = PlayerTransform.GetComponent<PlayerController>();
                 if (playerController != null)
                 {
@@ -150,10 +167,20 @@ public class MonsterController : MonoBehaviour
         return false;
     }
 
+
+    private async UniTaskVoid ResetAttackState()
+    {
+        await UniTask.Delay(TimeSpan.FromSeconds(attackCooldown));
+        isAttacking = false;
+        if(agent != null)
+            agent.isStopped = false;
+    }
+
     public void Idle()
     {
         if (agent != null)
         {
+            agent.isStopped = true;
             agent.ResetPath();
         }
     }
