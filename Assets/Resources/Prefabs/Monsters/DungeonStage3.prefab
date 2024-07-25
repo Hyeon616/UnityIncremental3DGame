@@ -621,7 +621,7 @@ GameObject:
   - component: {fileID: 4203030995968696}
   - component: {fileID: 95117915527138606}
   m_Layer: 0
-  m_Name: Polygonal Dragon Black
+  m_Name: DungeonStage3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

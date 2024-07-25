@@ -8,7 +8,7 @@ public class PlayerController : UnitySingleton<PlayerController>
 
     [SerializeField] private Projectile Projectile;
     [SerializeField] private Transform ProjectileSpawnPoint;
-    [SerializeField] private int initialPoolSize = 10;
+    private int projectilePoolSize = 15;
     private ObjectPool<Projectile> projectilePool;
 
     public GameObject NearestMonster { get; set; }
@@ -46,7 +46,7 @@ public class PlayerController : UnitySingleton<PlayerController>
 
         GameLogic.Instance.InitializePlayerHealth();
 
-        projectilePool = new ObjectPool<Projectile>(Projectile, initialPoolSize, transform);
+        projectilePool = new ObjectPool<Projectile>(Projectile, projectilePoolSize, transform);
 
 
     }
@@ -116,9 +116,9 @@ public class PlayerController : UnitySingleton<PlayerController>
                 lastAttackTime = Time.time;
                 if (animator != null)
                 {
-                    // 몬스터를 향해 즉시 회전
+                    
                     Vector3 directionToMonster = (monster.transform.position - transform.position).normalized;
-                    directionToMonster.y = 0; // y축 회전을 무시하려면 이 줄을 유지하세요
+                    directionToMonster.y = 0; 
                     transform.forward = directionToMonster;
 
                     isAttacking = true;
@@ -139,6 +139,7 @@ public class PlayerController : UnitySingleton<PlayerController>
         agent.isStopped = false;
     }
 
+    // AnimationEvent
     public void LaunchProjectile()
     {
         if (ProjectileSpawnPoint != null && NearestMonster != null)

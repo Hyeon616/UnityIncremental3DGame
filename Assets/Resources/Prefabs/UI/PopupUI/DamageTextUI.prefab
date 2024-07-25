@@ -94,6 +94,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DamageText: {fileID: 569608724984682076}
-  _disappearSpeed: 2
+  _disappearSpeed: 1
   _moveDistance: 2
-  _fadeSpeed: 2
+  _fadeSpeed: 1

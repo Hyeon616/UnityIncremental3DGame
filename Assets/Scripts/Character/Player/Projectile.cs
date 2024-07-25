@@ -12,6 +12,9 @@ public class Projectile : MonoBehaviour
     private Action<Projectile> returnToPool;
     private float lifetime;
     private PlayerModel playerModel;
+    private UI_DamageText damageText;
+
+
     public void Initialize(int damage, Action<Projectile> returnAction, PlayerModel playerModel)
     {
         this.damage = damage;
@@ -24,7 +27,7 @@ public class Projectile : MonoBehaviour
     {
         lifetime = 0f;
     }
-
+   
     private void Update()
     {
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
@@ -46,31 +49,16 @@ public class Projectile : MonoBehaviour
                 float criticalChance = playerModel.attributes.critical_chance;
                 float criticalDamage = playerModel.attributes.critical_damage;
                 bool isCritical = UnityEngine.Random.value < criticalChance;
-
-                int finalDamage = CalculateDamage(damage, isCritical, criticalDamage);
+                int finalDamage = CombatManager.Instance.CalculateDamage(damage, criticalChance, criticalDamage);
                 monster.TakeDamage(finalDamage);
 
                 // 데미지 텍스트 생성
-                UI_DamageText.Create(finalDamage, isCritical, monster.transform.position);
+                CombatManager.Instance.ShowDamageText(finalDamage, isCritical, monster.transform.position);
 
                 ReturnToPool();
             }
         }
     }
-
-    private int CalculateDamage(int baseDamage, bool isCritical, float criticalDamage)
-    {
-        float damageMultiplier = UnityEngine.Random.Range(0.8f, 1.2f);
-        int calculatedDamage = Mathf.RoundToInt(baseDamage * damageMultiplier);
-
-        if (isCritical)
-        {
-            calculatedDamage = Mathf.RoundToInt(calculatedDamage * criticalDamage);
-        }
-
-        return calculatedDamage;
-    }
-
 
     private void ReturnToPool()
     {

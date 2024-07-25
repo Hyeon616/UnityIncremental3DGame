@@ -876,7 +876,7 @@ GameObject:
   - component: {fileID: 4569660890401836}
   - component: {fileID: 95782492782072420}
   m_Layer: 0
-  m_Name: Polygonal Dragon Red
+  m_Name: DungeonStage2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

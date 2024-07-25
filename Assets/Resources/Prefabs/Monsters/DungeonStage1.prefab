@@ -382,7 +382,7 @@ GameObject:
   - component: {fileID: 4207642849844564}
   - component: {fileID: 95425983930884350}
   m_Layer: 0
-  m_Name: Polygonal Dragon Blue
+  m_Name: DungeonStage1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
