@@ -110,22 +110,19 @@ async function updatePlayerRank(playerId) {
   const conn = await pool.getConnection();
 
   try {
-    // Redis 순위 업데이트
     await redisClient.zAdd("player_ranks", {
       score: combatPower,
       value: playerId.toString(),
     });
 
-    // 새 순위 계산
     const rank = await redisClient.zRevRank(
       "player_ranks",
       playerId.toString()
     );
 
-    // DB 순위 업데이트
     await conn.query(
-      "UPDATE PlayerAttributes SET rank = ? WHERE player_id = ?",
-      [rank + 1, playerId]
+      "UPDATE PlayerAttributes SET rank = ?, combat_power = ? WHERE player_id = ?",
+      [rank + 1, combatPower, playerId]
     );
 
     console.log(`Updated rank for player ${playerId}: ${rank + 1}`);
@@ -173,22 +170,20 @@ exports.equipSkill = async (req, res) => {
   }
 };
 
-// 주기적으로 Redis의 순위를 DB에 동기화하는 함수
 async function syncRanksToDB() {
   const redisClient = redis.getClient();
   const conn = await pool.getConnection();
 
   try {
-    // 'REV' 옵션을 사용하여 역순으로 정렬
     const players = await redisClient.zRangeWithScores("player_ranks", 0, -1, {
       REV: true,
     });
 
     for (let i = 0; i < players.length; i++) {
-      const { score, value: playerId } = players[i];
+      const { score: combatPower, value: playerId } = players[i];
       await conn.query(
         "UPDATE PlayerAttributes SET rank = ?, combat_power = ? WHERE player_id = ?",
-        [i + 1, score, playerId]
+        [i + 1, combatPower, playerId]
       );
     }
   } finally {
