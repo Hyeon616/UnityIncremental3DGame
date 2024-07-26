@@ -52,6 +52,11 @@ exports.updatePlayerData = async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
+    const [oldPlayerData] = await conn.query(
+      "SELECT combat_power FROM PlayerAttributes WHERE player_id = ?",
+      [playerId]
+    );
+
     const updateQuery =
       "UPDATE PlayerAttributes SET " +
       Object.keys(updatedData)
