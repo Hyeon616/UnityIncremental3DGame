@@ -4,7 +4,7 @@ const pool = require("../config/db");
 const { getCachedWeapons } = require("../controllers/weaponController");
 const { getCachedSkills } = require("../controllers/skillController");
 const redis = require("../config/redis");
-
+const safeStringify = require("../utils/safeStringify");
 exports.register = async (req, res) => {
   const { username, password, nickname } = req.body;
   if (!username || !password || !nickname) {
@@ -182,9 +182,3 @@ exports.login = async (req, res) => {
     if (conn) conn.release();
   }
 };
-
-function safeStringify(obj) {
-  return JSON.stringify(obj, (key, value) =>
-    typeof value === "bigint" ? value.toString() : value
-  );
-}

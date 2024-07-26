@@ -1,5 +1,6 @@
 const pool = require("../config/db");
 const redis = require("../config/redis");
+const safeStringify = require("../utils/safeStringify");
 
 exports.getPlayerData = async (req, res) => {
   const playerId = parseInt(req.params.id);
@@ -22,7 +23,12 @@ exports.getPlayerData = async (req, res) => {
     conn.release();
 
     if (result.length > 0) {
-      res.json(result[0]);
+      const playerData = result[0];
+      if (typeof playerData.combat_power === "bigint") {
+        playerData.combat_power = playerData.combat_power.toString();
+      }
+      console.log("Player data retrieved:", safeStringify(playerData));
+      res.json(JSON.parse(safeStringify(playerData)));
     } else {
       res.status(404).json({ message: "Player not found" });
     }
@@ -60,12 +66,14 @@ exports.updatePlayerData = async (req, res) => {
     conn.release();
 
     if (updatedPlayer.length > 0) {
-      const oldCombatPower = updatedPlayer[0].combat_power;
-      if (oldCombatPower !== updatedPlayer[0].combat_power) {
-        await updatePlayerRank(playerId, updatedPlayer[0].combat_power);
+      const playerData = updatedPlayer[0];
+      if (typeof playerData.combat_power === "bigint") {
+        playerData.combat_power = playerData.combat_power.toString();
       }
+      await updatePlayerRank(playerId, playerData.combat_power);
 
-      res.json(updatedPlayer[0]);
+      console.log("Updated player data:", safeStringify(playerData));
+      res.json(JSON.parse(safeStringify(playerData)));
     } else {
       res.status(404).json({ message: "Player not found" });
     }
