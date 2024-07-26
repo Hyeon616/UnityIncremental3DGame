@@ -27,6 +27,11 @@ exports.getPlayerData = async (req, res) => {
       if (typeof playerData.combat_power === "bigint") {
         playerData.combat_power = playerData.combat_power.toString();
       }
+
+      const realTimeRank = await getPlayerRank(playerId);
+      if (realTimeRank !== null) {
+        playerData.rank = realTimeRank;
+      }
       console.log("Player data retrieved:", safeStringify(playerData));
       res.json(JSON.parse(safeStringify(playerData)));
     } else {
@@ -70,7 +75,11 @@ exports.updatePlayerData = async (req, res) => {
       if (typeof playerData.combat_power === "bigint") {
         playerData.combat_power = playerData.combat_power.toString();
       }
-      await updatePlayerRank(playerId, playerData.combat_power);
+      //await updatePlayerRank(playerId, playerData.combat_power);
+
+      if (oldPlayerData[0].combat_power !== playerData.combat_power) {
+        await updatePlayerRank(playerId, playerData.combat_power);
+      }
 
       console.log("Updated player data:", safeStringify(playerData));
       res.json(JSON.parse(safeStringify(playerData)));
@@ -84,6 +93,12 @@ exports.updatePlayerData = async (req, res) => {
       .json({ message: "Internal server error", error: error.message });
   }
 };
+
+async function getPlayerRank(playerId) {
+  const redisClient = redis.getClient();
+  const rank = await redisClient.zRevRank("player_ranks", playerId.toString());
+  return rank !== null ? rank + 1 : null;
+}
 
 async function updatePlayerRank(playerId) {
   const redisClient = redis.getClient();
