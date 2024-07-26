@@ -102,15 +102,17 @@ exports.register = async (req, res) => {
 
     // Redis 순위 업데이트
     const redisClient = redis.getClient();
+    await conn.query("CALL add_new_player_rank(?)", [playerId]);
+
     const [playerData] = await conn.query(
       "SELECT combat_power FROM PlayerAttributes WHERE player_id = ?",
       [playerId]
     );
+
     await redisClient.zAdd("player_ranks", {
       score: playerData.combat_power,
       value: playerId.toString(),
     });
-
     res
       .status(201)
       .json(
