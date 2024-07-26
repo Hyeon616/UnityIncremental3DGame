@@ -188,8 +188,6 @@ public class PlayerController : UnitySingleton<PlayerController>
 
     private void Die()
     {
-        // 플레이어 사망 처리 로직
-        Debug.Log("플레이어 사망");
         RestartCurrentStage();
     }
 

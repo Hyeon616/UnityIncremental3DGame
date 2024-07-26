@@ -75,7 +75,7 @@ public class PlayerModel
         public int level;
         public int awakening;
         public int? guild_id;
-        public int combat_power;
+        public long combat_power;
         public int? rank;
         public int? equipped_skill1_id;
         public int? equipped_skill2_id;

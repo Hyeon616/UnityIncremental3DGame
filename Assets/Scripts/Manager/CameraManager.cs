@@ -22,8 +22,6 @@ public class CameraManager : UnitySingleton<CameraManager>
     }
     public void SetPlayerTarget(Transform playerTransform)
     {
-        Debug.Log(playerCam);
-        Debug.Log(playerTransform);
         if (playerCam != null && playerTransform != null)
         {
             playerCam.Follow = playerTransform;

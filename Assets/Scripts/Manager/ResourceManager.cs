@@ -267,6 +267,10 @@ public class ResourceManager : Singleton<ResourceManager>
                 {
                     try
                     {
+                        var settings = new JsonSerializerSettings
+                        {
+                            Converters = new List<JsonConverter> { new BigIntConverter() }
+                        };
                         T data = JsonConvert.DeserializeObject<T>(jsonResult);
                         Debug.Log($"Deserialized data: {JsonConvert.SerializeObject(data)}");
                         onSuccess?.Invoke(data);
@@ -459,5 +463,36 @@ public class ResourceManager : Singleton<ResourceManager>
         // 메일 목록을 새로고침합니다.
         LoadMails(GameManager.Instance.GetUserId());
     }
+
+    public class BigIntConverter : JsonConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(long) || objectType == typeof(long?));
+        }
+
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (reader.TokenType == JsonToken.String)
+            {
+                if (long.TryParse((string)reader.Value, out long result))
+                {
+                    return result;
+                }
+            }
+            else if (reader.TokenType == JsonToken.Integer)
+            {
+                return Convert.ToInt64(reader.Value);
+            }
+
+            throw new JsonSerializationException($"Unexpected token type: {reader.TokenType}");
+        }
+
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            writer.WriteValue(value.ToString());
+        }
+    }
+
 
 }
