@@ -204,6 +204,16 @@ public class PlayerController : UnitySingleton<PlayerController>
         isAttacking = false;
         _animator.SetBool(IsMoving, false);
         _animator.SetBool(IsIdle, true);
+
+        foreach (var monsterObject in MonsterSpawner.Instance.CurrentMonsterObjects)
+        {
+            MonsterController controller = monsterObject.GetComponent<MonsterController>();
+            if (controller != null)
+            {
+                controller.ResetState();
+            }
+        }
+
     }
 
     private void OnApplicationQuit()

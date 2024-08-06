@@ -42,6 +42,7 @@ public class MonsterSpawner : UnitySingleton<MonsterSpawner>
             GameObject monsterObject = Instantiate(prefab, GetRandomSpawnPosition(), Quaternion.identity);
             MonsterController controller = monsterObject.AddComponent<MonsterController>();
             controller.Initialize(monsterModel);
+            controller.ResetState();
             monsterObject.tag = "Monster";
             CurrentMonsterObjects.Add(monsterObject);
         }

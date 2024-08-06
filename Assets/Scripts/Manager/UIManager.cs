@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIManager : UnitySingleton<UIManager>
 {
@@ -16,6 +15,7 @@ public class UIManager : UnitySingleton<UIManager>
 
     private const float UI_REMOVE_DELAY = 15f;
 
+    public bool IsDataLoaded => _isDataLoaded;
 
     public void InitializeUI()
     {
@@ -50,7 +50,7 @@ public class UIManager : UnitySingleton<UIManager>
         }
     }
 
-    public bool IsDataLoaded => _isDataLoaded;
+    
 
     public void ShowUI(UIPrefab uiPrefab)
     {

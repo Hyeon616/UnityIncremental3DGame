@@ -130,7 +130,6 @@ public class MonsterController : MonoBehaviour
             {
                 lastAttackTime = Time.time;
                 int damage = Model.Attack;
-
                 Vector3 directionToPlayer = (PlayerTransform.position - transform.position).normalized;
                 directionToPlayer.y = 0;
                 transform.forward = directionToPlayer;
@@ -177,6 +176,25 @@ public class MonsterController : MonoBehaviour
         MonsterManager.Instance.DamageMonster(Model, damage);
     }
 
+    public void ResetState()
+    {
+        if (Model != null)
+        {
+            Model.CurrentHealth = Model.Health;
+        }
+        lastAttackTime = 0f;
+        isAttacking = false;
+        if (agent != null)
+        {
+            agent.isStopped = false;
+            agent.ResetPath();
+        }
+        if (animator != null)
+        {
+            animator.ResetTrigger(Attack);
+            animator.SetBool(IsMoving, false);
+        }
+    }
 
     public float GetHealthPercentage()
     {

@@ -21,20 +21,19 @@ public class MonsterManager : Singleton<MonsterManager>
         {
             return;
         }
-
         int monstersToSpawn = StageManager.Instance.IsBossStage() ? 1 : StageManager.TotalMonstersPerStage;
-
         for (int i = 0; i < monstersToSpawn; i++)
         {
-            SpawnMonster(template);
+            MonsterModel newMonster = SpawnMonster(template);
+            ActiveMonsters.Add(newMonster);
         }
     }
 
-    private void SpawnMonster(MonsterModel template)
+    private MonsterModel SpawnMonster(MonsterModel template)
     {
         MonsterModel newMonster = new MonsterModel();
         CopyMonsterProperties(template, newMonster);
-        ActiveMonsters.Add(newMonster);
+        return newMonster;
     }
 
     private void CopyMonsterProperties(MonsterModel source, MonsterModel destination)
