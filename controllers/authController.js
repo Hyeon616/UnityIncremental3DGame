@@ -60,22 +60,24 @@ exports.register = async (req, res) => {
       const weaponInserts = weapons.map((weapon) => [
         playerId,
         weapon.weapon_id,
-        0, // count
+        1, // count를 0에서 1로 변경
         weapon.attack_power,
         parseFloat(weapon.crit_rate),
         parseFloat(weapon.crit_damage),
+        0, // level
       ]);
 
       const result = await conn.batch(
-        "INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, level) VALUES (?, ?, ?, ?, ?, ?, ?)",
         weaponInserts
       );
+      console.log(`Inserted ${result.affectedRows} weapons for new user`);
     } else {
       console.log("No weapons available for new user");
     }
 
     const skills = await getCachedSkills();
-    if (skills && skills.length > 0) {
+    if (Array.isArray(skills) && skills.length > 0) {
       const skillInserts = skills.map((skill) => [
         playerId,
         skill.id,
@@ -104,10 +106,18 @@ exports.register = async (req, res) => {
       [playerId]
     );
 
-    await redisClient.zAdd("player_ranks", {
-      score: playerData.combat_power,
-      value: playerId.toString(),
-    });
+    if (playerData && playerData.combat_power !== undefined) {
+      await redisClient.zAdd("player_ranks", {
+        score: playerData.combat_power,
+        value: playerId.toString(),
+      });
+      console.log(
+        `Added player ${playerId} to Redis ranks with combat_power ${playerData.combat_power}`
+      );
+    } else {
+      console.error("Failed to retrieve combat_power for new player");
+    }
+
     res
       .status(201)
       .json(
