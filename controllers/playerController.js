@@ -12,7 +12,7 @@ exports.getPlayerData = async (req, res) => {
       "SELECT p.player_id, p.player_username, p.player_nickname, " +
         "pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power, " +
         "pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage, " +
-        "pa.level, pa.awakening, pa.guild_id, pa.combat_power, pa.rank, " +
+        "pa.level, pa.awakening, pa.guild_id, pa.combat_power, " +
         "pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id " +
         "FROM Players p " +
         "LEFT JOIN PlayerAttributes pa ON p.player_id = pa.player_id " +
@@ -29,9 +29,8 @@ exports.getPlayerData = async (req, res) => {
       }
 
       const realTimeRank = await getPlayerRank(playerId);
-      if (realTimeRank !== null) {
-        playerData.rank = realTimeRank;
-      }
+      playerData.rank = realTimeRank;
+
       console.log("Player data retrieved:", safeStringify(playerData));
       res.json(JSON.parse(safeStringify(playerData)));
     } else {
@@ -80,11 +79,12 @@ exports.updatePlayerData = async (req, res) => {
       if (typeof playerData.combat_power === "bigint") {
         playerData.combat_power = playerData.combat_power.toString();
       }
-      //await updatePlayerRank(playerId, playerData.combat_power);
-
       if (oldPlayerData[0].combat_power !== playerData.combat_power) {
         await updatePlayerRank(playerId, playerData.combat_power);
       }
+
+      const realTimeRank = await getPlayerRank(playerId);
+      playerData.rank = realTimeRank;
 
       console.log("Updated player data:", safeStringify(playerData));
       res.json(JSON.parse(safeStringify(playerData)));
@@ -107,7 +107,6 @@ async function getPlayerRank(playerId) {
 
 async function updatePlayerRank(playerId) {
   const redisClient = redis.getClient();
-  const conn = await pool.getConnection();
 
   try {
     await redisClient.zAdd("player_ranks", {
@@ -118,11 +117,6 @@ async function updatePlayerRank(playerId) {
     const rank = await redisClient.zRevRank(
       "player_ranks",
       playerId.toString()
-    );
-
-    await conn.query(
-      "UPDATE PlayerAttributes SET rank = ?, combat_power = ? WHERE player_id = ?",
-      [rank + 1, combatPower, playerId]
     );
 
     console.log(`Updated rank for player ${playerId}: ${rank + 1}`);
