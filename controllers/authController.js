@@ -48,7 +48,7 @@ exports.register = async (req, res) => {
       "INSERT INTO PlayerAttributes (player_id) VALUES (?)",
       [playerId]
     );
-    console.log("PlayerAttributes inserted:", attributeResult);
+
     const missionResult = await conn.query(
       "INSERT INTO MissionProgress (player_id, level_progress, combat_power_progress, awakening_progress, online_time_progress, weapon_level_sum_progress) VALUES (?, 0, 0, 0, 0, 0)",
       [playerId]
@@ -95,28 +95,19 @@ exports.register = async (req, res) => {
       console.log("No skills available for new user");
     }
 
-    // 새 플레이어의 순위 업데이트
-    await conn.query("CALL add_new_player_rank(?)", [playerId]);
-
     await conn.commit();
 
     // Redis 순위 업데이트
     const redisClient = redis.getClient();
-    const [[{ new_rank, new_combat_power }]] = await conn.query(
-      "CALL add_new_player_rank(?)",
-      [playerId]
-    );
-
     const [playerData] = await conn.query(
       "SELECT combat_power FROM PlayerAttributes WHERE player_id = ?",
       [playerId]
     );
 
     await redisClient.zAdd("player_ranks", {
-      score: new_combat_power,
+      score: playerData.combat_power,
       value: playerId.toString(),
     });
-
     res
       .status(201)
       .json(
