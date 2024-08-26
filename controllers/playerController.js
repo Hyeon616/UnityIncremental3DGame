@@ -14,6 +14,7 @@ exports.getPlayerData = async (req, res) => {
         "pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage, " +
         "pa.level, pa.awakening, pa.guild_id, pa.combat_power, " +
         "pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id " +
+        "pa.Ability1, pa.Ability2, pa.Ability3 " +
         "FROM Players p " +
         "LEFT JOIN PlayerAttributes pa ON p.player_id = pa.player_id " +
         "WHERE p.player_id = ?",
