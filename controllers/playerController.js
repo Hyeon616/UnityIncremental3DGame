@@ -186,17 +186,23 @@ exports.resetAbilities = async (req, res) => {
 
   try {
     const conn = await pool.getConnection();
+    await conn.beginTransaction();
 
     // 플레이어 존재 여부 확인 및 새로운 능력치 생성
     const newAbilities = generateAbilities();
-    console.log(`Generated new abilities: ${JSON.stringify(newAbilities)}`);
 
-    // 데이터베이스 업데이트 및 업데이트된 플레이어 데이터 가져오기
-    const query = `
+     const updateQuery = `
       UPDATE PlayerAttributes 
-      SET Ability1 = ?, Ability2 = ?, Ability3 = ? 
+      SET Ability${abilitySetIndex * 3 + 1} = ?, 
+          Ability${abilitySetIndex * 3 + 2} = ?, 
+          Ability${abilitySetIndex * 3 + 3} = ? 
       WHERE player_id = ?;
+    `;
 
+    await conn.query(updateQuery, [...newAbilities, playerId]);
+
+    // 업데이트된 플레이어 데이터 가져오기
+    const selectQuery = `
       SELECT p.player_id, p.player_username, p.player_nickname,
         pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power,
         pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage,
@@ -209,10 +215,9 @@ exports.resetAbilities = async (req, res) => {
       WHERE p.player_id = ?;
     `;
 
-    const [updateResult, [updatedPlayer]] = await conn.query(query, [
-      newAbilities[0], newAbilities[1], newAbilities[2], playerId,
-      playerId
-    ]);
+    const [updatedPlayer] = await conn.query(selectQuery, [playerId]);
+
+    await conn.commit();
 
     conn.release();
 
