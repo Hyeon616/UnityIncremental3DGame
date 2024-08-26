@@ -13,9 +13,11 @@ public class GameManager : UnitySingleton<GameManager>
     private float timeSinceLastOnlineUpdate = 0f;
     private const float onlineUpdateInterval = 300f;
 
-    private async void Awake()
+    protected override async void Awake()
     {
+        base.Awake();
         await LoadAllUIPrefabs();
+        Initialize();
         UIManager.Instance.InitializeUI();
         CombatManager.Instance.Initialize();
     }
@@ -28,7 +30,13 @@ public class GameManager : UnitySingleton<GameManager>
         }
 
     }
-    
+
+    private void Initialize()
+    {
+        _ = AudioManager.Instance;
+        _ = UIManager.Instance;
+    }
+
     private async UniTask LoadAllUIPrefabs()
     {
         

@@ -19,7 +19,7 @@ public class PlayerModel
     public int level;
     public int awakening;
     public int? guild_id;
-    public int combat_power;
+    public string combat_power;
     public int? rank;
     public int? equipped_skill1_id;
     public int? equipped_skill2_id;
@@ -75,7 +75,7 @@ public class PlayerModel
         public int level;
         public int awakening;
         public int? guild_id;
-        public long combat_power;
+        public string combat_power;
         public int? rank;
         public int? equipped_skill1_id;
         public int? equipped_skill2_id;
@@ -83,6 +83,11 @@ public class PlayerModel
         public string Ability1;
         public string Ability2;
         public string Ability3;
+    }
+
+    public long GetCombatPowerAsLong()
+    {
+        return long.TryParse(combat_power, out long result) ? result : 0;
     }
 
     public override string ToString()

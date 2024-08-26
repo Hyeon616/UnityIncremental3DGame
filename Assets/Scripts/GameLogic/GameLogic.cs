@@ -151,7 +151,6 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     public int MonstersDefeatedInCurrentStage => StageManager.Instance.MonstersDefeatedInCurrentStage;
     public int TotalMonstersPerStage => StageManager.TotalMonstersPerStage;
 
-    public event Action OnStageProgressChanged;
     public event Action OnStageChanged;
     #endregion
 
@@ -159,10 +158,6 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     public event PropertyChangedEventHandler PropertyChanged;
     public event Action OnDataLoaded;
     public event Action<int> OnPlayerHealthChanged;
-    public event Action<int> OnMonsterHealthChanged;
-    public event Action<MonsterModel> OnMonsterDefeated;
-    public event Action OnPlayerDefeated;
-    public event Action<int, int, int> OnPlayerRewardsUpdated;
     public event Action OnPlayerDataUpdated;
     public event Action OnPlayerSkillsUpdated;
 

@@ -1,7 +1,4 @@
-using Magio;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
@@ -9,16 +6,17 @@ public class Projectile : MonoBehaviour
     private float speed = 5f;
     private float maxLifetime = 10f; // 최대 생존 시간
     private int damage;
-    private Action<Projectile> returnToPool;
+    private Action<Projectile> returnPool;
     private float lifetime;
     private PlayerModel playerModel;
     private UI_DamageText damageText;
 
+    [SerializeField] private AudioClip launchSound;
 
     public void Initialize(int damage, Action<Projectile> returnAction, PlayerModel playerModel)
     {
         this.damage = damage;
-        this.returnToPool = returnAction;
+        this.returnPool = returnAction;
         this.playerModel = playerModel;
         lifetime = 0f;
     }
@@ -26,8 +24,12 @@ public class Projectile : MonoBehaviour
     private void OnEnable()
     {
         lifetime = 0f;
+        if (launchSound != null && AudioManager.Instance !=null)
+        {
+            AudioManager.Instance.PlaySound(launchSound, transform.position);
+        }
     }
-   
+
     private void Update()
     {
         transform.Translate(Vector3.forward * speed * Time.deltaTime);
@@ -35,7 +37,7 @@ public class Projectile : MonoBehaviour
         lifetime += Time.deltaTime;
         if (lifetime > maxLifetime)
         {
-            ReturnToPool();
+            ReturnPool();
         }
     }
 
@@ -55,13 +57,13 @@ public class Projectile : MonoBehaviour
                 // 데미지 텍스트 생성
                 CombatManager.Instance.ShowDamageText(finalDamage, isCritical, monster.transform.position);
 
-                ReturnToPool();
+                ReturnPool();
             }
         }
     }
 
-    private void ReturnToPool()
+    private void ReturnPool()
     {
-        returnToPool?.Invoke(this);
+        returnPool?.Invoke(this);
     }
 }

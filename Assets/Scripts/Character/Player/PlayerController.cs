@@ -20,7 +20,7 @@ public class PlayerController : UnitySingleton<PlayerController>
     private float _attackCooldown = 1f;
     private float lastAttackTime;
 
-    public event Action<int> OnHealthChanged;
+    //public event Action<int> OnHealthChanged;
     private Vector3 _startPos;
 
 

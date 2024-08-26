@@ -14,7 +14,6 @@ public class ResourceManager : Singleton<ResourceManager>
     private ResourceManager()
     {
         APISettings = Resources.Load<APISettings>("APISettings");
-        Debug.Log($"Loaded APISettings. Base URL: {APISettings.baseUrl}");
     }
 
 
@@ -46,18 +45,13 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadPlayerData(int playerId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerId);
-        Debug.Log($"Attempting to load player data from URL: {url}");
         try
         {
             await LoadData<PlayerModel>(url, playerData =>
             {
                 if (playerData != null)
                 {
-                    Debug.Log($"Raw player data: {JsonConvert.SerializeObject(playerData)}");
-                    Debug.Log($"Player attributes: {JsonConvert.SerializeObject(playerData.attributes)}");
-
                     GameLogic.Instance.OnPlayerDataLoaded(playerData);
-                    Debug.Log("Player data loaded and assigned successfully");
                 }
                 else
                 {
@@ -76,7 +70,6 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadMails(int userId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.Mails, userId);
-        Debug.Log($"Loading mails from URL: {url}");
         await LoadData<ObservableCollection<MailModel>>(url, GameLogic.Instance.OnMailsLoaded);
     }
 
@@ -95,7 +88,6 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadPlayerWeapons(int userId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerWeapons, userId);
-        Debug.Log($"Loading player weapons from URL: {url}");
         try
         {
             await LoadData<ObservableCollection<PlayerWeaponModel>>(url, GameLogic.Instance.OnPlayerWeaponsLoaded);
@@ -109,7 +101,6 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask LoadPlayerSkills(int userId)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerSkills);
-        Debug.Log($"Loading player skills from URL: {url}");
         await LoadData<ObservableCollection<PlayerSkillModel>>(url, GameLogic.Instance.OnPlayerSkillsLoaded);
     }
 
@@ -211,14 +202,12 @@ public class ResourceManager : Singleton<ResourceManager>
         AttendanceRewardResponse response = JsonConvert.DeserializeObject<AttendanceRewardResponse>(jsonResponse);
         GameLogic.Instance.OnAttendanceRewardClaimed(response);
 
-        // 메일 목록을 새로고침합니다.
         await LoadMails(GameManager.Instance.GetUserId());
     }
 
     public async UniTask LoadMonsterData()
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.Monsters);
-        Debug.Log($"Loading monster data from URL: {url}");
         try
         {
             await LoadData<List<MonsterModel>>(url, monsters =>
@@ -389,7 +378,6 @@ public class ResourceManager : Singleton<ResourceManager>
             var result = await PutData<object>(url, requestData);
             if (result != null)
             {
-                // 서버에서 반환된 업데이트된 데이터로 CurrentPlayer 업데이트
                 GameLogic.Instance.OnPlayerDataLoaded(JsonConvert.DeserializeObject<PlayerModel>(result.ToString()));
             }
         }
@@ -402,7 +390,6 @@ public class ResourceManager : Singleton<ResourceManager>
     public async UniTask<PlayerModel> ResetAbilities()
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.ResetAbilities, GameLogic.Instance.CurrentPlayer.player_id);
-        Debug.Log($"Reset abilities URL: {url}");
         try
         {
             var requestData = new { playerId = GameLogic.Instance.CurrentPlayer.player_id };
