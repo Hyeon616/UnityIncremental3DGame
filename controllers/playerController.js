@@ -51,43 +51,35 @@ exports.updatePlayerData = async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
-    const oldPlayerData = await conn.query(
-      "SELECT combat_power FROM PlayerAttributes WHERE player_id = ?",
-      [playerId]
-    );
+    const allowedFields = ['money', 'element_stone', 'attack_power', 'max_health', 'critical_chance', 'critical_damage', 'level', 'equipped_skill1_id', 'equipped_skill2_id', 'equipped_skill3_id'];
+    const updateFields = Object.keys(updatedData).filter(key => allowedFields.includes(key));
 
     const updateQuery =
       "UPDATE PlayerAttributes SET " +
-      Object.keys(updatedData)
-        .map((key) => `${key} = ?`)
-        .join(", ") +
+      updateFields.map((key) => `${key} = ?`).join(", ") +
       " WHERE player_id = ?";
 
-    const updateValues = [...Object.values(updatedData), playerId];
+    const updateValues = [...updateFields.map(key => updatedData[key]), playerId];
 
     await conn.query(updateQuery, updateValues);
 
-    const updatedPlayer = await conn.query(
+    const [updatedPlayer] = await conn.query(
       "SELECT * FROM PlayerAttributes WHERE player_id = ?",
       [playerId]
     );
 
-    conn.release();
-
-    if (updatedPlayer.length > 0) {
-      const playerData = updatedPlayer[0];
-      if (typeof playerData.combat_power === "bigint") {
-        playerData.combat_power = playerData.combat_power.toString();
+    if (updatedPlayer) {
+      if (typeof updatedPlayer.combat_power === "bigint") {
+        updatedPlayer.combat_power = updatedPlayer.combat_power.toString();
       }
-      if (oldPlayerData[0].combat_power !== playerData.combat_power) {
-        await updatePlayerRank(playerId, playerData.combat_power);
-      }
+      
+      await updatePlayerRank(playerId, updatedPlayer.combat_power);
 
       const realTimeRank = await getPlayerRank(playerId);
-      playerData.rank = realTimeRank;
+      updatedPlayer.rank = realTimeRank;
 
-      console.log("Updated player data:", safeStringify(playerData));
-      res.json(JSON.parse(safeStringify(playerData)));
+      console.log("Updated player data:", safeStringify(updatedPlayer));
+      res.json(JSON.parse(safeStringify(updatedPlayer)));
     } else {
       res.status(404).json({ message: "Player not found" });
     }
@@ -96,6 +88,8 @@ exports.updatePlayerData = async (req, res) => {
     res
       .status(500)
       .json({ message: "Internal server error", error: error.message });
+  } finally {
+    if (conn) conn.release();
   }
 };
 
@@ -105,7 +99,7 @@ async function getPlayerRank(playerId) {
   return rank !== null ? rank + 1 : null;
 }
 
-async function updatePlayerRank(playerId) {
+async function updatePlayerRank(playerId, combatPower) {
   const redisClient = redis.getClient();
 
   try {
@@ -122,8 +116,6 @@ async function updatePlayerRank(playerId) {
     console.log(`Updated rank for player ${playerId}: ${rank + 1}`);
   } catch (error) {
     console.error("Error updating player rank:", error);
-  } finally {
-    conn.release();
   }
 }
 
