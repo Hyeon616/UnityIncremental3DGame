@@ -14,7 +14,8 @@ exports.getPlayerData = async (req, res) => {
       "pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage,",
       "pa.level, pa.awakening, pa.guild_id, pa.combat_power,",
       "pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id,",
-      "pa.Ability1, pa.Ability2, pa.Ability3",
+      "pa.Ability1, pa.Ability2, pa.Ability3, pa.Ability4, pa.Ability5, pa.Ability6,",
+      "pa.Ability7, pa.Ability8, pa.Ability9, pa.Ability10, pa.Ability11, pa.Ability12",
       "FROM Players p",
       "JOIN PlayerAttributes pa ON p.player_id = pa.player_id",
       "WHERE p.player_id = ?"
@@ -186,79 +187,45 @@ exports.resetAbilities = async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
-    // 플레이어 존재 여부 확인
-    const playerResult = await conn.query(
-      "SELECT * FROM Players WHERE player_id = ?",
-      [playerId]
-    );
-
-    console.log("Player query result:", playerResult);
-
-    let player;
-    if (Array.isArray(playerResult)) {
-      // 결과가 배열인 경우
-      player = playerResult[0];
-    } else if (typeof playerResult === "object") {
-      // 결과가 객체인 경우
-      player = playerResult;
-    }
-
-    if (!player || (Array.isArray(player) && player.length === 0)) {
-      console.log(`Player not found in Players table for ID: ${playerId}`);
-      conn.release();
-      return res.status(404).json({ message: "Player not found" });
-    }
-
-    // 새로운 능력치 생성
+    // 플레이어 존재 여부 확인 및 새로운 능력치 생성
     const newAbilities = generateAbilities();
     console.log(`Generated new abilities: ${JSON.stringify(newAbilities)}`);
 
-    // 데이터베이스 업데이트
-    await conn.query(
-      "UPDATE PlayerAttributes SET Ability1 = ?, Ability2 = ?, Ability3 = ? WHERE player_id = ?",
-      [newAbilities[0], newAbilities[1], newAbilities[2], playerId]
-    );
+    // 데이터베이스 업데이트 및 업데이트된 플레이어 데이터 가져오기
+    const query = `
+      UPDATE PlayerAttributes 
+      SET Ability1 = ?, Ability2 = ?, Ability3 = ? 
+      WHERE player_id = ?;
 
-    // 업데이트된 플레이어 데이터 가져오기
-    const updatedPlayerResult = await conn.query(
-      "SELECT p.player_id, p.player_username, p.player_nickname, " +
-        "pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power, " +
-        "pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage, " +
-        "pa.level, pa.awakening, pa.guild_id, pa.combat_power, " +
-        "pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id, " +
-        "pa.Ability1, pa.Ability2, pa.Ability3 " +
-        "FROM Players p " +
-        "JOIN PlayerAttributes pa ON p.player_id = pa.player_id " +
-        "WHERE p.player_id = ?",
-      [playerId]
-    );
+      SELECT p.player_id, p.player_username, p.player_nickname,
+        pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power,
+        pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage,
+        pa.level, pa.awakening, pa.guild_id, pa.combat_power,
+        pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id,
+        pa.Ability1, pa.Ability2, pa.Ability3, pa.Ability4, pa.Ability5, pa.Ability6,
+        pa.Ability7, pa.Ability8, pa.Ability9, pa.Ability10, pa.Ability11, pa.Ability12
+      FROM Players p
+      JOIN PlayerAttributes pa ON p.player_id = pa.player_id
+      WHERE p.player_id = ?;
+    `;
+
+    const [updateResult, [updatedPlayer]] = await conn.query(query, [
+      newAbilities[0], newAbilities[1], newAbilities[2], playerId,
+      playerId
+    ]);
 
     conn.release();
 
-    let updatedPlayer;
-    if (Array.isArray(updatedPlayerResult)) {
-      updatedPlayer = updatedPlayerResult[0];
-    } else if (typeof updatedPlayerResult === "object") {
-      updatedPlayer = updatedPlayerResult;
-    }
-
-    if (
-      updatedPlayer &&
-      (!Array.isArray(updatedPlayer) || updatedPlayer.length > 0)
-    ) {
-      console.log(
-        `Sending updated player data: ${JSON.stringify(updatedPlayer)}`
-      );
+    if (updatedPlayer) {
+      console.log(`Sending updated player data: ${JSON.stringify(updatedPlayer)}`);
       res.json(updatedPlayer);
     } else {
-      console.log(`Player not found after update for ID: ${playerId}`);
-      res.status(404).json({ message: "Player not found after update" });
+      console.log(`Player not found for ID: ${playerId}`);
+      res.status(404).json({ message: "Player not found" });
     }
   } catch (error) {
     console.error("Error resetting abilities:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
@@ -301,7 +268,6 @@ function applyAbilities(player) {
     player[stat] *= 1 + bonuses[stat] / 100;
   });
 
-  // combat_power 재계산 (데이터베이스의 generated column과 일치하도록 해야 함)
   player.combat_power = Math.floor(
     (player.attack_power +
       player.critical_chance +
