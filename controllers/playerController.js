@@ -184,19 +184,23 @@ exports.resetAbilities = async (req, res) => {
   const playerId = parseInt(req.body.playerId);
   console.log(`Resetting abilities for player ID: ${playerId}`);
 
+  let conn;
   try {
-    const conn = await pool.getConnection();
+    conn = await pool.getConnection();
+    await conn.beginTransaction();
 
-    // 플레이어 존재 여부 확인 및 새로운 능력치 생성
+    // 새로운 능력치 생성
     const newAbilities = generateAbilities();
     console.log(`Generated new abilities: ${JSON.stringify(newAbilities)}`);
 
-    // 데이터베이스 업데이트 및 업데이트된 플레이어 데이터 가져오기
-    const query = `
-      UPDATE PlayerAttributes 
-      SET Ability1 = ?, Ability2 = ?, Ability3 = ? 
-      WHERE player_id = ?;
+    // UPDATE 쿼리 실행
+    await conn.query(
+      "UPDATE PlayerAttributes SET Ability1 = ?, Ability2 = ?, Ability3 = ? WHERE player_id = ?",
+      [...newAbilities, playerId]
+    );
 
+    // SELECT 쿼리 실행
+    const [updatedPlayer] = await conn.query(`
       SELECT p.player_id, p.player_username, p.player_nickname,
         pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power,
         pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage,
@@ -206,15 +210,10 @@ exports.resetAbilities = async (req, res) => {
         pa.Ability7, pa.Ability8, pa.Ability9, pa.Ability10, pa.Ability11, pa.Ability12
       FROM Players p
       JOIN PlayerAttributes pa ON p.player_id = pa.player_id
-      WHERE p.player_id = ?;
-    `;
+      WHERE p.player_id = ?
+    `, [playerId]);
 
-    const [updateResult, [updatedPlayer]] = await conn.query(query, [
-      newAbilities[0], newAbilities[1], newAbilities[2], playerId,
-      playerId
-    ]);
-
-    conn.release();
+    await conn.commit();
 
     if (updatedPlayer) {
       console.log(`Sending updated player data: ${JSON.stringify(updatedPlayer)}`);
@@ -224,8 +223,11 @@ exports.resetAbilities = async (req, res) => {
       res.status(404).json({ message: "Player not found" });
     }
   } catch (error) {
+    if (conn) await conn.rollback();
     console.error("Error resetting abilities:", error);
     res.status(500).json({ message: "Internal server error", error: error.message });
+  } finally {
+    if (conn) conn.release();
   }
 };
 
@@ -238,7 +240,7 @@ function generateAbilities() {
   ];
   const percentages = [3, 6, 9, 12];
 
-  return Array(3)
+  return Array(12)
     .fill()
     .map(() => {
       const stat = stats[Math.floor(Math.random() * stats.length)];
