@@ -230,7 +230,7 @@ exports.resetAbilities = async (req, res) => {
       "SELECT p.player_id, p.player_username, p.player_nickname, " +
         "pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power, " +
         "pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage, " +
-        "pa.level, pa.awakening, pa.guild_id, pa.combat_power, pa.rank, " +
+        "pa.level, pa.awakening, pa.guild_id, pa.combat_power, " +
         "pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id, " +
         "pa.Ability1, pa.Ability2, pa.Ability3 " +
         "FROM Players p " +
