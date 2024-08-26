@@ -182,6 +182,7 @@ async function syncRanksToDB() {
 
 exports.resetAbilities = async (req, res) => {
   const playerId = parseInt(req.body.playerId);
+  const abilitySetIndex = parseInt(req.body.abilityIndex);
   console.log(`Resetting abilities for player ID: ${playerId}`);
 
   try {
