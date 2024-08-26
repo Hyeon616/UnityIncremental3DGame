@@ -1,5 +1,6 @@
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 [Serializable]
@@ -27,7 +28,16 @@ public class PlayerModel
     public string Ability1 { get; set; }
     public string Ability2 { get; set; }
     public string Ability3 { get; set; }
-    
+    public string Ability4 { get; set; }
+    public string Ability5 { get; set; }
+    public string Ability6 { get; set; }
+    public string Ability7 { get; set; }
+    public string Ability8 { get; set; }
+    public string Ability9 { get; set; }
+    public string Ability10 { get; set; }
+    public string Ability11 { get; set; }
+    public string Ability12 { get; set; }
+
 
     [JsonIgnore]
     public Attributes attributes;
@@ -56,7 +66,16 @@ public class PlayerModel
             equipped_skill3_id = this.equipped_skill3_id,
             Ability1 = this.Ability1,
             Ability2 = this.Ability2,
-            Ability3 = this.Ability3
+            Ability3 = this.Ability3,
+            Ability4 = this.Ability4,
+            Ability5 = this.Ability5,
+            Ability6 = this.Ability6,
+            Ability7 = this.Ability7,
+            Ability8 = this.Ability8,
+            Ability9 = this.Ability9,
+            Ability10 = this.Ability10,
+            Ability11 = this.Ability11,
+            Ability12 = this.Ability12
 
         };
 
@@ -83,7 +102,30 @@ public class PlayerModel
         public string Ability1;
         public string Ability2;
         public string Ability3;
+        public string Ability4;
+        public string Ability5;
+        public string Ability6;
+        public string Ability7;
+        public string Ability8;
+        public string Ability9;
+        public string Ability10;
+        public string Ability11;
+        public string Ability12;
+
+        public List<string> GetAbilitySet(int index)
+        {
+            switch (index)
+            {
+                case 0: return new List<string> { Ability1, Ability2, Ability3 };
+                case 1: return new List<string> { Ability4, Ability5, Ability6 };
+                case 2: return new List<string> { Ability7, Ability8, Ability9 };
+                case 3: return new List<string> { Ability10, Ability11, Ability12 };
+                default: return new List<string>();
+            }
+        }
     }
+
+    
 
     public long GetCombatPowerAsLong()
     {

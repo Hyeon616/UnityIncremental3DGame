@@ -7,27 +7,38 @@ using UnityEngine.UI;
 
 public class UI_Ability : MonoBehaviour, IUpdatableUI
 {
-    [Header("AbilitySlot1")]
-    [SerializeField] private TextMeshProUGUI AbilityItemsMaxText1;
-    [SerializeField] private TextMeshProUGUI AbilityItemsRatio1;
+    [Header("AbilitySlots")]
+    [SerializeField] private List<AbilitySlotUI> abilitySlots;
 
-    [Header("AbilitySlot1")]
-    [SerializeField] private TextMeshProUGUI AbilityItemsMaxText2;
-    [SerializeField] private TextMeshProUGUI AbilityItemsRatio2;
-
-    [Header("AbilitySlot1")]
-    [SerializeField] private TextMeshProUGUI AbilityItemsMaxText3;
-    [SerializeField] private TextMeshProUGUI AbilityItemsRatio3;
+    [Header("TabButtons")]
+    [SerializeField] private List<Button> tabButtons;
 
     [Header("ResetBtn")]
     [SerializeField] private TextMeshProUGUI ResetCostText;
     [SerializeField] private Button ResetBtn;
+
+    private int currentTabIndex = 0;
+
+    [Serializable]
+    private class AbilitySlotUI
+    {
+        public TextMeshProUGUI AbilityItemsMaxText;
+        public TextMeshProUGUI AbilityItemsRatio;
+    }
+
 
     private void OnEnable()
     {
         UIManager.Instance.RegisterUpdatableUI(this);
         ResetBtn.onClick.AddListener(OnResetButtonClicked);
         GameLogic.Instance.OnPlayerDataUpdated += UpdateUI;
+
+        for (int i = 0; i < tabButtons.Count; i++)
+        {
+            int index = i;
+            tabButtons[i].onClick.AddListener(() => OnTabButtonClicked(index));
+        }
+
         if (UIManager.Instance.IsDataLoaded)
         {
             UpdateUI();
@@ -39,6 +50,11 @@ public class UI_Ability : MonoBehaviour, IUpdatableUI
         UIManager.Instance.UnregisterUpdatableUI(this);
         ResetBtn.onClick.RemoveListener(OnResetButtonClicked);
         GameLogic.Instance.OnPlayerDataUpdated -= UpdateUI;
+
+        for (int i = 0; i < tabButtons.Count; i++)
+        {
+            tabButtons[i].onClick.RemoveAllListeners();
+        }
     }
 
     public void UpdateUI()
@@ -46,28 +62,43 @@ public class UI_Ability : MonoBehaviour, IUpdatableUI
         var player = GameLogic.Instance.CurrentPlayer;
         if (player == null || player.attributes == null) return;
 
-        UpdateAbilitySlot(AbilityItemsMaxText1, AbilityItemsRatio1, player.attributes.Ability1);
-        UpdateAbilitySlot(AbilityItemsMaxText2, AbilityItemsRatio2, player.attributes.Ability2);
-        UpdateAbilitySlot(AbilityItemsMaxText3, AbilityItemsRatio3, player.attributes.Ability3);
+        UpdateAbilitySlots();
+        UpdateTabButtonsVisual();
 
-        // Reset 비용 업데이트 (예: 100 골드)
         ResetCostText.text = "100";
-
-        
     }
 
-    private void UpdateAbilitySlot(TextMeshProUGUI maxText, TextMeshProUGUI ratioText, string ability)
+
+    private void UpdateAbilitySlots()
+    {
+        var abilities = GameLogic.Instance.CurrentPlayer.attributes.GetAbilitySet(currentTabIndex);
+        for (int i = 0; i < abilitySlots.Count; i++)
+        {
+            UpdateAbilitySlot(abilitySlots[i], i < abilities.Count ? abilities[i] : null);
+        }
+    }
+
+    private void UpdateAbilitySlot(AbilitySlotUI slot, string ability)
     {
         if (string.IsNullOrEmpty(ability))
         {
-            maxText.text = "None";
-            ratioText.text = "0%";
+            slot.AbilityItemsMaxText.text = "None";
+            slot.AbilityItemsRatio.text = "0%";
         }
         else
         {
             var parts = ability.Split(':');
-            maxText.text = TranslateAbilityName(parts[0]);
-            ratioText.text = $"{parts[1]}%";
+            slot.AbilityItemsMaxText.text = TranslateAbilityName(parts[0]);
+            slot.AbilityItemsRatio.text = $"{parts[1]}%";
+        }
+    }
+
+    // 선택된 탭
+    private void UpdateTabButtonsVisual()
+    {
+        for (int i = 0; i < tabButtons.Count; i++)
+        {
+            tabButtons[i].GetComponent<Image>().color = (i == currentTabIndex) ? Color.yellow : Color.white;
         }
     }
 
@@ -88,9 +119,16 @@ public class UI_Ability : MonoBehaviour, IUpdatableUI
         }
     }
 
+    private void OnTabButtonClicked(int index)
+    {
+        currentTabIndex = index;
+        UpdateUI();
+    }
+
     private async void OnResetButtonClicked()
     {
-        ResetBtn.interactable = false; // 버튼 비활성화
+        ResetBtn.interactable = false;
+        Debug.Log("Reset");
         try
         {
             var updatedPlayer = await ResourceManager.Instance.ResetAbilities();
@@ -101,17 +139,16 @@ public class UI_Ability : MonoBehaviour, IUpdatableUI
             }
             else
             {
-                Debug.LogError("Failed to reset abilities: Received null player data");
+                Debug.LogWarning("Failed to reset abilities: Received null player data");
             }
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to reset abilities: {ex.Message}");
-            // 여기에 사용자에게 오류를 알리는 UI 로직을 추가할 수 있습니다.
+            Debug.LogWarning($"Failed to reset abilities: {ex.Message}");
         }
         finally
         {
-            ResetBtn.interactable = true; // 버튼 다시 활성화
+            ResetBtn.interactable = true;
         }
     }
 }

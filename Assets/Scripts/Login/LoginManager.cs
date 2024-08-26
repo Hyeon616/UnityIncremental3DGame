@@ -28,8 +28,8 @@ public class LoginManager
 
                 if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
                 {
-                    Debug.LogError($"Error: {request.error}");
-                    Debug.LogError($"Response: {request.downloadHandler.text}");
+                    Debug.LogWarning($"Error: {request.error}");
+                    Debug.LogWarning($"Response: {request.downloadHandler.text}");
                     setFeedbackText(request.error);
                     return false;
                 }
@@ -55,14 +55,14 @@ public class LoginManager
                         }
                         else
                         {
-                            Debug.LogError("Invalid response data");
+                            Debug.LogWarning("Invalid response data");
                             setFeedbackText("로그인 실패: 서버 응답 오류");
                             return false;
                         }
                     }
                     else
                     {
-                        Debug.LogError($"Unknown error occurred. Status code: {request.responseCode}");
+                        Debug.LogWarning($"Unknown error occurred. Status code: {request.responseCode}");
                         setFeedbackText("로그인 실패: 알 수 없는 오류.");
                         return false;
                     }
@@ -71,7 +71,7 @@ public class LoginManager
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Exception occurred: {ex.Message}");
+            Debug.LogWarning($"Exception occurred: {ex.Message}");
             setFeedbackText($"오류 발생: {ex.Message}");
             return false;
         }

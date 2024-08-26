@@ -2779,12 +2779,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b8f7f232a1df38439e10c92fe751676, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AbilityItemsMaxText1: {fileID: 3224668721585494814}
-  AbilityItemsRatio1: {fileID: 8183132869467155961}
-  AbilityItemsMaxText2: {fileID: 1840934296628872728}
-  AbilityItemsRatio2: {fileID: 2566387641590230308}
-  AbilityItemsMaxText3: {fileID: 7744246760735175423}
-  AbilityItemsRatio3: {fileID: 2773081096739321273}
+  abilitySlots:
+  - AbilityItemsMaxText: {fileID: 3224668721585494814}
+    AbilityItemsRatio: {fileID: 8183132869467155961}
+  - AbilityItemsMaxText: {fileID: 1840934296628872728}
+    AbilityItemsRatio: {fileID: 2566387641590230308}
+  - AbilityItemsMaxText: {fileID: 7744246760735175423}
+    AbilityItemsRatio: {fileID: 2773081096739321273}
+  tabButtons:
+  - {fileID: 7282986033081613752}
+  - {fileID: 4147376000322254565}
+  - {fileID: 3456139823448242897}
+  - {fileID: 7500576680839430059}
   ResetCostText: {fileID: 4414505025185638257}
   ResetBtn: {fileID: 7191660631369724833}
 --- !u!1 &2303799509888663364

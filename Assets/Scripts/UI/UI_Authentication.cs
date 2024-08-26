@@ -1,9 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -98,7 +95,7 @@ public class UI_Authentication : MonoBehaviour
         {
             Debug.Log($"Sending login request for username: {username}");
             // 로그인 요청 코드
-            
+
             success = await loginManager.Login(username, password, SetFeedbackText);
             Debug.Log($"로그인 시도 결과: {success}");
         }
@@ -113,7 +110,8 @@ public class UI_Authentication : MonoBehaviour
             Debug.Log("로그인 성공, UI 전환");
             UIManager.Instance.HideUI(UIPrefab.AuthenticationUI);
             UIManager.Instance.ShowUI(UIPrefab.LoadingUI);
-            await GameManager.Instance.InitializeGame();
+            await UniTask.WhenAll(GameManager.Instance.InitializeGame());
+            //await GameManager.Instance.InitializeGame();
             UIManager.Instance.HideUI(UIPrefab.LoadingUI);
         }
         else
@@ -151,5 +149,5 @@ public class UI_Authentication : MonoBehaviour
         FeedbackText.text = "";
     }
 
-    
+
 }

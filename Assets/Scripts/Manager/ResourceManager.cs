@@ -38,7 +38,7 @@ public class ResourceManager : Singleton<ResourceManager>
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Error loading data: {ex.Message}");
+            Debug.LogWarning($"Error loading data: {ex.Message}");
         }
     }
 
@@ -52,6 +52,7 @@ public class ResourceManager : Singleton<ResourceManager>
                 if (playerData != null)
                 {
                     GameLogic.Instance.OnPlayerDataLoaded(playerData);
+                    Debug.Log(playerData);
                 }
                 else
                 {
@@ -61,7 +62,7 @@ public class ResourceManager : Singleton<ResourceManager>
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to load player data: {ex.Message}");
+            Debug.LogWarning($"Failed to load player data: {ex.Message}");
             throw;
         }
     }
@@ -94,7 +95,7 @@ public class ResourceManager : Singleton<ResourceManager>
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to load player weapons: {ex.Message}");
+            Debug.LogWarning($"Failed to load player weapons: {ex.Message}");
         }
     }
 
@@ -114,7 +115,7 @@ public class ResourceManager : Singleton<ResourceManager>
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to load mission progress: {ex.Message}. Mission progress may not exist for this user.");
+            Debug.LogWarning($"Failed to load mission progress: {ex.Message}. Mission progress may not exist for this user.");
         }
     }
 
@@ -163,13 +164,13 @@ public class ResourceManager : Singleton<ResourceManager>
                 }
                 else
                 {
-                    Debug.LogError("Received invalid current stage data");
+                    Debug.LogWarning("Received invalid current stage data");
                 }
             });
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to load current stage: {ex.Message}");
+            Debug.LogWarning($"Failed to load current stage: {ex.Message}");
         }
     }
 
@@ -218,14 +219,14 @@ public class ResourceManager : Singleton<ResourceManager>
                 }
                 else
                 {
-                    Debug.LogError("Received null monster data or MonsterManager is null");
+                    Debug.LogWarning("Received null monster data or MonsterManager is null");
                 }
             });
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to load monster data: {ex.Message}");
-            Debug.LogError($"Stack trace: {ex.StackTrace}");
+            Debug.LogWarning($"Failed to load monster data: {ex.Message}");
+            Debug.LogWarning($"Stack trace: {ex.StackTrace}");
         }
     }
 
@@ -242,16 +243,15 @@ public class ResourceManager : Singleton<ResourceManager>
 
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"Error: {www.error}");
-                Debug.LogError($"URL: {url}");
-                Debug.LogError($"Response Code: {www.responseCode}");
-                Debug.LogError($"Response Body: {www.downloadHandler.text}");
+                Debug.LogWarning($"Error: {www.error}");
+                Debug.LogWarning($"URL: {url}");
+                Debug.LogWarning($"Response Code: {www.responseCode}");
+                Debug.LogWarning($"Response Body: {www.downloadHandler.text}");
                 throw new Exception($"Web request failed: {www.error}");
             }
             else
             {
                 string jsonResult = www.downloadHandler.text;
-                Debug.Log($"Successful response from {url}: {jsonResult}");
                 if (!string.IsNullOrEmpty(jsonResult))
                 {
                     try
@@ -261,13 +261,12 @@ public class ResourceManager : Singleton<ResourceManager>
                             Converters = new List<JsonConverter> { new BigIntConverter() }
                         };
                         T data = JsonConvert.DeserializeObject<T>(jsonResult);
-                        Debug.Log($"Deserialized data: {JsonConvert.SerializeObject(data)}");
                         onSuccess?.Invoke(data);
                     }
                     catch (JsonException ex)
                     {
-                        Debug.LogError($"JSON Deserialization error: {ex.Message}");
-                        Debug.LogError($"JSON string: {jsonResult}");
+                        Debug.LogWarning($"JSON Deserialization error: {ex.Message}");
+                        Debug.LogWarning($"JSON string: {jsonResult}");
                         throw;
                     }
                 }
@@ -319,8 +318,8 @@ public class ResourceManager : Singleton<ResourceManager>
 
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"Error: {www.error}");
-                Debug.LogError($"Response: {www.downloadHandler.text}");
+                Debug.LogWarning($"Error: {www.error}");
+                Debug.LogWarning($"Response: {www.downloadHandler.text}");
                 throw new Exception(www.error);
             }
             else
@@ -333,19 +332,17 @@ public class ResourceManager : Singleton<ResourceManager>
     private async UniTask<TResponse> PutData<TRequest, TResponse>(string url, TRequest requestData)
     {
         string jsonData = JsonConvert.SerializeObject(requestData);
-        Debug.Log($"PUT request to {url} with data: {jsonData}");
         using (UnityWebRequest www = UnityWebRequest.Put(url, jsonData))
         {
             www.SetRequestHeader("Content-Type", "application/json");
             www.SetRequestHeader("Authorization", $"Bearer {GameManager.Instance.GetAuthToken()}");
-            Debug.Log($"Authorization header: Bearer {GameManager.Instance.GetAuthToken()}");
 
             await www.SendWebRequest();
 
             if (www.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"Error: {www.error}");
-                Debug.LogError($"Response: {www.downloadHandler.text}");
+                Debug.LogWarning($"Error: {www.error}");
+                Debug.LogWarning($"Response: {www.downloadHandler.text}");
                 throw new Exception(www.error);
             }
             else
@@ -393,29 +390,33 @@ public class ResourceManager : Singleton<ResourceManager>
         try
         {
             var requestData = new { playerId = GameLogic.Instance.CurrentPlayer.player_id };
+            Debug.Log($"Sending reset request with player ID: {requestData.playerId}");
             var result = await PutData<object, PlayerModel>(url, requestData);
+            Debug.Log($"Reset result received: {(result != null ? "not null" : "null")}");
             if (result != null)
             {
+                Debug.Log($"Reset successful. New player data: {JsonUtility.ToJson(result)}");
                 GameLogic.Instance.OnPlayerDataLoaded(result);
+
                 return result;
             }
             else
             {
-                Debug.LogError("Received null response when resetting abilities.");
+                Debug.LogWarning("Received null response when resetting abilities.");
                 return null;
             }
         }
         catch (UnityWebRequestException ex)
         {
-            Debug.LogError($"Failed to reset abilities: {ex.Message}");
-            Debug.LogError($"Response: {ex.Text}");
-            Debug.LogError($"Response Code: {ex.ResponseCode}");
-            Debug.LogError($"Result: {ex.Result}");
+            Debug.LogWarning($"Failed to reset abilities: {ex.Message}");
+            Debug.LogWarning($"Response: {ex.Text}");
+            Debug.LogWarning($"Response Code: {ex.ResponseCode}");
+            Debug.LogWarning($"Result: {ex.Result}");
             return null;
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Unexpected error when resetting abilities: {ex.Message}");
+            Debug.LogWarning($"Unexpected error when resetting abilities: {ex.Message}");
             return null;
         }
     }
@@ -435,7 +436,7 @@ public class ResourceManager : Singleton<ResourceManager>
         }
         catch (Exception ex)
         {
-            Debug.LogError($"Failed to update online time: {ex.Message}");
+            Debug.LogWarning($"Failed to update online time: {ex.Message}");
         }
     }
 

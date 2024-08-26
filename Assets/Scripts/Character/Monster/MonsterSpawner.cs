@@ -31,7 +31,7 @@ public class MonsterSpawner : UnitySingleton<MonsterSpawner>
             SpawnMonsterObject(monsterModel);
         }
 
-        Debug.Log($"Spawning monsters for stage {currentStage}. Total spawned: {CurrentMonsterObjects.Count}");
+       // Debug.Log($"Spawning monsters for stage {currentStage}. Total spawned: {CurrentMonsterObjects.Count}");
     }
 
     private void SpawnMonsterObject(MonsterModel monsterModel)

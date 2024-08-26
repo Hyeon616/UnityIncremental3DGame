@@ -297,6 +297,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     {
         if (playerData != null)
         {
+            Debug.Log($"OnPlayerDataLoaded called with data: {JsonUtility.ToJson(playerData)}");
             CurrentPlayer = playerData;
             OnPlayerDataUpdated?.Invoke();
             UIManager.Instance.UpdateAllUIs();
