@@ -8,18 +8,19 @@ exports.getPlayerData = async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
-    const result = await conn.query(
-      "SELECT p.player_id, p.player_username, p.player_nickname, " +
-        "pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power, " +
-        "pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage, " +
-        "pa.level, pa.awakening, pa.guild_id, pa.combat_power, " +
-        "pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id " +
-        "pa.Ability1, pa.Ability2, pa.Ability3 " +
-        "FROM Players p " +
-        "LEFT JOIN PlayerAttributes pa ON p.player_id = pa.player_id " +
-        "WHERE p.player_id = ?",
-      [playerId]
-    );
+    const query = [
+      "SELECT p.player_id, p.player_username, p.player_nickname,",
+      "pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power,",
+      "pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage,",
+      "pa.level, pa.awakening, pa.guild_id, pa.combat_power,",
+      "pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id,",
+      "pa.Ability1, pa.Ability2, pa.Ability3",
+      "FROM Players p",
+      "JOIN PlayerAttributes pa ON p.player_id = pa.player_id",
+      "WHERE p.player_id = ?"
+    ].join(" ");
+    
+    const result = await conn.query(query, [playerId]);
 
     conn.release();
 
