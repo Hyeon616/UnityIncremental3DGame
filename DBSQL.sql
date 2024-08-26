@@ -99,7 +99,7 @@ CREATE TABLE PlayerAttributes (
     Ability1 VARCHAR(20) DEFAULT NULL,
     Ability2 VARCHAR(20) DEFAULT NULL,
     Ability3 VARCHAR(20) DEFAULT NULL,
-    combat_power BIGINT GENERATED ALWAYS AS (
+     combat_power VARCHAR(255) GENERATED ALWAYS AS (
         CAST((
             attack_power * (1 + 
                 IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
@@ -123,7 +123,7 @@ CREATE TABLE PlayerAttributes (
             )
         ) * 
         (IF(awakening = 0, 1, awakening * 10)) * 
-        (level * 0.1) AS SIGNED)
+        (level * 0.1) AS CHAR(255))
     ) STORED,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE SET NULL,
