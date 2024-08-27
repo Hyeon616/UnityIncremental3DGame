@@ -54,7 +54,7 @@ exports.updatePlayerData = async (req, res) => {
   try {
     const conn = await pool.getConnection();
 
-    const allowedFields = ['money', 'element_stone', 'attack_power', 'max_health', 'critical_chance', 'critical_damage', 'level', 'equipped_skill1_id', 'equipped_skill2_id', 'equipped_skill3_id'];
+    const allowedFields = ['base_money', 'base_element_stone', 'base_attack_power', 'base_max_health', 'base_critical_chance', 'base_critical_damage', 'level', 'equipped_skill1_id', 'equipped_skill2_id', 'equipped_skill3_id'];
     const updateFields = Object.keys(updatedData).filter(key => allowedFields.includes(key));
 
     const updateQuery =
@@ -72,10 +72,6 @@ exports.updatePlayerData = async (req, res) => {
     );
 
     if (updatedPlayer) {
-      if (typeof updatedPlayer.combat_power === "bigint") {
-        updatedPlayer.combat_power = updatedPlayer.combat_power.toString();
-      }
-      
       await updatePlayerRank(playerId, updatedPlayer.combat_power);
 
       const realTimeRank = await getPlayerRank(playerId);
@@ -88,9 +84,7 @@ exports.updatePlayerData = async (req, res) => {
     }
   } catch (error) {
     console.error("Error updating player data:", error);
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   } finally {
     if (conn) conn.release();
   }
@@ -183,16 +177,15 @@ async function syncRanksToDB() {
 exports.resetAbilities = async (req, res) => {
   const playerId = parseInt(req.body.playerId);
   const abilitySetIndex = parseInt(req.body.abilityIndex);
-  console.log(`Resetting abilities for player ID: ${playerId}`);
+  console.log(`Resetting abilities for player ID: ${playerId}, set index: ${abilitySetIndex}`);
 
   try {
     const conn = await pool.getConnection();
     await conn.beginTransaction();
 
-    // 플레이어 존재 여부 확인 및 새로운 능력치 생성
     const newAbilities = generateAbilities();
 
-     const updateQuery = `
+    const updateQuery = `
       UPDATE PlayerAttributes 
       SET Ability${abilitySetIndex * 3 + 1} = ?, 
           Ability${abilitySetIndex * 3 + 2} = ?, 
@@ -202,7 +195,6 @@ exports.resetAbilities = async (req, res) => {
 
     await conn.query(updateQuery, [...newAbilities, playerId]);
 
-    // 업데이트된 플레이어 데이터 가져오기
     const selectQuery = `
       SELECT p.player_id, p.player_username, p.player_nickname,
         pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power,
@@ -219,10 +211,13 @@ exports.resetAbilities = async (req, res) => {
     const [updatedPlayer] = await conn.query(selectQuery, [playerId]);
 
     await conn.commit();
-
     conn.release();
 
     if (updatedPlayer) {
+      await updatePlayerRank(playerId, updatedPlayer.combat_power);
+      const realTimeRank = await getPlayerRank(playerId);
+      updatedPlayer.rank = realTimeRank;
+
       console.log(`Sending updated player data: ${JSON.stringify(updatedPlayer)}`);
       res.json(updatedPlayer);
     } else {
@@ -254,35 +249,7 @@ function generateAbilities() {
     });
 }
 
-function applyAbilities(player) {
-  const abilities = [player.Ability1, player.Ability2, player.Ability3].filter(
-    (a) => a
-  );
-  const bonuses = {
-    attack_power: 0,
-    max_health: 0,
-    critical_chance: 0,
-    critical_damage: 0,
-  };
 
-  abilities.forEach((ability) => {
-    const [stat, percentage] = ability.split(":");
-    bonuses[stat] += parseInt(percentage);
-  });
-
-  Object.keys(bonuses).forEach((stat) => {
-    player[stat] *= 1 + bonuses[stat] / 100;
-  });
-
-  player.combat_power = Math.floor(
-    (player.attack_power +
-      player.critical_chance +
-      player.max_health +
-      player.critical_damage) *
-      (player.awakening === 0 ? 1 : player.awakening * 10) *
-      (player.level * 0.1)
-  );
-}
 
 // 5분마다 순위 동기화
 setInterval(syncRanksToDB, 5 * 60 * 1000);

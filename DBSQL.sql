@@ -82,13 +82,13 @@ CREATE TABLE PlayerGuilds (
 
 CREATE TABLE PlayerAttributes (
     player_id INT PRIMARY KEY,
-    element_stone INT DEFAULT 0,
-    skill_summon_tickets INT DEFAULT 0,
-    money INT DEFAULT 0,
-    attack_power INT DEFAULT 10,
-    max_health INT DEFAULT 50,
-    critical_chance FLOAT DEFAULT 0,
-    critical_damage FLOAT DEFAULT 0,
+    base_element_stone INT DEFAULT 0,
+    base_skill_summon_tickets INT DEFAULT 0,
+    base_money INT DEFAULT 0,
+    base_attack_power INT DEFAULT 10,
+    base_max_health INT DEFAULT 50,
+    base_critical_chance FLOAT DEFAULT 0,
+    base_critical_damage FLOAT DEFAULT 0,
     current_stage VARCHAR(10) DEFAULT '1-1',
     level INT DEFAULT 1,
     awakening INT DEFAULT 0,
@@ -99,31 +99,92 @@ CREATE TABLE PlayerAttributes (
     Ability1 VARCHAR(20) DEFAULT NULL,
     Ability2 VARCHAR(20) DEFAULT NULL,
     Ability3 VARCHAR(20) DEFAULT NULL,
-     combat_power VARCHAR(255) GENERATED ALWAYS AS (
-        CAST((
-            attack_power * (1 + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0)
-            ) +
-            critical_chance * (1 + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0)
-            ) +
-            max_health * (1 + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0)
-            ) +
-            critical_damage * (1 + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) + 
-                IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0)
-            )
-        ) * 
+    Ability4 VARCHAR(20) DEFAULT NULL,
+    Ability5 VARCHAR(20) DEFAULT NULL,
+    Ability6 VARCHAR(20) DEFAULT NULL,
+    Ability7 VARCHAR(20) DEFAULT NULL,
+    Ability8 VARCHAR(20) DEFAULT NULL,
+    Ability9 VARCHAR(20) DEFAULT NULL,
+    Ability10 VARCHAR(20) DEFAULT NULL,
+    Ability11 VARCHAR(20) DEFAULT NULL,
+    Ability12 VARCHAR(20) DEFAULT NULL,
+    element_stone INT GENERATED ALWAYS AS (
+        base_element_stone
+    ) STORED,
+    skill_summon_tickets INT GENERATED ALWAYS AS (
+        base_skill_summon_tickets
+    ) STORED,
+    money INT GENERATED ALWAYS AS (
+        base_money
+    ) STORED,
+    attack_power INT GENERATED ALWAYS AS (
+        FLOOR(base_attack_power * (1 + 
+            IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability4, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability5, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability6, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability7, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability8, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability9, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability10, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability11, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability12, ':', -1) AS DECIMAL(5,2)) / 100, 0)
+        ))
+    ) STORED,
+    max_health INT GENERATED ALWAYS AS (
+        FLOOR(base_max_health * (1 + 
+            IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability4, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability5, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability6, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability7, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability8, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability9, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability10, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability11, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability12, ':', -1) AS DECIMAL(5,2)) / 100, 0)
+        ))
+    ) STORED,
+    critical_chance FLOAT GENERATED ALWAYS AS (
+        base_critical_chance * (1 + 
+            IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability4, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability5, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability6, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability7, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability8, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability9, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability10, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability11, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability12, ':', -1) AS DECIMAL(5,2)) / 100, 0)
+        )
+    ) STORED,
+    critical_damage FLOAT GENERATED ALWAYS AS (
+        base_critical_damage * (1 + 
+            IFNULL(CAST(SUBSTRING_INDEX(Ability1, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability2, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability3, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability4, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability5, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability6, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability7, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability8, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability9, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability10, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability11, ':', -1) AS DECIMAL(5,2)) / 100, 0) +
+            IFNULL(CAST(SUBSTRING_INDEX(Ability12, ':', -1) AS DECIMAL(5,2)) / 100, 0)
+        )
+    ) STORED,
+    combat_power INT GENERATED ALWAYS AS (
+        FLOOR((attack_power + FLOOR(critical_chance * 100) + max_health + FLOOR(critical_damage * 100)) * 
         (IF(awakening = 0, 1, awakening * 10)) * 
-        (level * 0.1) AS CHAR(255))
+        (level * 0.1))
     ) STORED,
     FOREIGN KEY (player_id) REFERENCES Players(player_id) ON DELETE CASCADE,
     FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id) ON DELETE SET NULL,
