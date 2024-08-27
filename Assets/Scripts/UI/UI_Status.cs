@@ -46,7 +46,6 @@ public class UI_Status : MonoBehaviour, IUpdatableUI
         if (player == null || player.attributes == null) return;
 
         CharacterLevel.text = $"Lv.{player.attributes.level}";
-        Debug.Log(player.attributes.base_attack_power);
         CurrentAttackText.text = GameLogic.FormatKoreanCurrency(player.attributes.base_attack_power);
         UpgradeAttackText.text = GameLogic.FormatKoreanCurrency(player.attributes.base_attack_power * 2);
 

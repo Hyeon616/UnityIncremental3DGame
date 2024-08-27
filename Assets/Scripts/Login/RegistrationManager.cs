@@ -35,7 +35,7 @@ public class RegistrationManager
 
                 if (request.result == UnityWebRequest.Result.ConnectionError || request.result == UnityWebRequest.Result.ProtocolError)
                 {
-                    UnityEngine.Debug.LogError($"Request error: {request.error}");
+                    UnityEngine.Debug.LogWarning($"Request error: {request.error}");
                     setFeedbackText($"연결 오류: {request.error}");
                 }
                 else
@@ -59,7 +59,7 @@ public class RegistrationManager
         }
         catch (Exception ex)
         {
-            UnityEngine.Debug.LogError($"Exception in Register: {ex}");
+            UnityEngine.Debug.LogWarning($"Exception in Register: {ex}");
             setFeedbackText($"오류 발생: {ex.Message}");
         }
     }

@@ -358,12 +358,12 @@ public class ResourceManager : Singleton<ResourceManager>
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerData.player_id);
         var requestData = new
         {
-            base_money = playerData.attributes.money,
-            base_element_stone = playerData.attributes.element_stone,
-            base_attack_power = playerData.attributes.attack_power,
-            base_max_health = playerData.attributes.max_health,
-            base_critical_chance = playerData.attributes.critical_chance,
-            base_critical_damage = playerData.attributes.critical_damage,
+            base_money = playerData.attributes.base_money,
+            base_element_stone = playerData.attributes.base_element_stone,
+            base_attack_power = playerData.attributes.base_attack_power,
+            base_max_health = playerData.attributes.base_max_health,
+            base_critical_chance = playerData.attributes.base_critical_chance,
+            base_critical_damage = playerData.attributes.base_critical_damage,
             level = playerData.attributes.level,
             equipped_skill1_id = playerData.attributes.equipped_skill1_id,
             equipped_skill2_id = playerData.attributes.equipped_skill2_id,
@@ -378,12 +378,12 @@ public class ResourceManager : Singleton<ResourceManager>
                 GameLogic.Instance.OnPlayerDataLoaded(updatedPlayerData);
 
                 // 업데이트된 데이터를 로컬 PlayerModel에 반영
-                playerData.attributes.money = updatedPlayerData.attributes.money;
-                playerData.attributes.element_stone = updatedPlayerData.attributes.element_stone;
-                playerData.attributes.attack_power = updatedPlayerData.attributes.attack_power;
-                playerData.attributes.max_health = updatedPlayerData.attributes.max_health;
-                playerData.attributes.critical_chance = updatedPlayerData.attributes.critical_chance;
-                playerData.attributes.critical_damage = updatedPlayerData.attributes.critical_damage;
+                playerData.attributes.base_money = updatedPlayerData.attributes.base_money;
+                playerData.attributes.base_element_stone = updatedPlayerData.attributes.base_element_stone;
+                playerData.attributes.base_attack_power = updatedPlayerData.attributes.base_attack_power;
+                playerData.attributes.base_max_health = updatedPlayerData.attributes.base_max_health;
+                playerData.attributes.base_critical_chance = updatedPlayerData.attributes.base_critical_chance;
+                playerData.attributes.base_critical_damage = updatedPlayerData.attributes.base_critical_damage;
                 playerData.attributes.combat_power = updatedPlayerData.attributes.combat_power;
             }
         }

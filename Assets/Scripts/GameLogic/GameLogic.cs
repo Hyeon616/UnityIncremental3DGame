@@ -297,7 +297,6 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     {
         if (playerData != null)
         {
-            
             CurrentPlayer = playerData;
             OnPlayerDataUpdated?.Invoke();
             UIManager.Instance.UpdateAllUIs();
