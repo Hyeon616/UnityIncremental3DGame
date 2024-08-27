@@ -10,9 +10,11 @@ exports.getPlayerData = async (req, res) => {
 
     const query = [
       "SELECT p.player_id, p.player_username, p.player_nickname,",
-      "pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power,",
-      "pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage,",
-      "pa.level, pa.awakening, pa.guild_id, pa.combat_power,",
+      "pa.base_element_stone, pa.base_skill_summon_tickets, pa.base_money,",
+      "pa.base_attack_power, pa.base_max_health, pa.base_critical_chance, pa.base_critical_damage,",
+      "pa.element_stone, pa.skill_summon_tickets, pa.money,",
+      "pa.attack_power, pa.max_health, pa.critical_chance, pa.critical_damage,",
+      "pa.current_stage, pa.level, pa.awakening, pa.guild_id, pa.combat_power,",
       "pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id,",
       "pa.Ability1, pa.Ability2, pa.Ability3, pa.Ability4, pa.Ability5, pa.Ability6,",
       "pa.Ability7, pa.Ability8, pa.Ability9, pa.Ability10, pa.Ability11, pa.Ability12",
@@ -196,16 +198,12 @@ exports.resetAbilities = async (req, res) => {
     await conn.query(updateQuery, [...newAbilities, playerId]);
 
     const selectQuery = `
-      SELECT p.player_id, p.player_username, p.player_nickname,
-        pa.element_stone, pa.skill_summon_tickets, pa.money, pa.attack_power,
-        pa.max_health, pa.critical_chance, pa.critical_damage, pa.current_stage,
-        pa.level, pa.awakening, pa.guild_id, pa.combat_power,
-        pa.equipped_skill1_id, pa.equipped_skill2_id, pa.equipped_skill3_id,
-        pa.Ability1, pa.Ability2, pa.Ability3, pa.Ability4, pa.Ability5, pa.Ability6,
-        pa.Ability7, pa.Ability8, pa.Ability9, pa.Ability10, pa.Ability11, pa.Ability12
-      FROM Players p
-      JOIN PlayerAttributes pa ON p.player_id = pa.player_id
-      WHERE p.player_id = ?;
+      SELECT 
+        attack_power, max_health, critical_chance, critical_damage, combat_power,
+        Ability1, Ability2, Ability3, Ability4, Ability5, Ability6,
+        Ability7, Ability8, Ability9, Ability10, Ability11, Ability12
+      FROM PlayerAttributes
+      WHERE player_id = ?;
     `;
 
     const [updatedPlayer] = await conn.query(selectQuery, [playerId]);
