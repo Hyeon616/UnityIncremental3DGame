@@ -131,7 +131,7 @@ public class UI_Ability : MonoBehaviour, IUpdatableUI
         Debug.Log("Reset");
         try
         {
-            var updatedPlayer = await ResourceManager.Instance.ResetAbilities();
+            var updatedPlayer = await ResourceManager.Instance.ResetAbilities(currentTabIndex);
             if (updatedPlayer != null)
             {
                 GameLogic.Instance.OnPlayerDataLoaded(updatedPlayer);

@@ -6,25 +6,32 @@ using System.Runtime.Serialization;
 [Serializable]
 public class PlayerModel
 {
-    public int player_id;
-    public string player_username;
-    public string player_nickname;
-    public int element_stone;
-    public int skill_summon_tickets;
-    public int money;
-    public int attack_power;
-    public int max_health;
-    public float critical_chance;
-    public float critical_damage;
-    public string current_stage;
-    public int level;
-    public int awakening;
-    public int? guild_id;
-    public string combat_power;
-    public int? rank;
-    public int? equipped_skill1_id;
-    public int? equipped_skill2_id;
-    public int? equipped_skill3_id;
+    public int player_id { get; set; }
+    public string player_username { get; set; }
+    public string player_nickname { get; set; }
+    public int base_element_stone { get; set; }
+    public int base_skill_summon_tickets { get; set; }
+    public int base_money { get; set; }
+    public int base_attack_power { get; set; }
+    public int base_max_health { get; set; }
+    public float base_critical_chance { get; set; }
+    public float base_critical_damage { get; set; }
+    public string current_stage { get; set; }
+    public int level { get; set; }
+    public int awakening { get; set; }
+    public int? guild_id { get; set; }
+    public int element_stone { get; set; }
+    public int skill_summon_tickets { get; set; }
+    public int money { get; set; }
+    public int attack_power { get; set; }
+    public int max_health { get; set; }
+    public float critical_chance { get; set; }
+    public float critical_damage { get; set; }
+    public int combat_power { get; set; }
+    public int? rank { get; set; }
+    public int? equipped_skill1_id { get; set; }
+    public int? equipped_skill2_id { get; set; }
+    public int? equipped_skill3_id { get; set; }
     public string Ability1 { get; set; }
     public string Ability2 { get; set; }
     public string Ability3 { get; set; }
@@ -38,16 +45,21 @@ public class PlayerModel
     public string Ability11 { get; set; }
     public string Ability12 { get; set; }
 
-
     [JsonIgnore]
     public Attributes attributes;
 
     [OnDeserialized]
     internal void OnDeserialized(StreamingContext context)
     {
-        
         attributes = new Attributes
         {
+            base_element_stone = this.base_element_stone,
+            base_skill_summon_tickets = this.base_skill_summon_tickets,
+            base_money = this.base_money,
+            base_attack_power = this.base_attack_power,
+            base_max_health = this.base_max_health,
+            base_critical_chance = this.base_critical_chance,
+            base_critical_damage = this.base_critical_damage,
             element_stone = this.element_stone,
             skill_summon_tickets = this.skill_summon_tickets,
             money = this.money,
@@ -76,13 +88,18 @@ public class PlayerModel
             Ability10 = this.Ability10,
             Ability11 = this.Ability11,
             Ability12 = this.Ability12
-
         };
-
     }
 
     public class Attributes
     {
+        public int base_element_stone;
+        public int base_skill_summon_tickets;
+        public int base_money;
+        public int base_attack_power;
+        public int base_max_health;
+        public float base_critical_chance;
+        public float base_critical_damage;
         public int element_stone;
         public int skill_summon_tickets;
         public int money;
@@ -94,7 +111,7 @@ public class PlayerModel
         public int level;
         public int awakening;
         public int? guild_id;
-        public string combat_power;
+        public int combat_power;
         public int? rank;
         public int? equipped_skill1_id;
         public int? equipped_skill2_id;
@@ -123,13 +140,6 @@ public class PlayerModel
                 default: return new List<string>();
             }
         }
-    }
-
-    
-
-    public long GetCombatPowerAsLong()
-    {
-        return long.TryParse(combat_power, out long result) ? result : 0;
     }
 
     public override string ToString()

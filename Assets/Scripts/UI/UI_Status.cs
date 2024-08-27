@@ -46,18 +46,18 @@ public class UI_Status : MonoBehaviour, IUpdatableUI
         if (player == null || player.attributes == null) return;
 
         CharacterLevel.text = $"Lv.{player.attributes.level}";
+        Debug.Log(player.attributes.base_attack_power);
+        CurrentAttackText.text = GameLogic.FormatKoreanCurrency(player.attributes.base_attack_power);
+        UpgradeAttackText.text = GameLogic.FormatKoreanCurrency(player.attributes.base_attack_power * 2);
 
-        CurrentAttackText.text = GameLogic.FormatKoreanCurrency(player.attributes.attack_power);
-        UpgradeAttackText.text = GameLogic.FormatKoreanCurrency(player.attributes.attack_power * 2);
+        CurrentHpText.text = GameLogic.FormatKoreanCurrency(player.attributes.base_max_health);
+        UpgradeHpText.text = GameLogic.FormatKoreanCurrency(player.attributes.base_max_health * 2);
 
-        CurrentHpText.text = GameLogic.FormatKoreanCurrency(player.attributes.max_health);
-        UpgradeHpText.text = GameLogic.FormatKoreanCurrency(player.attributes.max_health * 2);
+        CurrentCriticalChanceText.text = $"{player.attributes.base_critical_chance:F2}%";
+        UpgradeCriticalChanceText.text = $"{player.attributes.base_critical_chance * 2:F2}%";
 
-        CurrentCriticalChanceText.text = $"{player.attributes.critical_chance:F2}%";
-        UpgradeCriticalChanceText.text = $"{player.attributes.critical_chance * 2:F2}%";
-
-        CurrentCriticalDamageText.text = $"{player.attributes.critical_damage:F2}%";
-        UpgradeCriticalDamageText.text = $"{player.attributes.critical_damage * 2:F2}%";
+        CurrentCriticalDamageText.text = $"{player.attributes.base_critical_damage:F2}%";
+        UpgradeCriticalDamageText.text = $"{player.attributes.base_critical_damage * 2:F2}%";
 
         int upgradeCost = GameLogic.Instance.GetUpgradeCost();
 

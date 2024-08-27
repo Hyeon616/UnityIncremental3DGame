@@ -358,24 +358,33 @@ public class ResourceManager : Singleton<ResourceManager>
         string url = APISettings.GetUrl(APISettings.Endpoint.PlayerData, playerData.player_id);
         var requestData = new
         {
-            money = playerData.attributes.money,
-            element_stone = playerData.attributes.element_stone,
-            attack_power = playerData.attributes.attack_power,
-            max_health = playerData.attributes.max_health,
-            critical_chance = playerData.attributes.critical_chance,
-            critical_damage = playerData.attributes.critical_damage,
+            base_money = playerData.attributes.money,
+            base_element_stone = playerData.attributes.element_stone,
+            base_attack_power = playerData.attributes.attack_power,
+            base_max_health = playerData.attributes.max_health,
+            base_critical_chance = playerData.attributes.critical_chance,
+            base_critical_damage = playerData.attributes.critical_damage,
             level = playerData.attributes.level,
             equipped_skill1_id = playerData.attributes.equipped_skill1_id,
             equipped_skill2_id = playerData.attributes.equipped_skill2_id,
             equipped_skill3_id = playerData.attributes.equipped_skill3_id
         };
-
         try
         {
             var result = await PutData<object>(url, requestData);
             if (result != null)
             {
-                GameLogic.Instance.OnPlayerDataLoaded(JsonConvert.DeserializeObject<PlayerModel>(result.ToString()));
+                var updatedPlayerData = JsonConvert.DeserializeObject<PlayerModel>(result.ToString());
+                GameLogic.Instance.OnPlayerDataLoaded(updatedPlayerData);
+
+                // 업데이트된 데이터를 로컬 PlayerModel에 반영
+                playerData.attributes.money = updatedPlayerData.attributes.money;
+                playerData.attributes.element_stone = updatedPlayerData.attributes.element_stone;
+                playerData.attributes.attack_power = updatedPlayerData.attributes.attack_power;
+                playerData.attributes.max_health = updatedPlayerData.attributes.max_health;
+                playerData.attributes.critical_chance = updatedPlayerData.attributes.critical_chance;
+                playerData.attributes.critical_damage = updatedPlayerData.attributes.critical_damage;
+                playerData.attributes.combat_power = updatedPlayerData.attributes.combat_power;
             }
         }
         catch (Exception ex)
@@ -384,12 +393,12 @@ public class ResourceManager : Singleton<ResourceManager>
         }
     }
 
-    public async UniTask<PlayerModel> ResetAbilities()
+    public async UniTask<PlayerModel> ResetAbilities(int abilityIndex)
     {
         string url = APISettings.GetUrl(APISettings.Endpoint.ResetAbilities, GameLogic.Instance.CurrentPlayer.player_id);
         try
         {
-            var requestData = new { playerId = GameLogic.Instance.CurrentPlayer.player_id };
+            var requestData = new { playerId = GameLogic.Instance.CurrentPlayer.player_id, abilityIndex = abilityIndex };
             Debug.Log($"Sending reset request with player ID: {requestData.playerId}");
             var result = await PutData<object, PlayerModel>(url, requestData);
             Debug.Log($"Reset result received: {(result != null ? "not null" : "null")}");

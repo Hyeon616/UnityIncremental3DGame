@@ -233,10 +233,10 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     public async void UpgradePlayer()
     {
         CurrentPlayer.attributes.level++;
-        CurrentPlayer.attributes.attack_power *= 2;
-        CurrentPlayer.attributes.max_health *= 2;
-        CurrentPlayer.attributes.critical_chance *= 2;
-        CurrentPlayer.attributes.critical_damage *= 2;
+        CurrentPlayer.attributes.base_attack_power *= 2;
+        CurrentPlayer.attributes.base_max_health *= 2;
+        CurrentPlayer.attributes.base_critical_chance *= 2;
+        CurrentPlayer.attributes.base_critical_damage *= 2;
 
         OnPropertyChanged(nameof(CurrentPlayer));
         OnPlayerDataUpdated?.Invoke();
@@ -297,7 +297,7 @@ public class GameLogic : Singleton<GameLogic>, INotifyPropertyChanged
     {
         if (playerData != null)
         {
-            Debug.Log($"OnPlayerDataLoaded called with data: {JsonUtility.ToJson(playerData)}");
+            
             CurrentPlayer = playerData;
             OnPlayerDataUpdated?.Invoke();
             UIManager.Instance.UpdateAllUIs();
