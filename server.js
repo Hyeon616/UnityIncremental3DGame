@@ -101,9 +101,7 @@ process.on("SIGINT", async () => {
   try {
     const redisClient = getClient();
     if (redisClient) {
-      console.log("Closing Redis client connection...");
       await redisClient.quit();
-      console.log("Redis connection closed");
     }
   } catch (error) {
     console.error("Error closing Redis connection:", error);
