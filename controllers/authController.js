@@ -46,20 +46,20 @@ exports.register = async (req, res) => {
     } else {
       throw new Error("Failed to get new player ID");
     }
-    
-    // const attributeResult = await conn.query(
-    //   `INSERT INTO PlayerAttributes (
-    //     player_id, base_element_stone, base_skill_summon_tickets, base_money, 
-    //     base_attack_power, base_max_health, base_critical_chance, base_critical_damage, 
-    //     current_stage, level, awakening
-    //   ) VALUES (?, 0, 0, 0, 10, 50, 0, 0, '1-1', 1, 0)`,
-    //   [playerId]
-    // );
 
-    // const missionResult = await conn.query(
-    //   "INSERT INTO MissionProgress (player_id, level_progress, combat_power_progress, awakening_progress, online_time_progress, weapon_level_sum_progress) VALUES (?, 0, 0, 0, 0, 0)",
-    //   [playerId]
-    // );
+    const attributeResult = await conn.query(
+      `INSERT INTO PlayerAttributes (
+        player_id, base_element_stone, base_skill_summon_tickets, base_money, 
+        base_attack_power, base_max_health, base_critical_chance, base_critical_damage, 
+        current_stage, level, awakening
+      ) VALUES (?, 0, 0, 0, 10, 50, 0, 0, '1-1', 1, 0)`,
+      [playerId]
+    );
+
+    const missionResult = await conn.query(
+      "INSERT INTO MissionProgress (player_id, level_progress, combat_power_progress, awakening_progress, online_time_progress, weapon_level_sum_progress) VALUES (?, 0, 0, 0, 0, 0)",
+      [playerId]
+    );
 
     const weapons = await getCachedWeapons();
 
