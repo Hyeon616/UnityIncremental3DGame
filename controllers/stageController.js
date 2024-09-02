@@ -1,60 +1,22 @@
 const pool = require('../config/db');
-const { getClient, connectRedis } = require('../config/redis');
 
-async function cacheStages() {
-    let client = getClient();
-    if (!client || !client.isOpen) {
-        client = await connectRedis();
-    }
-
+async function getStagesFromDB() {
     let conn;
     try {
         conn = await pool.getConnection();
         const rows = await conn.query('SELECT DISTINCT Stage FROM Monsters ORDER BY Stage');
-        
-        if (rows) {
-            const stagesArray = Array.isArray(rows) ? rows : [rows];
-            await client.set('stages', JSON.stringify(stagesArray), {
-                EX: 3600
-            });
-            console.log(`${stagesArray.length} stages successfully cached in Redis.`);
-            return stagesArray;
-        } else {
-            console.log('No stages found in the database');
-            return [];
-        }
+        return Array.isArray(rows) ? rows : [rows];
     } catch (err) {
-        console.error('Error in cacheStages:', err);
+        console.error('Error fetching stages from database:', err);
         throw err;
     } finally {
         if (conn) conn.release();
     }
 }
 
-async function getCachedStages() {
-    let client = getClient();
-    if (!client || !client.isOpen) {
-        client = await connectRedis();
-    }
-
-    try {
-        let stages = await client.get('stages');
-        if (stages) {
-            console.log('Stages data successfully loaded from Redis.');
-            return JSON.parse(stages);
-        } else {
-            console.log('No stages found in Redis, fetching from DB');
-            return await cacheStages();
-        }
-    } catch (err) {
-        console.error('Error in getCachedStages:', err);
-        return await cacheStages();
-    }
-}
-
 exports.getStages = async (req, res) => {
     try {
-        const stages = await getCachedStages();
+        const stages = await getStagesFromDB();
         res.json(stages);
     } catch (err) {
         console.error('Error retrieving stages:', err);
@@ -116,6 +78,5 @@ module.exports = {
     getStages: exports.getStages,
     updateStage: exports.updateStage,
     getCurrentStage: exports.getCurrentStage,
-    cacheStages,
-    getCachedStages
+    getStagesFromDB
 };

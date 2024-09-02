@@ -1,12 +1,6 @@
 const pool = require('../config/db');
-const { getClient, connectRedis } = require('../config/redis');
 
-async function cacheGuilds() {
-    let client = getClient();
-    if (!client.isOpen) {
-        client = await connectRedis();
-    }
-
+async function getGuildsFromDB() {
     let conn;
     try {
         conn = await pool.getConnection();
@@ -16,40 +10,18 @@ async function cacheGuilds() {
             return [];
         }
         console.log('DB에서 가져온 길드 목록:', guilds);
-
-        await client.set('guilds', JSON.stringify(guilds), {
-            EX: 3600
-        });
-        console.log('길드 목록이 성공적으로 캐싱되었습니다.');
         return guilds;
     } catch (error) {
-        console.error('길드 목록 캐싱 중 오류 발생:', error);
+        console.error('길드 목록 가져오기 중 오류 발생:', error);
         throw error;
     } finally {
         if (conn) conn.release();
     }
 }
 
-async function getCachedGuilds() {
-    let client = getClient();
-    if (!client.isOpen) {
-        client = await connectRedis();
-    }
-
-    let guilds = await client.get('guilds');
-    console.log('Redis에서 가져온 길드 목록:', guilds);
-
-    if (guilds) {
-        console.log('길드 목록이 성공적으로 Redis에서 로드되었습니다.');
-        return JSON.parse(guilds);
-    } else {
-        return await cacheGuilds();
-    }
-}
-
 exports.getGuilds = async (req, res) => {
     try {
-        const guilds = await getCachedGuilds();
+        const guilds = await getGuildsFromDB();
         res.json(guilds);
     } catch (err) {
         console.error('길드 목록 가져오기 중 오류 발생:', err);
@@ -69,7 +41,6 @@ exports.createGuild = async (req, res) => {
         await conn.query('INSERT INTO PlayerGuilds (player_id, guild_id) VALUES (?, ?)', [guildLeader, guildId]);
         await conn.query('UPDATE PlayerAttributes SET guild_id = ? WHERE player_id = ?', [guildId, guildLeader]);
 
-        await cacheGuilds();
         res.status(200).json({ message: 'Guild created successfully', guildId });
     } catch (err) {
         console.error('길드 생성 중 오류 발생:', err);
@@ -89,7 +60,6 @@ exports.joinGuild = async (req, res) => {
         await conn.query('INSERT INTO PlayerGuilds (player_id, guild_id) VALUES (?, ?)', [playerId, guildId]);
         await conn.query('UPDATE PlayerAttributes SET guild_id = ? WHERE player_id = ?', [guildId, playerId]);
 
-        await cacheGuilds();
         res.status(200).json({ message: 'Joined guild successfully' });
     } catch (err) {
         console.error('길드 가입 중 오류 발생:', err);
@@ -109,7 +79,6 @@ exports.leaveGuild = async (req, res) => {
         await conn.query('DELETE FROM PlayerGuilds WHERE player_id = ? AND guild_id = ?', [playerId, guildId]);
         await conn.query('UPDATE PlayerAttributes SET guild_id = NULL WHERE player_id = ?', [playerId]);
 
-        await cacheGuilds();
         res.status(200).json({ message: 'Left guild successfully' });
     } catch (err) {
         console.error('길드 탈퇴 중 오류 발생:', err);
@@ -134,7 +103,6 @@ exports.kickMember = async (req, res) => {
         await conn.query('DELETE FROM PlayerGuilds WHERE player_id = ? AND guild_id = ?', [memberId, guildId]);
         await conn.query('UPDATE PlayerAttributes SET guild_id = NULL WHERE player_id = ?', [memberId]);
 
-        await cacheGuilds();
         res.status(200).json({ message: 'Member kicked successfully' });
     } catch (err) {
         console.error('길드원 강퇴 중 오류 발생:', err);
@@ -160,7 +128,6 @@ exports.disbandGuild = async (req, res) => {
         await conn.query('UPDATE PlayerAttributes SET guild_id = NULL WHERE guild_id = ?', [guildId]);
         await conn.query('DELETE FROM Guilds WHERE guild_id = ?', [guildId]);
 
-        await cacheGuilds();
         res.status(200).json({ message: 'Guild disbanded successfully' });
     } catch (err) {
         console.error('길드 해체 중 오류 발생:', err);
@@ -184,7 +151,6 @@ exports.updateGuildName = async (req, res) => {
 
         await conn.query('UPDATE Guilds SET guild_name = ? WHERE guild_id = ?', [newName, guildId]);
 
-        await cacheGuilds();
         res.status(200).json({ message: 'Guild name updated successfully' });
     } catch (err) {
         console.error('길드 이름 변경 중 오류 발생:', err);
@@ -192,4 +158,14 @@ exports.updateGuildName = async (req, res) => {
     } finally {
         if (conn) conn.release();
     }
+};
+
+module.exports = {
+    getGuilds: exports.getGuilds,
+    createGuild: exports.createGuild,
+    joinGuild: exports.joinGuild,
+    leaveGuild: exports.leaveGuild,
+    kickMember: exports.kickMember,
+    disbandGuild: exports.disbandGuild,
+    updateGuildName: exports.updateGuildName
 };

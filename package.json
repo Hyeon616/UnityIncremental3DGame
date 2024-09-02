@@ -20,8 +20,8 @@
     "jsonwebtoken": "^9.0.2",
     "mariadb": "^3.3.1",
     "path": "^0.12.7",
-    "redis": "^4.6.15",
-    "xml2js": "^0.6.2"
+    "xml2js": "^0.6.2",
+    "mongodb": "^4.5.0"
   },
   "devDependencies": {
     "eslint": "^9.4.0",

@@ -1,40 +1,16 @@
 const pool = require('../config/db');
-const { getClient, connectRedis } = require('../config/redis');
 
-
-// 친구 데이터를 Redis에 캐싱하는 함수
-async function cacheFriends(playerId) {
-    let client = getClient();
-    if (!client.isOpen) {
-        client = await connectRedis();
-    }
-
-    const conn = await pool.getConnection();
+async function getFriendsFromDB(playerId) {
+    let conn;
     try {
+        conn = await pool.getConnection();
         const friends = await conn.query('SELECT * FROM Friends WHERE player_id = ?', [playerId]);
-        const friendsData = friends ? friends : [];
-        await client.set(`friends:${playerId}`, JSON.stringify(friendsData), 'EX', 3600);
-        console.log(`플레이어 ${playerId}의 친구 목록이 성공적으로 캐싱되었습니다.`);
-        return friendsData;
+        return friends || [];
+    } catch (err) {
+        console.error('친구 목록 가져오기 중 오류 발생:', err);
+        throw err;
     } finally {
         if (conn) conn.release();
-    }
-}
-
-
-// Redis에서 친구 목록을 가져오는 함수
-async function getCachedFriends(playerId) {
-    let client = getClient();
-    if (!client.isOpen) {
-        client = await connectRedis();
-    }
-
-    let friends = await client.get(`friends:${playerId}`);
-    if (friends) {
-        console.log(`플레이어 ${playerId}의 친구 목록이 성공적으로 Redis에서 로드되었습니다.`);
-        return JSON.parse(friends);
-    } else {
-        return await cacheFriends(playerId);
     }
 }
 
@@ -42,7 +18,7 @@ exports.getFriends = async (req, res) => {
     const playerId = req.user.userId;
 
     try {
-        const friends = await getCachedFriends(playerId);
+        const friends = await getFriendsFromDB(playerId);
         res.json(friends);
     } catch (err) {
         console.error('친구 목록 가져오기 중 오류 발생:', err);
@@ -60,9 +36,6 @@ exports.addFriend = async (req, res) => {
 
         await conn.query('INSERT INTO Friends (player_id, friend_id) VALUES (?, ?)', [playerId, friendId]);
         await conn.query('INSERT INTO Friends (player_id, friend_id) VALUES (?, ?)', [friendId, playerId]);
-
-        await cacheFriends(playerId);
-        await cacheFriends(friendId);
 
         res.status(200).json({ message: 'Friend added successfully' });
     } catch (err) {
@@ -83,9 +56,6 @@ exports.removeFriend = async (req, res) => {
 
         await conn.query('DELETE FROM Friends WHERE player_id = ? AND friend_id = ?', [playerId, friendId]);
         await conn.query('DELETE FROM Friends WHERE player_id = ? AND friend_id = ?', [friendId, playerId]);
-
-        await cacheFriends(playerId);
-        await cacheFriends(friendId);
 
         res.status(200).json({ message: 'Friend removed successfully' });
     } catch (err) {
@@ -152,9 +122,6 @@ exports.respondToFriendRequest = async (req, res) => {
         if (status === 'accepted') {
             await conn.query('INSERT INTO Friends (player_id, friend_id) VALUES (?, ?)', [playerId, request.sender_id]);
             await conn.query('INSERT INTO Friends (player_id, friend_id) VALUES (?, ?)', [request.sender_id, playerId]);
-
-            await cacheFriends(playerId);
-            await cacheFriends(request.sender_id);
         }
 
         res.status(200).json({ message: 'Friend request responded successfully' });
@@ -190,4 +157,14 @@ exports.cancelFriendRequest = async (req, res) => {
     } finally {
         if (conn) conn.release();
     }
+};
+
+module.exports = {
+    getFriends: exports.getFriends,
+    addFriend: exports.addFriend,
+    removeFriend: exports.removeFriend,
+    getFriendRequests: exports.getFriendRequests,
+    sendFriendRequest: exports.sendFriendRequest,
+    respondToFriendRequest: exports.respondToFriendRequest,
+    cancelFriendRequest: exports.cancelFriendRequest
 };

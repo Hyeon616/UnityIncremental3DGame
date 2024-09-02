@@ -1,6 +1,5 @@
 // 가호
 const pool = require('../config/db');
-const { getAsync, setAsync } = require('../config/redis');
 
 exports.getBlessings = async (req, res) => {
     let conn;

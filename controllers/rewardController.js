@@ -1,42 +1,21 @@
 const pool = require('../config/db');
-const redis = require('../config/redis');
-
-async function getRewardsCache() {
-    const client = redis.getClient();
-    const rewards = await client.get('rewards');
-    return rewards ? JSON.parse(rewards) : null;
-}
 
 exports.getRewards = async (req, res) => {
+    let conn;
     try {
-        // Redis 캐시에서 rewards 가져오기
-        const cachedRewards = await getRewardsCache();
+        conn = await pool.getConnection();
+        const [rows] = await conn.query('SELECT * FROM Rewards');
         
-        if (cachedRewards) {
-            return res.json(cachedRewards);
-        }
-        
-        // 캐시에 없으면 DB에서 가져오기
-        let conn;
-        try {
-            conn = await pool.getConnection();
-            const [rows] = await conn.query('SELECT * FROM Rewards');
-            
-            if (rows && rows.length > 0) {
-                // Redis에 캐시 저장
-                const client = redis.getClient();
-                await client.set('rewards', JSON.stringify(rows), 'EX', 3600); // 1시간 동안 캐시
-                
-                res.json(rows);
-            } else {
-                res.status(404).json({ error: 'No rewards found' });
-            }
-        } finally {
-            if (conn) conn.release();
+        if (rows && rows.length > 0) {
+            res.json(rows);
+        } else {
+            res.status(404).json({ error: 'No rewards found' });
         }
     } catch (err) {
         console.error('Error retrieving rewards:', err);
         res.status(500).json({ error: 'Server error' });
+    } finally {
+        if (conn) conn.release();
     }
 };
 
@@ -81,20 +60,8 @@ exports.claimReward = async (req, res) => {
     }
 };
 
-exports.cacheRewards = async () => {
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        const [rows] = await conn.query('SELECT * FROM Rewards');
-        
-        if (rows && rows.length > 0) {
-            const client = redis.getClient();
-            await client.set('rewards', JSON.stringify(rows), 'EX', 3600); // 1시간 동안 캐시
-            console.log('Rewards cached successfully');
-        }
-    } catch (err) {
-        console.error('Error caching rewards:', err);
-    } finally {
-        if (conn) conn.release();
-    }
+
+module.exports = {
+    getRewards: exports.getRewards,
+    claimReward: exports.claimReward
 };

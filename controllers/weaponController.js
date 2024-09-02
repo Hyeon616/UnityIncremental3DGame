@@ -1,66 +1,16 @@
 const pool = require('../config/db');
-const { getClient, connectRedis } = require('../config/redis');
 
-function serializeBigInt(obj) {
-    return JSON.stringify(obj, (key, value) =>
-        typeof value === 'bigint' ? value.toString() : value
-    );
-}
-
-// 무기 데이터를 Redis에 캐싱하는 함수
-async function cacheWeapons() {
-    let client = getClient();
-    if (!client || !client.isOpen) {
-        client = await connectRedis();
-    }
-
+async function getWeaponsFromDB() {
     let conn;
     try {
         conn = await pool.getConnection();
         const result = await conn.query('SELECT * FROM Weapon');
-        
-        let rows = Array.isArray(result) ? result : [result];
-       
-        // BigInt 값을 문자열로 변환
-        const serializedRows = rows.map(row => ({
-            ...row,
-            weapon_exp: row.weapon_exp ? row.weapon_exp.toString() : null
-        }));
-
-        await client.set('weapons', serializeBigInt(serializedRows), {
-            EX: 3600
-        });
-        console.log(`${rows.length} weapons successfully cached in Redis.`);
-        return serializedRows;
+        return Array.isArray(result) ? result : [result];
     } catch (err) {
-        console.error('Error in cacheWeapons:', err);
+        console.error('Error fetching weapons from database:', err);
         throw err;
     } finally {
         if (conn) conn.release();
-    }
-}
-
-
-// Redis에서 무기 데이터를 가져오는 함수
-async function getCachedWeapons() {
-    let client = getClient();
-    if (!client || !client.isOpen) {
-        client = await connectRedis();
-    }
-
-    try {
-        let weapons = await client.get('weapons');
-        if (weapons) {
-            console.log('Weapons data successfully loaded from Redis.');
-            return JSON.parse(weapons);
-        } else {
-            console.log('No weapons found in Redis, fetching from DB');
-            return await cacheWeapons();
-        }
-    } catch (err) {
-        console.error('Error in getCachedWeapons:', err);
-        // 에러가 발생해도 DB에서 직접 가져오기 시도
-        return await cacheWeapons();
     }
 }
 
@@ -83,7 +33,6 @@ async function getPlayerWeapons(req, res) {
     }
 }
 
-// 무기 뽑기 함수
 async function drawWeapon(req, res) {
     const { weaponId } = req.body;
 
@@ -93,7 +42,7 @@ async function drawWeapon(req, res) {
 
         const [weapon] = await conn.query('SELECT * FROM PlayerWeaponInventory WHERE player_id = ? AND weapon_id = ?', [req.user.userId, weaponId]);
         if (!weapon || weapon.length === 0) {
-            const weapons = await getCachedWeapons();
+            const weapons = await getWeaponsFromDB();
             const weaponInfo = weapons.find(w => w.weapon_id === weaponId);
             if (!weaponInfo) {
                 return res.status(400).json({ error: 'Invalid weapon ID' });
@@ -115,6 +64,7 @@ async function drawWeapon(req, res) {
         if (conn) conn.release();
     }
 }
+
 
 // 무기 합성 함수
 async function synthesizeWeapon(req, res) {
@@ -195,7 +145,6 @@ module.exports = {
     drawWeapon,
     synthesizeWeapon,
     synthesizeAllWeapons,
-    cacheWeapons,
-    getCachedWeapons,
+    getWeaponsFromDB,
     getPlayerWeapons
 };

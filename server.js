@@ -3,10 +3,10 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path");
+const { connectToMongo } = require("./config/mongodb");
 
 dotenv.config({ path: path.join(__dirname, "config.env") });
 
-const { connectRedis, getClient } = require("./config/redis");
 const pool = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
@@ -22,12 +22,7 @@ const checkRoutes = require("./routes/checkRoutes");
 const playerRoutes = require("./routes/playerRoutes");
 const mailRoutes = require("./routes/mailRoutes");
 const missionRoutes = require("./routes/missionRoutes");
-
-const { cacheSkills } = require("./controllers/skillController");
-const { cacheWeapons } = require("./controllers/weaponController");
-const { cacheStages } = require("./controllers/stageController");
-const { cacheMonsters } = require("./controllers/monsterController");
-const { cacheRewards } = require("./controllers/rewardController");
+const rankingRoutes = require("./routes/rankingRoutes");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -48,30 +43,13 @@ app.use("/checks", checkRoutes);
 app.use("/player", playerRoutes);
 app.use("/mails", mailRoutes);
 app.use("/mission", missionRoutes);
+app.use("/rankings", rankingRoutes);
+
 
 async function startServer() {
   try {
-    await connectRedis();
-
-    console.log("Starting to cache data...");
-    const results = await Promise.allSettled([
-      cacheSkills(),
-      cacheWeapons(),
-      cacheMonsters(),
-      cacheStages(),
-      cacheRewards(),
-    ]);
-
-    results.forEach((result, index) => {
-      if (result.status === "fulfilled") {
-        console.log(`Successfully cached data for index ${index}`);
-      } else {
-        console.error(
-          `Failed to cache data for index ${index}:`,
-          result.reason
-        );
-      }
-    });
+    const db = await connectToMongo();
+    app.locals.db = db;
 
     app.listen(port, "0.0.0.0", () => {
       console.log(`Server running on http://0.0.0.0:${port}`);
@@ -82,29 +60,14 @@ async function startServer() {
   }
 }
 
-async function checkRedisConnection() {
-  try {
-    const client = getClient();
-    await client.ping();
-    console.log("Redis connection is alive");
-  } catch (error) {
-    console.error("Redis connection error:", error);
-    // 연결 재시도 로직
-    await reconnectIfNeeded();
-  }
-}
-
 startServer();
-setInterval(checkRedisConnection, 60 * 1000);
 
 process.on("SIGINT", async () => {
   try {
-    const redisClient = getClient();
-    if (redisClient) {
-      await redisClient.quit();
-    }
+    await app.locals.db.client.close();
+    console.log("MongoDB connection closed");
   } catch (error) {
-    console.error("Error closing Redis connection:", error);
+    console.error("Error closing MongoDB connection:", error);
   } finally {
     process.exit();
   }

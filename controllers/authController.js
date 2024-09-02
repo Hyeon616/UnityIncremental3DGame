@@ -1,9 +1,9 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
-const { getCachedWeapons } = require("../controllers/weaponController");
-const { getCachedSkills } = require("../controllers/skillController");
-const redis = require("../config/redis");
+const { getWeaponsFromDB } = require("../controllers/weaponController");
+const { getSkillsFromDB } = require("../controllers/skillController");
+const { updatePlayerRanking } = require("../controllers/rankingController");
 const safeStringify = require("../utils/safeStringify");
 
 
@@ -61,78 +61,75 @@ exports.register = async (req, res) => {
       [playerId]
     );
 
-    const weapons = await getCachedWeapons();
+    const weapons = await getWeaponsFromDB();
 
     if (Array.isArray(weapons) && weapons.length > 0) {
-      const weaponInserts = weapons.map((weapon) => [
-        playerId,
-        weapon.weapon_id,
-        1, // count를 0에서 1로 변경
-        weapon.attack_power,
-        parseFloat(weapon.crit_rate),
-        parseFloat(weapon.crit_damage),
-        0, // level
-      ]);
+        const weaponInserts = weapons.map((weapon) => [
+            playerId,
+            weapon.weapon_id,
+            1,
+            weapon.attack_power,
+            parseFloat(weapon.crit_rate),
+            parseFloat(weapon.crit_damage),
+            0,
+        ]);
 
-      const result = await conn.batch(
-        "INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, level) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        weaponInserts
-      );
-      console.log(`Inserted ${result.affectedRows} weapons for new user`);
+        const result = await conn.batch(
+            "INSERT INTO PlayerWeaponInventory (player_id, weapon_id, count, attack_power, critical_chance, critical_damage, level) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            weaponInserts
+        );
+        console.log(`Inserted ${result.affectedRows} weapons for new user`);
     } else {
-      console.log("No weapons available for new user");
+        console.log("No weapons available for new user");
     }
 
-    const skills = await getCachedSkills();
-    if (Array.isArray(skills) && skills.length > 0) {
-      const skillInserts = skills.map((skill) => [
-        playerId,
-        skill.id,
-        1, // 초기 레벨
-      ]);
 
-      console.log(
-        `Preparing to insert ${skillInserts.length} skills for new user`
-      );
+    const skills = await getSkillsFromDB();
+        if (Array.isArray(skills) && skills.length > 0) {
+            const skillInserts = skills.map((skill) => [
+                playerId,
+                skill.id,
+                1,
+            ]);
 
-      const skillResult = await conn.batch(
-        "INSERT INTO PlayerSkills (player_id, skill_id, level) VALUES (?, ?, ?)",
-        skillInserts
-      );
-      console.log(`Inserted ${skillResult.affectedRows} skills for new user`);
-    } else {
-      console.log("No skills available for new user");
-    }
+            console.log(
+                `Preparing to insert ${skillInserts.length} skills for new user`
+            );
 
+            const skillResult = await conn.batch(
+                "INSERT INTO PlayerSkills (player_id, skill_id, level) VALUES (?, ?, ?)",
+                skillInserts
+            );
+            console.log(`Inserted ${skillResult.affectedRows} skills for new user`);
+        } else {
+            console.log("No skills available for new user");
+        }
     await conn.commit();
 
-    // Redis 순위 업데이트
-    const redisClient = redis.getClient();
+    // MongoDB 순위 업데이트
     const [playerData] = await conn.query(
       "SELECT combat_power FROM PlayerAttributes WHERE player_id = ?",
       [playerId]
-    );
+  );
 
-    if (playerData && playerData.combat_power !== undefined) {
-      await redisClient.zAdd("player_ranks", {
-        score: playerData.combat_power,
-        value: playerId.toString(),
-      });
+  if (playerData && playerData.combat_power !== undefined) {
+      const db = req.app.locals.db;
+      await updatePlayerRanking(db, playerId, playerData.combat_power);
       console.log(
-        `Added player ${playerId} to Redis ranks with combat_power ${playerData.combat_power}`
+          `Added player ${playerId} to MongoDB ranks with combat_power ${playerData.combat_power}`
       );
-    } else {
+  } else {
       console.error("Failed to retrieve combat_power for new player");
-    }
+  }
 
-    res
+  res
       .status(201)
       .json(
-        JSON.parse(
-          safeStringify({ message: "User registered successfully", playerId })
-        )
+          JSON.parse(
+              safeStringify({ message: "User registered successfully", playerId })
+          )
       );
-  } catch (err) {
+}catch (err) {
     if (conn) await conn.rollback();
     console.error("Registration error:", err);
     if (err.code === "ER_BAD_NULL_ERROR") {
